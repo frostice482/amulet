@@ -18,7 +18,7 @@ function BalaNotation:format(n, places)
         if type(num) == "table" then
             num = num:to_number()
         end
-        if num >= 10^6 then
+        if (num or 0) >= 10^6 then
             local x = string.format("%.4g",num)
             local fac = math.floor(math.log(tonumber(x), 10))
             return string.format("%.3f",x/(10^fac))..'e'..fac
@@ -36,12 +36,12 @@ function BalaNotation:format(n, places)
             local mantissa = 10^(n.array[1]-math.floor(n.array[1]))
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             local exponent = math.floor(n.array[1])
-            return mantissa.."e"..e_ify(exponent)
+            return (n.sign == -1 and "-" or "")..mantissa.."e"..e_ify(exponent)
         else
             local exponent = math.floor(math.log(n.array[1],10))
             local mantissa = n.array[1]/10^exponent
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
-            return mantissa.."e"..e_ify(exponent)
+            return (n.sign == -1 and "-" or "")..mantissa.."e"..e_ify(exponent)
         end
     elseif to_big(n:log10()) < to_big(10)^1000000 then
         --e1.234e56789
@@ -54,31 +54,31 @@ function BalaNotation:format(n, places)
             local mantissa = 10^(n.array[1]-math.floor(n.array[1]))
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             local exponent = math.floor(n.array[1])
-            return "e"..mantissa.."e"..e_ify(exponent)
+            return (n.sign == -1 and "-" or "").."e"..mantissa.."e"..e_ify(exponent)
         else
             local exponent = math.floor(math.log(n.array[1],10))
             local mantissa = n.array[1]/10^exponent
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
-            return "e"..mantissa.."e"..e_ify(exponent)
+            return (n.sign == -1 and "-" or "").."e"..mantissa.."e"..e_ify(exponent)
         end
     elseif not n.array or not (n.isFinite and n:isFinite()) then
         return "Infinity"
-    elseif n.array[2] and #n.array == 2 and n.array[2] <= 8 then
+    elseif n.array[2] and n:arraySize() == 2 and n.array[2] <= 8 then
         --eeeeeee1.234e56789
         local mantissa = 10^(n.array[1]-math.floor(n.array[1]))
         mantissa = math.floor(mantissa*10^places+0.5)/10^places
         local exponent = math.floor(n.array[1])
-        return string.rep("e", n.array[2]-1)..mantissa.."e"..e_ify(exponent)
-    elseif #n.array < 8 then
+        return (n.sign == -1 and "-" or "")..string.rep("e", n.array[2]-1)..mantissa.."e"..e_ify(exponent)
+    elseif n:arraySize() < 8 then
         --e12#34#56#78
-        local r = "e"..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[2])
-        for i = 3, #n.array do
-            r = r.."#"..e_ify(n.array[i]+1)
+        local r = (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[2])
+        for i = 3, n:arraySize() do
+            r = r.."#"..e_ify((n.array[i] or 0)+1)
         end
         return r
     else
         --e12#34##5678
-        return "e"..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[#n.array]).."##"..e_ify(#n.array-2)
+        return (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[n:arraySize()] or 0).."##"..e_ify(n:arraySize()-2)
     end
 end
 

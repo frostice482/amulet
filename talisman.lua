@@ -34,10 +34,14 @@ function init_localization()
 	talismanloc()
 end
 
-Talisman = {config_file = {disable_anims = true, break_infinity = "omeganum", score_opt_id = 2}}
+Talisman = {config_file = {disable_anims = true, break_infinity = "omeganum", score_opt_id = 3}}
 if nativefs.read(lovely.mod_dir.."/Talisman/config.lua") then
     Talisman.config_file = STR_UNPACK(nativefs.read(lovely.mod_dir.."/Talisman/config.lua"))
-
+    if Talisman.config_file.break_infinity == "bignumber" then
+      Talisman.config_file.break_infinity = "omeganum"
+      Talisman.config_file.score_opt_id = 2
+    end
+    if Talisman.config_file.score_opt_id == 3 then Talisman.config_file.score_opt_id = 2 end
     if Talisman.config_file.break_infinity and type(Talisman.config_file.break_infinity) ~= 'string' then
       Talisman.config_file.break_infinity = "omeganum"
     end
@@ -70,7 +74,7 @@ Talisman.config_tab = function()
                   label = localize("talisman_string_C"),
                   scale = 0.8,
                   w = 6,
-                  options = {localize("talisman_vanilla"), localize("talisman_bignum"), localize("talisman_omeganum") .. "(e10##1000)"},
+                  options = {localize("talisman_vanilla"), localize("talisman_omeganum") .. "(e10##1000)"},
                   opt_callback = 'talisman_upd_score_opt',
                   current_option = Talisman.config_file.score_opt_id,
                 })}
@@ -108,7 +112,7 @@ G.FUNCS.talismanMenu = function(e)
 end
 G.FUNCS.talisman_upd_score_opt = function(e)
   Talisman.config_file.score_opt_id = e.to_key
-  local score_opts = {"", "bignumber", "omeganum"}
+  local score_opts = {"", "omeganum"}
   Talisman.config_file.break_infinity = score_opts[e.to_key]
   nativefs.write(lovely.mod_dir .. "/Talisman/config.lua", STR_PACK(Talisman.config_file))
 end
@@ -134,9 +138,15 @@ if Talisman.config_file.break_infinity then
   local nf = number_format
   function number_format(num, e_switch_point)
       if type(num) == 'table' then
-          num = to_big(num)
+          --num = to_big(num)
+          if num.str then return num.str end
+          if num:arraySize() > 2 then
+            local str = Notations.Balatro:format(num, 3)
+            num.str = str
+            return str
+          end
           G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
-          if num < to_big(e_switch_point or G.E_SWITCH_POINT) then
+          if (num or 0) < (to_big(G.E_SWITCH_POINT) or 0) then
               return nf(num:to_number(), e_switch_point)
           else
             return Notations.Balatro:format(num, 3)
@@ -339,24 +349,35 @@ function lenient_bignum(x)
   local sn = scale_number
   function scale_number(number, scale, max, e_switch_point)
     if not Big then return sn(number, scale, max, e_switch_point) end
-    scale = to_big(scale)
+    if type(scale) ~= "table" then scale = to_big(scale) end
+    if type(number) ~= "table" then number = Big:ensureBig(number) end
+    if number.scale then return number.scale end
     G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
     if not number or not is_number(number) then return scale end
     if not max then max = 10000 end
-    if to_big(number).e and to_big(number).e == 10^1000 then
+    if type(number) ~= "table" then math.min(3, scale:to_number()) end
+    if number.e and number.e == 10^1000 then
       scale = scale*math.floor(math.log(max*10, 10))/7
     end
-    if to_big(number) >= to_big(e_switch_point or G.E_SWITCH_POINT) then
-      if (to_big(to_big(number):log10()) <= to_big(999)) then
-        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(1000000*10, 10))
+    if not e_switch_point and number:arraySize() > 2 then --this is noticable faster than >= on the raw number for some reason
+      if number:arraySize() <= 2 and (number.array[1] or 0) <= 999 then --gross hack
+        scale = scale*math.floor(math.log(max*10, 10))/7 --this divisor is a constant so im precalcualting it
+      else
+        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.max(7,string.len(number.str or number_format(number))-1))
+      end
+    elseif to_big(number) >= to_big(e_switch_point or G.E_SWITCH_POINT) then
+      if number:arraySize() <= 2 and (number.array[1] or 0) <= 999 then --gross hack
+        scale = scale*math.floor(math.log(max*10, 10))/7 --this divisor is a constant so im precalcualting it
       else
         scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.max(7,string.len(number_format(number))-1))
       end
     elseif to_big(number) >= to_big(max) then
       scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(number*10, 10))
     end
-    return math.min(3, scale:to_number())
-  end
+    local scale = math.min(3, scale:to_number())
+    number.scale = scale
+    return scale
+   end
 
   local tsj = G.FUNCS.text_super_juice
   function G.FUNCS.text_super_juice(e, _amount)
@@ -372,8 +393,15 @@ function lenient_bignum(x)
   --don't return a Big unless we have to - it causes nativefs to break
   function math.max(x, y)
     if type(x) == 'table' or type(y) == 'table' then
-    x = to_big(x)
-    y = to_big(y)
+    if type(x) == 'table' and type(y) == 'table' then
+      if x:arraySize() > y:arraySize() then return x end
+      if y:arraySize() > x:arraySize() then return y end
+    end
+    --only convert when we have to, its expensive to do it again
+    if type(x) ~= 'table' then x = to_big(x) end
+    if type(y) ~= 'table' then y = to_big(y) end
+    if x:arraySize() > y:arraySize() then return x end
+    if y:arraySize() > x:arraySize() then return y end
     if (x > y) then
       return x
     else
@@ -385,8 +413,14 @@ function lenient_bignum(x)
   local min = math.min
   function math.min(x, y)
     if type(x) == 'table' or type(y) == 'table' then
-    x = to_big(x)
-    y = to_big(y)
+    if type(x) == 'table' and type(y) == 'table' then
+      if x:arraySize() < y:arraySize() then return x end
+      if y:arraySize() < x:arraySize() then return y end
+    end
+    if type(x) ~= 'table' then x = to_big(x) end
+    if type(y) ~= 'table' then y = to_big(y) end
+    if x:arraySize() < y:arraySize() then return x end
+    if y:arraySize() < x:arraySize() then return y end
     if (x < y) then
       return x
     else
@@ -429,7 +463,8 @@ function to_big(x, y)
   if type(x) == 'string' and x == "0" then --hack for when 0 is asked to be a bignumber need to really figure out the fix
     return 0
   elseif Big and Big.m then
-    return Big:new(x,y)
+    local x = Big:new(x,y)
+    return x
   elseif Big and Big.array then
     local result = Big:create(x)
     result.sign = y or result.sign or x.sign or 1
@@ -1009,6 +1044,7 @@ if SMODS and SMODS.calculate_individual_effect then
 
     if (key == 'ee_mult' or key == 'eemult' or key == 'EEmult_mod') and amount ~= 1 then 
       if effect.card then juice_card(effect.card) end
+      mult = to_big(mult)
       mult = mod_mult(mult:arrow(2, amount))
       update_hand_text({delay = 0}, {chips = hand_chips, mult = mult})
       if not effect.remove_default_message then
@@ -1027,6 +1063,7 @@ if SMODS and SMODS.calculate_individual_effect then
 
     if (key == 'eee_mult' or key == 'eeemult' or key == 'EEEmult_mod') and amount ~= 1 then 
       if effect.card then juice_card(effect.card) end
+      mult = to_big(mult)
       mult = mod_mult(mult:arrow(3, amount))
       update_hand_text({delay = 0}, {chips = hand_chips, mult = mult})
       if not effect.remove_default_message then
@@ -1045,6 +1082,7 @@ if SMODS and SMODS.calculate_individual_effect then
 
     if (key == 'hyper_mult' or key == 'hypermult' or key == 'hypermult_mod') and type(amount) == 'table' then 
       if effect.card then juice_card(effect.card) end
+      mult = to_big(mult)
       mult = mod_mult(mult:arrow(amount[1], amount[2]))
       update_hand_text({delay = 0}, {chips = hand_chips, mult = mult})
       if not effect.remove_default_message then

@@ -72,6 +72,14 @@ end
 
 ------------------------------------------------------
 
+function Big:arraySize()
+    local total = 0
+    for i, v in pairs(self.array) do
+        total = i
+    end
+    return total
+end
+
 function Big:new(arr)
     return setmetatable({array = arr, sign = 1}, OmegaMeta):normalize()
 end
@@ -96,7 +104,10 @@ function Big:isint()
         return true;
     end
     local num = self:to_number()
-    return (math.floor(num) == num);
+    if (math.floor(num) == num) then
+        return true
+    end
+    return Big:create(math.floor(self:to_number())) == self;
 end
 
 function Big:compareTo(other)
@@ -110,7 +121,7 @@ function Big:compareTo(other)
     if ((self.array[1]~=R.POSITIVE_INFINITY) and (other.array[1]==R.POSITIVE_INFINITY)) then
         return other.sign
     end
-    if ((#self.array==1) and (self.array[1]==0) and (#other.array==1) and (other.array[1]==0)) then
+    if ((self:arraySize()==1) and (self.array[1]==0) and (other:arraySize()==1) and (other.array[1]==0)) then
         return 0
     end
     if (self.sign~=other.sign) then
@@ -118,16 +129,25 @@ function Big:compareTo(other)
     end
     local m = self.sign;
     local r = nil;
-    if (#self.array>#other.array) then
+    if (self:arraySize()>other:arraySize()) then
         r = 1;
-    elseif (#self.array<#other.array) then
+    elseif (self:arraySize()<other:arraySize()) then
         r = -1;
     else
-        for i=#self.array,1,-1 do
-            if (self.array[i]>other.array[i]) then
+        local barray = {}
+        for i, v in pairs(self.array) do
+            barray[#barray+1]=i
+        end
+        --make sure to include both sets of indeces so that it actually checks every non 0 value
+        for i, v in pairs(other.array) do
+            barray[#barray+1]=i
+        end
+        table.sort(barray, function(a,b) return a > b end)
+        for i, v in pairs(barray) do
+            if ((self.array[v] or 0)>(other.array[v] or 0)) then
                 r = 1;
                 break;
-            elseif (self.array[i]<other.array[i]) then
+            elseif ((self.array[v] or 0)<(other.array[v] or 0)) then
                 r = -1
                 break
             end
@@ -188,14 +208,14 @@ end
 function Big:normalize()
     local b = nil
     local x = self
-    if ((x.array == nil) or (type(x.array) ~= "table") or (#x.array == 0)) then
+    if ((x.array == nil) or (type(x.array) ~= "table") or (x:arraySize() == 0)) then
         x.array = {0}
     end
-    if (#x.array == 1) and (x.array[1] == 0) then
+    if (x:arraySize() == 1) and (x.array[1] == 0) then
         x.sign = 1
         return x
     end
-    if (#x.array == 1) and (x.array[1] < 0) then
+    if (x:arraySize() == 1) and (x.array[1] < 0) then
         x.sign = -1
         x.array[1] = -x.array[1]
     end
@@ -207,18 +227,8 @@ function Big:normalize()
             x.sign = 1;
         end
     end
-    local l = 0
-    for i ,j in pairs(x.array) do
-        if i > l then
-                l = i
-        end
-    end
-    for i=1,l do
-        local e = x.array[i];
-        if ((e == nil)) then
-            x.array[i] = 0
-            e = 0
-        end
+    for i, v in pairs(x.array) do
+        local e = x.array[i] or 0;
         if (e ~= e) then
             x.array={R.NaN};
             return x;
@@ -230,26 +240,31 @@ function Big:normalize()
         if (i ~= 1) then
             x.array[i]=math.floor(e)
         end
+        --first 3 values kept because they are hardcoded in a few places
+        --it also doesnt hurt memory that much to keep them anyway
+        if ((e == 0)) and i > 3 then
+            x.array[i] = nil
+        end
     end
     local doOnce = true
     while (doOnce or b) do
     --   if (OmegaNum.debug>=OmegaNum.ALL) console.log(x.toString());
         b=false;
-        while ((#x.array ~= 0) and (x.array[#x.array]==0)) do
-            x.array[#x.array] = nil;
+        while ((x:arraySize() ~= 0) and (x.array[x:arraySize()]==0)) do
+            x.array[x:arraySize()] = nil;
             b=true;
         end
-        if (x.array[1] > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
+        if ((x.array[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
             x.array[2]=(x.array[2] or 0) + 1;
             x.array[1]= math.log(x.array[1], 10);
             b=true;
         end
-        while ((x.array[1] < math.log(R.MAX_DISP_INTEGER,10)) and ((x.array[2] ~= nil) and (x.array[2] ~= 0))) do
+        while (((x.array[1] or 0) < math.log(R.MAX_DISP_INTEGER,10)) and ((x.array[2] ~= nil) and (x.array[2] ~= 0))) do
             x.array[1] = math.pow(10,x.array[1], 10);
             x.array[2] = x.array[2] - 1
             b=true;
         end
-        -- if ((#x.array>2) and ((x.array[2] == nil) or (x.array[2] == 0))) then
+        -- if ((x:arraySize()>2) and ((x.array[2] == nil) or (x.array[2] == 0))) then
         --     local i = 3
         --     while (x.array[i] == nil) or (x.array[i] == 0) do
         --         i = i + 1
@@ -260,9 +275,9 @@ function Big:normalize()
         --     b=true;
         -- end
         doOnce = false;
-        l = #x.array
-        for i=1,l do
-            if (x.array[i]>R.MAX_SAFE_INTEGER) then
+        --l = x:arraySize()
+        for i, v in pairs(x.array) do
+            if ((x.array[i] or 0)>R.MAX_SAFE_INTEGER) then
                 x.array[i+1]=(x.array[i+1] or 0)+1;
                 x.array[1]=x.array[i]+1;
                 for j=2,i do
@@ -272,7 +287,7 @@ function Big:normalize()
             end
         end
     end
-    if (#x.array == 0) then
+    if (x:arraySize() == 0) then
         x.array = {0}
     end
     return x;
@@ -287,8 +302,8 @@ function Big:toString()
     end
     -- if (!isFinite(this.array[0])) return "Infinity";
     local s = "";
-    if (#self.array>=2) then
-        for i=#self.array,3,-1 do
+    if (self:arraySize()>=2) then
+        for i=self:arraySize(),3,-1 do
             local q = nil
             if (i >= 6) then
                 q = "{"..(i-1).."}"
@@ -527,15 +542,17 @@ function Big:to_number()
     if (self.sign==-1) then
         return -1*(self:neg():to_number());
     end
-    if ((#self.array>=2) and ((self.array[2]>=2) or (self.array[2]==1) and (self.array[1]>308))) then
+    if not self.array[1] then return 0 end
+    if self.array[2] == nil then self.array[2] = 0 end
+    if ((self:arraySize()>=2) and ((self.array[2]>=2) or (self.array[2]==1) and (self.array[1]>308))) then
         return R.POSITIVE_INFINITY;
     end
-    if (#self.array >= 3) and ((self.array[1] >= 3) or (self.array[2] >= 1) or (self.array[3] >= 1)) then
+    if (self:arraySize() >= 3) and ((self.array[1] >= 3) or (self.array[2] >= 1) or (self.array[3] >= 1)) then
         return R.POSITIVE_INFINITY;
     end
-    if (#self.array >= 4) and ((self.array[1] > 1) or (self.array[2] >= 1) or (self.array[3] >= 1)) then
-        for i = 4, #self.array do
-            if self.array[i] > 0 then
+    if (self:arraySize() >= 4) and ((self.array[1] > 1) or (self.array[2] >= 1) or (self.array[3] >= 1)) then
+        for i, v in pairs(self.array) do
+            if self.array[i] > 0 and i > 4 then
                 return R.POSITIVE_INFINITY;
             end
         end
@@ -550,7 +567,7 @@ function Big:to_number()
 end
 
 function Big:floor()
-    if (self:isint()) then
+    if (self:isint(true)) then
         return self:clone()
     end
     return Big:create(math.floor(self:to_number()));
@@ -565,7 +582,7 @@ end
 
 function Big:clone()
     local newArr = {}
-    for i, j in ipairs(self.array) do
+    for i, j in pairs(self.array) do
         newArr[i] = j
     end
     local result = Big:new(newArr)
@@ -831,7 +848,7 @@ function Big:log10()
         return x:clone();
     end
     x = x:clone()
-    x.array[2] = x.array[2] - 1;
+    x.array[2] = (x.array[2] or 0) - 1;
     return x:normalize()
 end
 
@@ -1115,9 +1132,16 @@ function Big:max_for_op(arrows)
     local arr = {}
     arr[1] = 10e9
     arr[arrows] = R.MAX_SAFE_INTEGER - 2
-    for i = 2, arrows - 1 do
+    for i = 2, math.min(arrows - 1, 1e6) do
         arr[i] = 8
     end
+    if arrows > 1e6 then
+        local limit = math.floor(math.log(arrows, 10))
+        for i = 6, limit do
+            arr[10^i] = 8
+        end 
+    end
+    arr[arrows - 1] = 8
 
     local res = Big:new({0})
     res.array = arr
@@ -1125,18 +1149,26 @@ function Big:max_for_op(arrows)
 end
 
 function Big:arrow(arrows, other)
-    local t = self
+    local t = self:clone()
+    local oldarrows = arrows
     arrows = Big:ensureBig(arrows)
-    if (not arrows:isint() or arrows:lt(B.ZERO)) then
+    if oldarrows >= 1e6 then --needed to stop "Infinity"
+        arrows = arrows:floor()
+    end
+    if self:eq(B.ONE) then return 1 end
+    if self:eq(B.ZERO) then return 0 end
+    --idk why but arrows above 1e6 just sometimes randomly get treated as non ints even though they are
+    --this is technically inaccurate now but i think 1e7 +0.1 countinas an integer arrow here is fine
+    if (not arrows:isint() or arrows:lt(B.ZERO)) and arrows:lt(1e6) then
         return Big:create(B.NaN)
     end
     if arrows:eq(B.ZERO) then
         return t:mul(other)
     end
-    if arrows:eq(B.ONE) then
-        return t:pow(other)
+    if arrows:eq(B.ONE) or oldarrows == 1 then
+        return t ^ other--t:pow(other)
     end
-    if arrows:eq(2) then
+    if arrows:eq(2) or oldarrows == 2 then
         return t:tetrate(other)
     end
     other = Big:create(other)
@@ -1152,7 +1184,9 @@ function Big:arrow(arrows, other)
     --[[if (arrows:gte(maxArrow)) then
         return Big:create(B.POSITIVE_INFINITY)
     end--]]
-    local arrowsNum = arrows:to_number()
+
+    --remove potential error from before
+    local arrowsNum = math.floor(oldarrows)
     if (other:eq(2)) then
         return t:arrow(arrows:sub(B.ONE), t)
     end
@@ -1163,11 +1197,23 @@ function Big:arrow(arrows, other)
         return t:max(other)
     end
     local r = nil
+    -- if arrows >= Big:ensureBig(3500) then
+    --     if self:arrow(100, self) > other then
+    --         return Big:new({
+    --             [1] = math.min(to_number(math.log(other, 10)), 1e300),
+    --             [2] = 0,
+    --             [3] = 0,
+    --             [to_number(arrows)+1] = 1
+    --         })
+    --     end
+    -- end
     if (t:gt(limit) or other:gt(B.MAX_SAFE_INTEGER)) or arrows >= Big:ensureBig(350) then
         if (t:gt(limit)) then
             r = t:clone()
             r.array[arrowsNum + 1] = r.array[arrowsNum + 1] - 1
-            r:normalize()
+            if arrowsNum < 25000 then
+                r:normalize()
+            end
         elseif (t:gt(limit_minus)) then
             r = Big:create(t.array[arrowsNum])
         else

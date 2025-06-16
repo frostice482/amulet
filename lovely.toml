@@ -189,7 +189,15 @@ overwrite = true
 target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.mult) == 'number' and G.GAME.current_round.current_hand.mult or 1)))) end"
 position = "at"
-payload = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1))))) end"
+payload = '''
+local num = 0
+if to_big(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1) > to_big(1e300) then 
+	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1))))
+else
+	num = 1e300
+end
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, num) end
+'''
 match_indent = true
 overwrite = true
 
@@ -198,7 +206,15 @@ overwrite = true
 target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.chips) == 'number' and G.GAME.current_round.current_hand.chips or 1)))) end"
 position = "at"
-payload = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1))))) end"
+payload = '''
+local num = 0
+if to_big(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1) > to_big(1e300) then 
+	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1))))
+else
+	num = 1e300
+end
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, num) end
+'''
 match_indent = true
 overwrite = true
 
@@ -274,29 +290,12 @@ payload = '''
 if v.m and v.e then
 v = "to_big("..v.m..","..v.e..")"
 elseif v.array and v.sign then
-	if #v.array > 20 then
-		local last = v.array[1]
-		local running = 1
-		local v0 = "uncompress_big({"
-		for qi = 2,#v.array do
-			if last ~= v.array[qi] then
-				v0 = v0 .. "{"..last..","..running.."}" .. ", "
-				last = v.array[qi]
-		running = 1
-			else running = running + 1 end
-		end
-		v0 = v0 .. "{"..v.array[#v.array]..",1}"
-		v0 = v0 .. "},"..v.sign..")"
-		v = v0
-	else
-		--this is smaller if the number is small enough
-		local v0 = "to_big({"
-		for qi = 1,#v.array do
-			v0 = v0 .. v.array[qi] .. ", "
-		end
-		v0 = v0 .. "},"..v.sign..")"
-		v = v0
+	local v0 = "to_big({"
+	for i, v in pairs(v.array) do
+		v0 = v0 .. ("["..i.."] = "..(v or 0)) .. ", "
 	end
+	v0 = v0 .. "},"..v.sign..")"
+	v = v0
 '''
 match_indent = true
 overwrite = false
@@ -403,8 +402,8 @@ pattern = "if _th and _tw then"
 position = "after"
 payload = '''
 if Big then
-	_th = to_big(_th):to_number()
-	_tw = to_big(_tw):to_number()
+	_th = to_number(_th)
+	_tw = to_number(_tw)
 end
 '''
 match_indent = true
@@ -416,7 +415,7 @@ overwrite = false
 target = "engine/ui.lua"
 pattern = "local _cw, _ch = w:set_wh()"
 position = "after"
-payload = "if Big and G.STATE == G.STATES.MENU then _cw = to_big(_cw):to_number(); _ch = to_big(_ch):to_number() end"
+payload = "if Big and G.STATE == G.STATES.MENU then _cw = to_number(_cw); _ch = to_number(_ch) end"
 match_indent = true
 
 [[patches]]
@@ -1528,4 +1527,16 @@ G.E_MANAGER:add_event(Event({
         return true
     end
 }))
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+position = 'at'
+match_indent = true
+pattern = '''
+G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+'''
+payload = '''
+G.ARGS.score_intensity.earned_score = math.min(to_number(G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
 '''

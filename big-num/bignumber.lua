@@ -177,6 +177,10 @@ function Big:round()
     end
 end
 
+function Big:arraySize()
+    return 1
+end
+
 function Big:floor()
     if self.e > 100 then return self end
     return Big:new(math.floor(self:to_number()))
