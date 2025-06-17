@@ -1,6 +1,6 @@
 local lovely = require("lovely")
 local nativefs = require("nativefs")
-BaseLetterNotation = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations/baseletternotation.lua")()
+BaseLetterNotation = nativefs.load(Talisman.mod_path.."/big-num/notations/baseletternotation.lua")()
 
 CyrillicNotation = {}
 CyrillicNotation.__index = LetterNotation

@@ -1,7 +1,7 @@
 local lovely = require("lovely")
 local nativefs = require("nativefs")
-Notation = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations/notation.lua")()
-ThousandNotation = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations/thousandnotation.lua")()
+Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
+ThousandNotation = nativefs.load(Talisman.mod_path.."/big-num/notations/thousandnotation.lua")()
 
 DynamicNotation = {}
 DynamicNotation.__index = DynamicNotation
