@@ -1,9 +1,15 @@
 local lovely = require("lovely")
 local nativefs = require("nativefs")
 
-if not nativefs.getInfo(lovely.mod_dir .. "/Talisman") then
+local info = nativefs.getDirectoryItemsInfo(lovely.mod_dir)
+local talisman_path = ""
+for i, v in pairs(info) do
+  if v.type == "directory" and nativefs.getInfo(lovely.mod_dir .. "/" .. v.name .. "/talisman.lua") then talisman_path = lovely.mod_dir .. "/" .. v.name end
+end
+
+if not nativefs.getInfo(talisman_path) then
     error(
-        'Could not find proper Talisman folder.\nPlease make sure the folder for Talisman is named exactly "Talisman" and not "Talisman-main" or anything else.')
+        'Could not find proper Talisman folder.\nPlease make sure that Talisman is installed correctly and the folders arent nested.')
 end
 
 -- "Borrowed" from Trance
@@ -21,8 +27,8 @@ end
 local talismanloc = init_localization
 function init_localization()
 	local abc = load_file_with_fallback2(
-		lovely.mod_dir .. "/Talisman/localization/" .. (G.SETTINGS.language or "en-us") .. ".lua",
-		lovely.mod_dir .. "/Talisman/localization/en-us.lua"
+		talisman_path.."/localization/" .. (G.SETTINGS.language or "en-us") .. ".lua",
+		talisman_path .. "/localization/en-us.lua"
 	)
 	for k, v in pairs(abc) do
 		if k ~= "descriptions" then
@@ -34,9 +40,9 @@ function init_localization()
 	talismanloc()
 end
 
-Talisman = {config_file = {disable_anims = true, break_infinity = "omeganum", score_opt_id = 3}}
-if nativefs.read(lovely.mod_dir.."/Talisman/config.lua") then
-    Talisman.config_file = STR_UNPACK(nativefs.read(lovely.mod_dir.."/Talisman/config.lua"))
+Talisman = {config_file = {disable_anims = true, break_infinity = "omeganum", score_opt_id = 3}, mod_path = talisman_path}
+if nativefs.read(talisman_path.."/config.lua") then
+    Talisman.config_file = STR_UNPACK(nativefs.read(talisman_path.."/config.lua"))
     if Talisman.config_file.break_infinity == "bignumber" then
       Talisman.config_file.break_infinity = "omeganum"
       Talisman.config_file.score_opt_id = 2
@@ -68,7 +74,7 @@ Talisman.config_tab = function()
                   {n=G.UIT.O, config={object = DynaText({string = localize("talisman_string_A"), colours = {G.C.WHITE}, shadow = true, scale = 0.4})}},
                 }},create_toggle({label = localize("talisman_string_B"), ref_table = Talisman.config_file, ref_value = "disable_anims",
                 callback = function(_set_toggle)
-	                nativefs.write(lovely.mod_dir .. "/Talisman/config.lua", STR_PACK(Talisman.config_file))
+	                nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
                 end}),
                 create_option_cycle({
                   label = localize("talisman_string_C"),
@@ -114,12 +120,12 @@ G.FUNCS.talisman_upd_score_opt = function(e)
   Talisman.config_file.score_opt_id = e.to_key
   local score_opts = {"", "omeganum"}
   Talisman.config_file.break_infinity = score_opts[e.to_key]
-  nativefs.write(lovely.mod_dir .. "/Talisman/config.lua", STR_PACK(Talisman.config_file))
+  nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
 end
 if Talisman.config_file.break_infinity then
-  Big, err = nativefs.load(lovely.mod_dir.."/Talisman/big-num/"..Talisman.config_file.break_infinity..".lua")
+  Big, err = nativefs.load(talisman_path.."/big-num/"..Talisman.config_file.break_infinity..".lua")
   if not err then Big = Big() else Big = nil end
-  Notations = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations.lua")()
+  Notations = nativefs.load(talisman_path.."/big-num/notations.lua")()
   -- We call this after init_game_object to leave room for mods that add more poker hands
   Talisman.igo = function(obj)
       for _, v in pairs(obj.hands) do

@@ -1,6 +1,6 @@
 local lovely = require("lovely")
 local nativefs = require("nativefs")
-Notation = nativefs.load(lovely.mod_dir.."/Talisman/big-num/notations/notation.lua")()
+Notation = nativefs.load(Talisman.mod_path.."/big-num/notations/notation.lua")()
 BaseStandardNotation = {}
 BaseStandardNotation.__index = BaseStandardNotation
 BaseStandardNotation.__tostring = function (notation)
