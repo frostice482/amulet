@@ -162,7 +162,7 @@ if Talisman.config_file.break_infinity then
 
   local mf = math.floor
   function math.floor(x)
-      if type(x) == 'table' then return x:floor() end
+      if type(x) == 'table' then return x.floor and x:floor() or x end
       return mf(x)
   end
   local mc = math.ceil

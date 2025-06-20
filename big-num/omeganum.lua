@@ -75,7 +75,9 @@ end
 function Big:arraySize()
     local total = 0
     for i, v in pairs(self.array) do
-        total = i
+        if type(i) == "number" then
+            total = i
+        end
     end
     return total
 end
@@ -277,13 +279,15 @@ function Big:normalize()
         doOnce = false;
         --l = x:arraySize()
         for i, v in pairs(x.array) do
-            if ((x.array[i] or 0)>R.MAX_SAFE_INTEGER) then
-                x.array[i+1]=(x.array[i+1] or 0)+1;
-                x.array[1]=x.array[i]+1;
-                for j=2,i do
-                    x.array[j]=0;
+            if type(i) == "number" then
+                if ((x.array[i] or 0)>R.MAX_SAFE_INTEGER) then
+                    x.array[i+1]=(x.array[i+1] or 0)+1;
+                    x.array[1]=x.array[i]+1;
+                    for j=2,i do
+                        x.array[j]=0;
+                    end
+                    b=true;
                 end
-                b=true;
             end
         end
     end
