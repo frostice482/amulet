@@ -1155,6 +1155,9 @@ end
 function Big:arrow(arrows, other)
     local t = self:clone()
     local oldarrows = arrows
+    if type(oldarrows) ~= "number" then
+        return Big:create(R.POSITIVE_INFINITY)
+    end
     arrows = Big:ensureBig(arrows)
     if oldarrows >= 1e6 then --needed to stop "Infinity"
         arrows = arrows:floor()
