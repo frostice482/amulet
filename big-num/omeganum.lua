@@ -1166,6 +1166,9 @@ function Big:arrow(arrows, other)
     if (not arrows:isint() or arrows:lt(B.ZERO)) and arrows:lt(1e6) then
         return Big:create(B.NaN)
     end
+    if type(oldarrows) == "number" and oldarrows ~= math.floor(oldarrows) and oldarrows < 1e6 then
+        return Big:create(B.NaN)
+    end
     if arrows:eq(B.ZERO) then
         return t:mul(other)
     end
