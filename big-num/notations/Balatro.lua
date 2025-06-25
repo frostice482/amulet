@@ -62,7 +62,7 @@ function BalaNotation:format(n, places)
             return (n.sign == -1 and "-" or "").."e"..mantissa.."e"..e_ify(exponent)
         end
     elseif n:isNaN() then
-        return "NaN"
+        return "nan"
     elseif not n.array or not (n.isFinite and n:isFinite()) then
         return "Infinity"
     elseif n.array[2] and n:arraySize() == 2 and n.array[2] <= 8 then
