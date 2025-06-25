@@ -45,6 +45,11 @@ function Big:normalized()
     return self
 end
 
+function Big:isNaN()
+    if not self.m or not self.e then return true end
+    if tostring(self.e) == "nan" or tostring(self.m) == "nan" then return true end
+end
+
 function Big:add(b)
     if type(b) == "number" then b = Big:new(b) end
     local delta = b.e - self.e
