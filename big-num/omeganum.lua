@@ -782,7 +782,7 @@ function Big:div(other)
 end
 
 function Big:mul(other)
-    local x = self;
+    local x = Big:ensureBig(self);
     other = Big:ensureBig(other);
     -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(x+"*"+other);
     if (x.sign*other.sign==-1) then
@@ -794,10 +794,10 @@ function Big:mul(other)
     if (x:isNaN() or other:isNaN() or (x:isInfinite() and other:isInfinite() and x:eq(other:neg()))) then
         return Big:create(B.NaN)
     end
-    if (other:eq(B.ZERO)) then
+    if (other:eq(B.ZERO)) or x:eq(B.ZERO) then
         return Big:create(B.ZERO)
     end
-    if (other:eq(B.ONE)) then
+    if (other:eq(B.ONE)) or x:eq(B.ONE) then
         return x:clone()
     end
     if (x:isInfinite()) then
