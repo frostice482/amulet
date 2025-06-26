@@ -1155,7 +1155,7 @@ end
 function Big:arrow(arrows, other)
     local t = self:clone()
     local oldarrows = arrows
-    if type(oldarrows) ~= "number" then
+    if type(oldarrows) ~= "number" then --if too big return infinity
         return Big:create(R.POSITIVE_INFINITY)
     end
     arrows = Big:ensureBig(arrows)
@@ -1165,7 +1165,7 @@ function Big:arrow(arrows, other)
     if self:eq(B.ONE) then return 1 end
     if self:eq(B.ZERO) then return 0 end
     --idk why but arrows above 1e6 just sometimes randomly get treated as non ints even though they are
-    --this is technically inaccurate now but i think 1e7 +0.1 countinas an integer arrow here is fine
+    --this is technically inaccurate now but i think 1e7 +0.1 counting as an integer amount of arrow here is fine
     if (not arrows:isint() or arrows:lt(B.ZERO)) and arrows:lt(1e6) then
         return Big:create(B.NaN)
     end
@@ -1176,7 +1176,7 @@ function Big:arrow(arrows, other)
         return t:mul(other)
     end
     if arrows:eq(B.ONE) or oldarrows == 1 then
-        return t ^ other--t:pow(other)
+        return t ^ other--t:pow(other) idk why this was causing issues but it was so now theres this
     end
     if arrows:eq(2) or oldarrows == 2 then
         return t:tetrate(other)
@@ -1217,11 +1217,11 @@ function Big:arrow(arrows, other)
     --         })
     --     end
     -- end
-    if (t:gt(limit) or other:gt(B.MAX_SAFE_INTEGER)) or arrows >= Big:ensureBig(350) then
+    if (t:gt(limit) or other:gt(B.MAX_SAFE_INTEGER)) or arrows >= Big:ensureBig(350) then --just kinda chosen randomly
         if (t:gt(limit)) then
             r = t:clone()
             r.array[arrowsNum + 1] = r.array[arrowsNum + 1] - 1
-            if arrowsNum < 25000 then
+            if arrowsNum < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
                 r:normalize()
             end
         elseif (t:gt(limit_minus)) then
