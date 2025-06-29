@@ -123,7 +123,7 @@ function Big:compareTo(other)
     if ((self.array[1]~=R.POSITIVE_INFINITY) and (other.array[1]==R.POSITIVE_INFINITY)) then
         return other.sign
     end
-    if ((self:arraySize()==1) and (self.array[1]==0) and (other:arraySize()==1) and (other.array[1]==0)) then
+    if ((self:arraySize()==1) and (self.array[1]==other.array[1]) and (other:arraySize()==1)) then
         return 0
     end
     if (self.sign~=other.sign) then
