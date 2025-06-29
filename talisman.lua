@@ -399,15 +399,8 @@ function lenient_bignum(x)
   --don't return a Big unless we have to - it causes nativefs to break
   function math.max(x, y)
     if type(x) == 'table' or type(y) == 'table' then
-    if type(x) == 'table' and type(y) == 'table' then
-      if x:arraySize() > y:arraySize() then return x end
-      if y:arraySize() > x:arraySize() then return y end
-    end
-    --only convert when we have to, its expensive to do it again
-    if type(x) ~= 'table' then x = to_big(x) end
-    if type(y) ~= 'table' then y = to_big(y) end
-    if x:arraySize() > y:arraySize() then return x end
-    if y:arraySize() > x:arraySize() then return y end
+    x = to_big(x)
+    y = to_big(y)
     if (x > y) then
       return x
     else
@@ -419,14 +412,8 @@ function lenient_bignum(x)
   local min = math.min
   function math.min(x, y)
     if type(x) == 'table' or type(y) == 'table' then
-    if type(x) == 'table' and type(y) == 'table' then
-      if x:arraySize() < y:arraySize() then return x end
-      if y:arraySize() < x:arraySize() then return y end
-    end
-    if type(x) ~= 'table' then x = to_big(x) end
-    if type(y) ~= 'table' then y = to_big(y) end
-    if x:arraySize() < y:arraySize() then return x end
-    if y:arraySize() < x:arraySize() then return y end
+    x = to_big(x)
+    y = to_big(y)
     if (x < y) then
       return x
     else
