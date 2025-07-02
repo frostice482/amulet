@@ -1198,7 +1198,7 @@ function Big:arrow(arrows, other)
     --remove potential error from before
     local arrowsNum = math.floor(oldarrows)
     if (other:eq(2)) then
-        return t:arrow(arrows:sub(B.ONE), t)
+        return t:arrow(arrowsNum - 1, t)
     end
     local limit_plus = Big:max_for_op(arrowsNum+1)
     local limit = Big:max_for_op(arrowsNum)

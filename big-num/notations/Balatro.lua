@@ -15,6 +15,7 @@ end
 function BalaNotation:format(n, places)
     --vanilla balatro number_format function basically
     local function e_ify(num)
+        --if not num then return "0" end
         if type(num) == "table" then
             num = num:to_number()
         end
@@ -73,7 +74,7 @@ function BalaNotation:format(n, places)
         return (n.sign == -1 and "-" or "")..string.rep("e", n.array[2]-1)..mantissa.."e"..e_ify(exponent)
     elseif n:arraySize() < 8 then
         --e12#34#56#78
-        local r = (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[2])
+        local r = (n.sign == -1 and "-e" or "e")..e_ify(math.floor(n.array[1]*10^places+0.5)/10^places).."#"..e_ify(n.array[2] or 1)
         for i = 3, n:arraySize() do
             r = r.."#"..e_ify((n.array[i] or 0)+1)
         end
