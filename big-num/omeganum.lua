@@ -114,6 +114,8 @@ end
 
 function Big:compareTo(other)
     other = Big:ensureBig(other)
+    local other_array_size = other:arraySize()
+    local self_array_size = self:arraySize()
     if ((self.array[1] ~= self.array[1]) or (other.array[1] ~= other.array[1])) then
         return R.NaN;
     end
@@ -123,7 +125,7 @@ function Big:compareTo(other)
     if ((self.array[1]~=R.POSITIVE_INFINITY) and (other.array[1]==R.POSITIVE_INFINITY)) then
         return other.sign
     end
-    if ((self:arraySize()==1) and (self.array[1]==other.array[1]) and (other:arraySize()==1)) then
+    if ((self_array_size==1) and (self.array[1]==other.array[1]) and (other_array_size==1)) then
         return 0
     end
     if (self.sign~=other.sign) then
@@ -131,11 +133,20 @@ function Big:compareTo(other)
     end
     local m = self.sign;
     local r = nil;
-    if (self:arraySize()>other:arraySize()) then
+    if (self_array_size>other_array_size) then
         r = 1;
-    elseif (self:arraySize()<other:arraySize()) then
+    elseif (self_array_size<other_array_size) then
         r = -1;
     else
+        if self_array_size == 1 then 
+            if self.array[1] > other.array[1]  then
+                return 1 * m
+            elseif self.array[1] < other.array[1] then
+                return -1 * m
+            else
+                return 0
+            end
+        end
         local barray = {}
         for i, v in pairs(self.array) do
             barray[#barray+1]=i
