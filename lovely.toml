@@ -492,7 +492,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}"
 position = "at"
-payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==to_big(1) and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[mat.floor(to_number(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
+payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==to_big(1) and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
 match_indent = true
 
 [[patches]]
