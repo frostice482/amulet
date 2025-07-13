@@ -355,10 +355,10 @@ position = "before"
 payload = '''
 if Big then
 	if type(self.strings[k].W) == 'table' then
-		self.strings[k].W = self.strings[k].W:to_number()
+		self.strings[k].W = to_number(self.strings[k].W)
 	end
 	if type(self.strings[k].H) == 'table' then
-		self.strings[k].H = self.strings[k].H:to_number()
+		self.strings[k].H = to_number(self.strings[k].H)
 	end
 end
 '''
@@ -372,8 +372,8 @@ pattern = "function DynaText:draw()"
 position = "after"
 payload = '''
 if Big then
-	self.scale = to_big(self.scale):to_number()
-	if self.shadow_parallax then self.shadow_parallax.x = to_big(self.shadow_parallax.x):to_number() end
+	self.scale = to_number(self.scale)
+	if self.shadow_parallax then self.shadow_parallax.x = to_number(self.shadow_parallax.x) end
 end
 '''
 match_indent = true
@@ -386,10 +386,10 @@ pattern = "for k, letter in ipairs(self.strings[self.focused_string].letters) do
 position = "after"
 payload = '''
 if Big then
-	letter.dims.x = to_big(letter.dims.x):to_number()
-	letter.dims.y = to_big(letter.dims.y):to_number()
-	letter.offset.x = to_big(letter.offset.x):to_number()
-	letter.offset.y = to_big(letter.offset.y):to_number()
+	letter.dims.x = to_number(letter.dims.x)
+	letter.dims.y = to_number(letter.dims.y)
+	letter.offset.x = to_number(letter.offset.x)
+	letter.offset.y = to_number(letter.offset.y)
 end
 '''
 match_indent = true
@@ -424,10 +424,10 @@ target = "engine/moveable.lua"
 pattern = "function Moveable:move_wh(dt)"
 position = "after"
 payload = '''
-if Big and G.STATE == G.STATES.MENU then self.T.w = to_big(self.T.w):to_number()
-self.T.h = to_big(self.T.h):to_number()
-self.VT.w = to_big(self.VT.w):to_number()
-self.VT.h = to_big(self.VT.h):to_number() end
+if Big and G.STATE == G.STATES.MENU then self.T.w = to_number(self.T.w)
+self.T.h = to_number(self.T.h)
+self.VT.w = to_number(self.VT.w)
+self.VT.h = to_number(self.VT.h) end
 '''
 match_indent = true
 
@@ -437,10 +437,10 @@ target = "functions/misc_functions.lua"
 pattern = "function prep_draw(moveable, scale, rotate, offset)"
 position = "after"
 payload = '''
-if Big and G.STATE == G.STATES.MENU then moveable.VT.x = to_big(moveable.VT.x):to_number()
-moveable.VT.y = to_big(moveable.VT.y):to_number()
-moveable.VT.w = to_big(moveable.VT.w):to_number()
-moveable.VT.h = to_big(moveable.VT.h):to_number() end
+if Big and G.STATE == G.STATES.MENU then moveable.VT.x = to_number(moveable.VT.x)
+moveable.VT.y = to_number(moveable.VT.y)
+moveable.VT.w = to_number(moveable.VT.w)
+moveable.VT.h = to_number(moveable.VT.h) end
 '''
 match_indent = true
 
@@ -450,7 +450,7 @@ target = "engine/ui.lua"
 pattern = "if self.config.vert then love.graphics.translate(0,self.VT.h); love.graphics.rotate(-math.pi/2) end"
 position = "before"
 payload = '''
-if Big and G.STATE == G.STATES.MENU then self.config.scale = to_big(self.config.scale):to_number() end
+if Big and G.STATE == G.STATES.MENU then self.config.scale = to_number(self.config.scale) end
 '''
 match_indent = true
 
@@ -586,7 +586,7 @@ match_indent = true
 target = "cardarea.lua"
 pattern = '''self:change_size(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar))'''
 position = "at"
-payload = '''self:change_size(to_big(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar)):to_number())'''
+payload = '''self:change_size(to_number(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar)))'''
 match_indent = true
 
 # for now, I'm letting dollar eval ignore bignum, I'll patch it later
@@ -1476,14 +1476,14 @@ if type(AC[k].vol) == "table" then
 	if AC[k].vol > to_big(1e300) then
 		AC[k].vol = 1e300
 	else
-		AC[k].vol = AC[k].vol:to_number()
+		AC[k].vol = to_number(AC[k].vol)
 	end
 end
 if type(AC[k].per) == "table" then
 	if AC[k].per > to_big(1e300) then
 		AC[k].per = 1e300
 	else
-		AC[k].per = AC[k].per:to_number()
+		AC[k].per = to_number(AC[k].per)
 	end
 end
 '''
@@ -1498,7 +1498,7 @@ payload = '''if type(_F.intensity) == "table" then
 	if _F.intensity > to_big(1e300) then
 		_F.intensity = 1e300
 	else
-		_F.intensity = _F.intensity:to_number()
+		_F.intensity = to_number(_F.intensity)
 	end
 end
 '''
