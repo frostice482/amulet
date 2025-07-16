@@ -337,17 +337,40 @@ target = "engine/text.lua"
 pattern = "if self.strings[k].W > self.config.W then self.config.W = self.strings[k].W; self.strings[k].W_offset = 0 end"
 position = "before"
 payload = '''
-if Big then
-	if type(self.strings[k].W) == 'table' then
-		self.strings[k].W = self.strings[k].W:to_number()
-	end
-	if type(self.strings[k].H) == 'table' then
-		self.strings[k].H = self.strings[k].H:to_number()
-	end
-end
+self.strings[k].W = to_number(self.strings[k].W)
+self.strings[k].H = to_number(self.strings[k].H)
 '''
 match_indent = true
 overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "engine/text.lua"
+pattern = "if self.strings[k].W > self.config.W then"
+position = "before"
+payload = '''
+self.strings[k].W = to_number(self.strings[k].W)
+self.strings[k].H = to_number(self.strings[k].H)
+self.config.W = to_number(self.config.W)
+self.config.H = to_number(self.config.H)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "engine/text.lua"
+pattern = "love.graphics.setColor(letter.prefix or letter.suffix or letter.colour or self.colours[k%#self.colours + 1])"
+position = "before"
+payload = '''
+_shadow_norm.x = to_number(_shadow_norm.x)
+letter.offset.x = to_number(letter.offset.x)
+letter.dims.x = to_number(letter.dims.x)
+_shadow_norm.y = to_number(_shadow_norm.y)
+letter.offset.y = to_number(letter.offset.y)
+letter.dims.y = to_number(letter.dims.y)
+letter.r= to_number(letter.r)
+'''
+match_indent = true
 
 [[patches]]
 [patches.pattern]
