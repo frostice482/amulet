@@ -332,10 +332,11 @@ overwrite = true
 
 # For some reason Big leaks into the text engine, this mitigates it
 [[patches]]
-[patches.pattern]
+[patches.regex]
 target = "engine/text.lua"
-pattern = "if self.strings[k].W > self.config.W then self.config.W = self.strings[k].W; self.strings[k].W_offset = 0 end"
+pattern = '''(?<indent>[\t ]*)if self\.strings\[k\]\.W > self\.config\.W then'''
 position = "before"
+line_prepend = "$indent"
 payload = '''
 self.strings[k].W = to_number(self.strings[k].W)
 self.strings[k].H = to_number(self.strings[k].H)
@@ -390,7 +391,23 @@ overwrite = false
 [patches.pattern]
 target = "engine/text.lua"
 pattern = "for k, letter in ipairs(self.strings[self.focused_string].letters) do"
-position = "after"
+position = "after" # Keeping this for backward compat
+payload = '''
+	if Big then
+		letter.dims.x = to_big(letter.dims.x):to_number()
+		letter.dims.y = to_big(letter.dims.y):to_number()
+		letter.offset.x = to_big(letter.offset.x):to_number()
+		letter.offset.y = to_big(letter.offset.y):to_number()
+	end
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "engine/text.lua"
+pattern = "local letter = self.strings[self.focused_string].letters[k]"
+position = "after" # This is for Aiko's new mod menu interference with DynaText
 payload = '''
 if Big then
 	letter.dims.x = to_big(letter.dims.x):to_number()
