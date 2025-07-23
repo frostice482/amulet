@@ -240,20 +240,20 @@ function lenient_bignum(x)
       if ante < 1 then return to_big(100) end
       if ante <= 8 then 
         local amount = amounts[ante]
-        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
-          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
-          amount = math.floor(amount / exponent):to_number() * exponent
+        if to_big(amount) < to_big(R and R.E_MAX_SAFE_INTEGER or 9e15) then
+          local exponent = to_big(10)^to_number(math.floor(math.log(amount, 10) - to_big(1)))
+          amount = to_number(math.floor(amount / exponent)) * exponent
         end
-        amount:normalize()
+        if type(amount) == "table" then amount:normalize() end
         return amount
        end
       local a, b, c, d = amounts[8], amounts[8]/amounts[7], ante-8, 1 + 0.2*(ante-8)
       local amount = math.floor(a*(b + (b*k*c)^d)^c)
-      if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
-        local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
-        amount = math.floor(amount / exponent):to_number() * exponent
+      if to_big(amount) < to_big(R and R.E_MAX_SAFE_INTEGER or 9e15) then
+        local exponent = to_big(10)^to_number(math.floor(math.log(amount, 10) - to_big(1)))
+        amount = to_number(math.floor(amount / exponent)) * exponent
       end
-      amount:normalize()
+      if type(amount) == "table" then amount:normalize() end
       return amount
     end
   end
@@ -272,11 +272,11 @@ function lenient_bignum(x)
         if ante <= 8 then return amounts[ante] end
         local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
         local amount = a*(b+(k*c)^d)^c
-        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
-          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
-          amount = math.floor(amount / exponent):to_number() * exponent
+        if to_big(amount) < to_big(R and R.E_MAX_SAFE_INTEGER or 9e15) then
+          local exponent = to_big(10)^to_number(math.floor(math.log(amount, 10) - to_big(1)))
+          amount = to_number(math.floor(amount / exponent)) * exponent
         end
-        amount:normalize()
+        if type(amount) == "table" then amount:normalize() end
         return amount
       elseif G.GAME.modifiers.scaling == 2 then 
         local amounts = {
@@ -287,11 +287,11 @@ function lenient_bignum(x)
         if ante <= 8 then return amounts[ante] end
         local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
         local amount = a*(b+(k*c)^d)^c
-        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
-          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
-          amount = math.floor(amount / exponent):to_number() * exponent
+        if to_big(amount) < to_big(R and R.E_MAX_SAFE_INTEGER or 9e15) then
+          local exponent = to_big(10)^to_number(math.floor(math.log(amount, 10) - to_big(1)))
+          amount = to_number(math.floor(amount / exponent)) * exponent
         end
-        amount:normalize()
+        if type(amount) == "table" then amount:normalize() end
         return amount
       elseif G.GAME.modifiers.scaling == 3 then 
         local amounts = {
@@ -302,11 +302,11 @@ function lenient_bignum(x)
         if ante <= 8 then return amounts[ante] end
         local a, b, c, d = amounts[8],1.6,ante-8, 1 + 0.2*(ante-8)
         local amount = a*(b+(k*c)^d)^c
-        if (amount:lt(R.E_MAX_SAFE_INTEGER)) then
-          local exponent = to_big(10)^(math.floor(amount:log10() - to_big(1))):to_number()
-          amount = math.floor(amount / exponent):to_number() * exponent
+        if to_big(amount) < to_big(R and R.E_MAX_SAFE_INTEGER or 9e15) then
+          local exponent = to_big(10)^to_number(math.floor(math.log(amount, 10) - to_big(1)))
+          amount = to_number(math.floor(amount / exponent)) * exponent
         end
-        amount:normalize()
+        if type(amount) == "table" then amount:normalize() end
         return amount
       end
     end

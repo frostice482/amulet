@@ -38,7 +38,7 @@ R.MAX_DISP_INTEGER=1000000
 R.NaN=0/0
 R.NEGATIVE_INFINITY = -1/0
 R.POSITIVE_INFINITY = 1/0
-R.E_MAX_SAFE_INTEGER="e"..tostring(R.MAX_SAFE_INTEGER)
+R and R.E_MAX_SAFE_INTEGER or 9e15="e"..tostring(R.MAX_SAFE_INTEGER)
 R.EE_MAX_SAFE_INTEGER="ee"..tostring(R.MAX_SAFE_INTEGER)
 R.TETRATED_MAX_SAFE_INTEGER="10^^"..tostring(R.MAX_SAFE_INTEGER)
 
@@ -613,15 +613,15 @@ function Big:add(other)
     local p=x:min(other);
     local q=x:max(other);
     local t = -1;
-    if (p.array[2] == 2) and not p:gt(R.E_MAX_SAFE_INTEGER) then
+    if (p.array[2] == 2) and not p:gt(R and R.E_MAX_SAFE_INTEGER or 9e15) then
         p.array[2] = 1
         p.array[1] = 10 ^ p.array[1]
     end
-    if (q.array[2] == 2) and not q:gt(R.E_MAX_SAFE_INTEGER) then
+    if (q.array[2] == 2) and not q:gt(R and R.E_MAX_SAFE_INTEGER or 9e15) then
         q.array[2] = 1
         q.array[1] = 10 ^ q.array[1]
     end
-    if (q:gt(R.E_MAX_SAFE_INTEGER) or q:div(p):gt(R.MAX_SAFE_INTEGER)) then
+    if (q:gt(R and R.E_MAX_SAFE_INTEGER or 9e15) or q:div(p):gt(R.MAX_SAFE_INTEGER)) then
         t = q;
     elseif (q.array[2] == nil) or (q.array[2] == 0) then
         t= Big:create(x:to_number()+other:to_number());
@@ -667,15 +667,15 @@ function Big:sub(other)
     local q = x:max(other);
     local n = other:gt(x);
     local t = -1;
-    if (p.array[2] == 2) and not p:gt(R.E_MAX_SAFE_INTEGER) then
+    if (p.array[2] == 2) and not p:gt(R and R.E_MAX_SAFE_INTEGER or 9e15) then
         p.array[2] = 1
         p.array[1] = 10 ^ p.array[1]
     end
-    if (q.array[2] == 2) and not q:gt(R.E_MAX_SAFE_INTEGER) then
+    if (q.array[2] == 2) and not q:gt(R and R.E_MAX_SAFE_INTEGER or 9e15) then
         q.array[2] = 1
         q.array[1] = 10 ^ q.array[1]
     end
-    if (q:gt(R.E_MAX_SAFE_INTEGER) or q:div(p):gt(R.MAX_SAFE_INTEGER)) then
+    if (q:gt(R and R.E_MAX_SAFE_INTEGER or 9e15) or q:div(p):gt(R.MAX_SAFE_INTEGER)) then
         t = q;
         if n then
             t = t:neg()
@@ -1057,7 +1057,7 @@ function Big:tetrate(other)
     local r = t:pow(y-f)
     local l = Big:create(R.NaN)
     local i = 0
-    local m = Big:create(R.E_MAX_SAFE_INTEGER)
+    local m = Big:create(R and R.E_MAX_SAFE_INTEGER or 9e15)
     while ((f ~= 0) and r:lt(m) and (i < 100)) do
         if (f > 0) then
             r = t:pow(r)
@@ -1188,7 +1188,7 @@ function Big:lambertw()
         x.array[1] = x.array[1] - 1
         return x;
     end
-    if (x:gt(R.E_MAX_SAFE_INTEGER)) then
+    if (x:gt(R and R.E_MAX_SAFE_INTEGER or 9e15)) then
         return Big:d_lambertw(x)
     else
         return Big:create(Big:f_lambertw(x.sign*x.array[1]))
