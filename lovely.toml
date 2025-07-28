@@ -1409,6 +1409,15 @@ payload = "text = localize{type='variable',key='a_xmult'..(to_big(amt)<to_big(0)
 match_indent = true
 
 [[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "text = localize{type='variable',key='a_xchips'..(amt<0 and '_minus' or ''),vars={math.abs(amt)}}"
+position = 'at'
+payload = "text = localize{type='variable',key='a_xchips'..(to_big(amt)<to_big(0) and '_minus' or ''),vars={math.abs(amt)}}"
+times = 1
+match_indent = true
+
+[[patches]]
 [patches.regex]
 target = '=[SMODS _ "src/utils.lua"]'
 pattern = 'key = amount > 0'
