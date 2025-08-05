@@ -808,8 +808,11 @@ function Big:mul(other)
     if (other:eq(B.ZERO)) or x:eq(B.ZERO) then
         return Big:create(B.ZERO)
     end
-    if (other:eq(B.ONE)) or x:eq(B.ONE) then
+    if (other:eq(B.ONE)) then
         return x:clone()
+    end
+    if (x:eq(B.ONE)) then
+        return other:clone()
     end
     if (x:isInfinite()) then
         return x:clone()
