@@ -1393,6 +1393,14 @@ payload = "if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then"
 match_indent = true
 
 [[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = "if amt > 0 or amt < 0 then"
+position = 'at'
+payload = "if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then"
+match_indent = true
+
+[[patches]]
 [patches.regex]
 target = "functions/common_events.lua"
 pattern = 'amt<0'
