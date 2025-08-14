@@ -75,7 +75,7 @@ end
 function Big:arraySize()
     local total = 0
     for i, v in pairs(self.array) do
-        if type(i) == "number" then
+        if type(i) == "number" and v ~= 0 then
             total = i
         end
     end
