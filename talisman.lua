@@ -875,13 +875,6 @@ end
 
 -- Steamodded calculation API: add extra operations
 if SMODS and SMODS.calculate_individual_effect then
-  local smods_xchips = false
-  for _, v in pairs(SMODS.calculation_keys) do
-    if v == 'x_chips' then
-      smods_xchips = true
-      break
-    end
-  end
   local scie = SMODS.calculate_individual_effect
   function SMODS.calculate_individual_effect(effect, scored_card, key, amount, from_edition)
     -- For some reason, some keys' animations are completely removed
@@ -892,24 +885,6 @@ if SMODS and SMODS.calculate_individual_effect then
     local ret = scie(effect, scored_card, key, amount, from_edition)
     if ret then
       return ret
-    end
-    if not smods_xchips and (key == 'x_chips' or key == 'xchips' or key == 'Xchip_mod') and amount ~= 1 then 
-      if effect.card then juice_card(effect.card) end
-      local chips = SMODS.Scoring_Parameters["chips"]
-      chips.current = mod_chips(chips.current * amount)
-      update_hand_text({delay = 0}, {chips = chips.current})
-      if not effect.remove_default_message then
-          if from_edition then
-              card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "X"..amount, colour =  G.C.EDITION, edition = true})
-          elseif key ~= 'Xchip_mod' then
-              if effect.xchip_message then
-                  card_eval_status_text(scored_card or effect.card or effect.focus, 'extra', nil, percent, nil, effect.xchip_message)
-              else
-                  card_eval_status_text(scored_card or effect.card or effect.focus, 'x_chips', amount, percent)
-              end
-          end
-      end
-      return true
     end
 
     if (key == 'e_chips' or key == 'echips' or key == 'Echip_mod') and amount ~= 1 then 
@@ -1068,11 +1043,6 @@ if SMODS and SMODS.calculate_individual_effect then
                       'emult', 'echips', 'eemult', 'eechips', 'eeemult', 'eeechips', 'hypermult', 'hyperchips',
                       'Emult_mod', 'Echip_mod', 'EEmult_mod', 'EEchip_mod', 'EEEmult_mod', 'EEEchip_mod', 'hypermult_mod', 'hyperchip_mod'}) do
     table.insert(SMODS.scoring_parameter_keys, v)
-  end
-  if not smods_xchips then
-    for _, v in ipairs({'x_chips', 'xchips', 'Xchip_mod'}) do
-    table.insert(SMODS.scoring_parameter_keys, v)
-  end
   end
 
   -- prvent juice animations
