@@ -1598,3 +1598,16 @@ if  SMODS.calculate_round_score()  > to_big(0) then
 '''
 match_indent = true
 times = 1
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+SMODS.last_hand_oneshot = SMODS.calculate_round_score() > G.GAME.blind.chips
+'''
+position = '''at'''
+payload = '''
+SMODS.last_hand_oneshot = to_big(SMODS.calculate_round_score()) > to_big(G.GAME.blind.chips)
+'''
+match_indent = true
+times = 1
