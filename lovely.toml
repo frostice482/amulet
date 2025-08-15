@@ -1570,3 +1570,31 @@ G.E_MANAGER:add_event(Event({
     end
 }))
 '''
+
+# G.FUNCS.flame_handler
+[[patches]]
+[patches.pattern]
+target = '''=[SMODS _ "src/ui.lua"]'''
+pattern = '''
+if G.ARGS.score_intensity.earned_score >= G.ARGS.score_intensity.required_score and G.ARGS.score_intensity.required_score > 0 then
+'''
+position = '''at'''
+payload = '''
+if to_big(G.ARGS.score_intensity.earned_score) >= to_big(G.ARGS.score_intensity.required_score) and to_big(G.ARGS.score_intensity.required_score) > to_big(0) then
+'''
+match_indent = true
+times = 1
+
+# evaluate_play_final_scoring comparison
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''
+if  SMODS.calculate_round_score()  > 0 then 
+'''
+position = '''at'''
+payload = '''
+if  SMODS.calculate_round_score()  > to_big(0) then 
+'''
+match_indent = true
+times = 1
