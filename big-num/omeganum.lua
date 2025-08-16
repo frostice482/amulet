@@ -1007,7 +1007,7 @@ function Big:slog(base)
     if (x:max(base):gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         if x:gt(base) then
             x = x:clone()
-            x.array[3] = x.array[3] - 1
+            x.array[3] = (x.array[3] or 0) - 1
             x:normalize()
             return x:sub(x.array[2])
         end
@@ -1039,6 +1039,7 @@ end
 
 function Big:tetrate(other)
     local t = self
+    if other == 1 then return Big:create(self) end
     other = Big:ensureBig(other)
     local negln = nil
     if (t:isNaN() or other:isNaN()) then
@@ -1175,6 +1176,9 @@ function Big:arrow(arrows, other)
     arrows = Big:ensureBig(arrows)
     if oldarrows >= 1e6 then --needed to stop "Infinity"
         arrows = arrows:floor()
+    end
+    if oldarrows == 1 then
+        return Big:create(self)
     end
     if self:eq(B.ONE) then return 1 end
     if self:eq(B.ZERO) then return 0 end
