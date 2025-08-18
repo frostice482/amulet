@@ -41,9 +41,13 @@ function init_localization()
 end
 
 Talisman = {config_file = {disable_anims = false, break_infinity = "omeganum", score_opt_id = 3}, mod_path = talisman_path}
-if nativefs.read(Talisman.mod_path.."/config.lua") then
-    Talisman.config_file = STR_UNPACK(nativefs.read(Talisman.mod_path.."/config.lua"))
-
+if nativefs.read(talisman_path.."/config.lua") then
+    Talisman.config_file = STR_UNPACK(nativefs.read(talisman_path.."/config.lua"))
+    if Talisman.config_file.break_infinity == "bignumber" then
+      Talisman.config_file.break_infinity = "omeganum"
+      Talisman.config_file.score_opt_id = 2
+    end
+    if Talisman.config_file.score_opt_id == 3 then Talisman.config_file.score_opt_id = 2 end
     if Talisman.config_file.break_infinity and type(Talisman.config_file.break_infinity) ~= 'string' then
       Talisman.config_file.break_infinity = "omeganum"
     end
@@ -70,13 +74,13 @@ Talisman.config_tab = function()
                   {n=G.UIT.O, config={object = DynaText({string = localize("talisman_string_A"), colours = {G.C.WHITE}, shadow = true, scale = 0.4})}},
                 }},create_toggle({label = localize("talisman_string_B"), ref_table = Talisman.config_file, ref_value = "disable_anims",
                 callback = function(_set_toggle)
-	                nativefs.write(lovely.mod_dir .. "/Talisman/config.lua", STR_PACK(Talisman.config_file))
+	                nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
                 end}),
                 create_option_cycle({
                   label = localize("talisman_string_C"),
                   scale = 0.8,
                   w = 6,
-                  options = {localize("talisman_vanilla"), localize("talisman_bignum"), localize("talisman_omeganum") .. "(e10##1000)"},
+                  options = {localize("talisman_vanilla"), localize("talisman_omeganum") .. "(e10##1000)"},
                   opt_callback = 'talisman_upd_score_opt',
                   current_option = Talisman.config_file.score_opt_id,
                 })}
@@ -114,14 +118,14 @@ G.FUNCS.talismanMenu = function(e)
 end
 G.FUNCS.talisman_upd_score_opt = function(e)
   Talisman.config_file.score_opt_id = e.to_key
-  local score_opts = {"", "bignumber", "omeganum"}
+  local score_opts = {"", "omeganum"}
   Talisman.config_file.break_infinity = score_opts[e.to_key]
-  nativefs.write(lovely.mod_dir .. "/Talisman/config.lua", STR_PACK(Talisman.config_file))
+  nativefs.write(talisman_path .. "/config.lua", STR_PACK(Talisman.config_file))
 end
 if Talisman.config_file.break_infinity then
-  Big, err = nativefs.load(Talisman.mod_path.."/big-num/"..Talisman.config_file.break_infinity..".lua")
+  Big, err = nativefs.load(talisman_path.."/big-num/"..Talisman.config_file.break_infinity..".lua")
   if not err then Big = Big() else Big = nil end
-  Notations = nativefs.load(Talisman.mod_path.."/big-num/notations.lua")()
+  Notations = nativefs.load(talisman_path.."/big-num/notations.lua")()
   -- We call this after init_game_object to leave room for mods that add more poker hands
   Talisman.igo = function(obj)
       for _, v in pairs(obj.hands) do
@@ -140,9 +144,15 @@ if Talisman.config_file.break_infinity then
   local nf = number_format
   function number_format(num, e_switch_point)
       if type(num) == 'table' then
-          num = to_big(num)
+          --num = to_big(num)
+          if num.str then return num.str end
+          if num:arraySize() > 2 then
+            local str = Notations.Balatro:format(num, 3)
+            num.str = str
+            return str
+          end
           G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
-          if num < to_big(e_switch_point or G.E_SWITCH_POINT) then
+          if (num or 0) < (to_big(G.E_SWITCH_POINT) or 0) then
               return nf(num:to_number(), e_switch_point)
           else
             return Notations.Balatro:format(num, 3)
@@ -152,7 +162,7 @@ if Talisman.config_file.break_infinity then
 
   local mf = math.floor
   function math.floor(x)
-      if type(x) == 'table' then return x:floor() end
+      if type(x) == 'table' then return x.floor and x:floor() or x end
       return mf(x)
   end
   local mc = math.ceil
@@ -345,24 +355,35 @@ function lenient_bignum(x)
   local sn = scale_number
   function scale_number(number, scale, max, e_switch_point)
     if not Big then return sn(number, scale, max, e_switch_point) end
-    scale = to_big(scale)
+    if type(scale) ~= "table" then scale = to_big(scale) end
+    if type(number) ~= "table" then number = Big:ensureBig(number) end
+    if number.scale then return number.scale end
     G.E_SWITCH_POINT = G.E_SWITCH_POINT or 100000000000
     if not number or not is_number(number) then return scale end
     if not max then max = 10000 end
-    if to_big(number).e and to_big(number).e == 10^1000 then
+    if type(number) ~= "table" then math.min(3, scale:to_number()) end
+    if number.e and number.e == 10^1000 then
       scale = scale*math.floor(math.log(max*10, 10))/7
     end
-    if to_big(number) >= to_big(e_switch_point or G.E_SWITCH_POINT) then
-      if (to_big(to_big(number):log10()) <= to_big(999)) then
-        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(1000000*10, 10))
+    if not e_switch_point and number:arraySize() > 2 then --this is noticable faster than >= on the raw number for some reason
+      if number:arraySize() <= 2 and (number.array[1] or 0) <= 999 then --gross hack
+        scale = scale*math.floor(math.log(max*10, 10))/7 --this divisor is a constant so im precalcualting it
+      else
+        scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.max(7,string.len(number.str or number_format(number))-1))
+      end
+    elseif to_big(number) >= to_big(e_switch_point or G.E_SWITCH_POINT) then
+      if number:arraySize() <= 2 and (number.array[1] or 0) <= 999 then --gross hack
+        scale = scale*math.floor(math.log(max*10, 10))/7 --this divisor is a constant so im precalcualting it
       else
         scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.max(7,string.len(number_format(number))-1))
       end
     elseif to_big(number) >= to_big(max) then
       scale = scale*math.floor(math.log(max*10, 10))/math.floor(math.log(number*10, 10))
     end
-    return math.min(3, scale:to_number())
-  end
+    local scale = math.min(3, scale:to_number())
+    number.scale = scale
+    return scale
+   end
 
   local tsj = G.FUNCS.text_super_juice
   function G.FUNCS.text_super_juice(e, _amount)
@@ -435,7 +456,8 @@ function to_big(x, y)
   if type(x) == 'string' and x == "0" then --hack for when 0 is asked to be a bignumber need to really figure out the fix
     return 0
   elseif Big and Big.m then
-    return Big:new(x,y)
+    local x = Big:new(x,y)
+    return x
   elseif Big and Big.array then
     local result = Big:create(x)
     result.sign = y or result.sign or x.sign or 1
@@ -461,6 +483,18 @@ function to_number(x)
   else
     return x
   end
+end
+
+function uncompress_big(str, sign)
+    local curr = 1
+    local array = {}
+    for i, v in pairs(str) do
+        for i2 = 1, v[2] do
+            array[curr] = v[1]
+            curr = curr + 1
+        end
+    end
+    return to_big(array, y)
 end
 
 --patch to remove animations
@@ -512,7 +546,7 @@ function tal_uht(config, vals)
         else
             G.GAME.current_round.current_hand.hand_level = ' '..localize('k_lvl')..tostring(vals.level)
             if is_number(vals.level) then
-                G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[type(vals.level) == "number" and math.floor(math.min(vals.level, 7)) or math.floor(to_big(math.min(vals.level, 7))):to_number()]
+                G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[type(vals.level) == "number" and math.floor(math.min(vals.level, 7)) or math.floor(to_number(math.min(vals.level, 7)))]
             else
                 G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[1]
             end
@@ -826,7 +860,7 @@ local su = G.start_up
 function safe_str_unpack(str)
   local chunk, err = loadstring(str)
   if chunk then
-    setfenv(chunk, {Big = Big, BigMeta = BigMeta, OmegaMeta = OmegaMeta, to_big = to_big, inf = 1.79769e308})  -- Use an empty environment to prevent access to potentially harmful functions
+    setfenv(chunk, {Big = Big, BigMeta = BigMeta, OmegaMeta = OmegaMeta, to_big = to_big, inf = 1.79769e308, uncompress_big=uncompress_big})  -- Use an empty environment to prevent access to potentially harmful functions
     local success, result = pcall(chunk)
     if success then
     return result
@@ -887,7 +921,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return ret
     end
 
-    if (key == 'e_chips' or key == 'echips' or key == 'Echip_mod') and amount ~= 1 then 
+    if (key == 'e_chips' or key == 'echips' or key == 'Echip_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
       chips.current = mod_chips(chips.current ^ amount)
@@ -906,7 +940,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'ee_chips' or key == 'eechips' or key == 'EEchip_mod') and amount ~= 1 then 
+    if (key == 'ee_chips' or key == 'eechips' or key == 'EEchip_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
       chips.current = mod_chips(to_big(chips.current):tetrate(amount))
@@ -925,7 +959,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'eee_chips' or key == 'eeechips' or key == 'EEEchip_mod') and amount ~= 1 then 
+    if (key == 'eee_chips' or key == 'eeechips' or key == 'EEEchip_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
       chips.current = mod_chips(to_big(chips.current):arrow(3, amount))
@@ -944,7 +978,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'hyper_chips' or key == 'hyperchips' or key == 'hyperchip_mod') and type(amount) == 'table' then 
+    if (key == 'hyper_chips' or key == 'hyperchips' or key == 'hyperchip_mod') and type(amount) == 'table' then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
       chips.current = mod_chips(to_big(chips.current):arrow(amount[1], amount[2]))
@@ -963,7 +997,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'e_mult' or key == 'emult' or key == 'Emult_mod') and amount ~= 1 then 
+    if (key == 'e_mult' or key == 'emult' or key == 'Emult_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
       mult.current = mod_mult(mult.current ^ amount)
@@ -982,7 +1016,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'ee_mult' or key == 'eemult' or key == 'EEmult_mod') and amount ~= 1 then 
+    if (key == 'ee_mult' or key == 'eemult' or key == 'EEmult_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
       mult.current = mod_mult(to_big(mult.current):arrow(2, amount))
@@ -1001,7 +1035,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'eee_mult' or key == 'eeemult' or key == 'EEEmult_mod') and amount ~= 1 then 
+    if (key == 'eee_mult' or key == 'eeemult' or key == 'EEEmult_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
       mult.current = mod_mult(to_big(mult.current):arrow(3, amount))
@@ -1020,7 +1054,7 @@ if SMODS and SMODS.calculate_individual_effect then
       return true
     end
 
-    if (key == 'hyper_mult' or key == 'hypermult' or key == 'hypermult_mod') and type(amount) == 'table' then 
+    if (key == 'hyper_mult' or key == 'hypermult' or key == 'hypermult_mod') and type(amount) == 'table' then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
       mult.current = mod_mult(to_big(mult.current):arrow(amount[1], amount[2]))

@@ -189,7 +189,15 @@ overwrite = true
 target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.mult) == 'number' and G.GAME.current_round.current_hand.mult or 1)))) end"
 position = "at"
-payload = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1))))) end"
+payload = '''
+local num = 0
+if to_big(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1) > to_big(1e300) then 
+	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.mult) and G.GAME.current_round.current_hand.mult or 1))))
+else
+	num = 1e300
+end
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, num) end
+'''
 match_indent = true
 overwrite = true
 
@@ -198,7 +206,15 @@ overwrite = true
 target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.chips) == 'number' and G.GAME.current_round.current_hand.chips or 1)))) end"
 position = "at"
-payload = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1))))) end"
+payload = '''
+local num = 0
+if to_big(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1) > to_big(1e300) then 
+	num = math.min(2,math.max(0,math.floor(math.log10(is_number(G.GAME.current_round.current_hand.chips) and G.GAME.current_round.current_hand.chips or 1))))
+else
+	num = 1e300
+end
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, num) end
+'''
 match_indent = true
 overwrite = true
 
@@ -275,8 +291,8 @@ if v.m and v.e then
 v = "to_big("..v.m..","..v.e..")"
 elseif v.array and v.sign then
 	local v0 = "to_big({"
-	for qi = 1,#v.array do
-		v0 = v0 .. v.array[qi] .. ", "
+	for i, v in pairs(v.array) do
+		v0 = v0 .. ("["..i.."] = "..(v or 0)) .. ", "
 	end
 	v0 = v0 .. "},"..v.sign..")"
 	v = v0
@@ -380,8 +396,8 @@ pattern = "function DynaText:draw()"
 position = "after"
 payload = '''
 if Big then
-	self.scale = to_big(self.scale):to_number()
-	if self.shadow_parallax then self.shadow_parallax.x = to_big(self.shadow_parallax.x):to_number() end
+	self.scale = to_number(self.scale)
+	if self.shadow_parallax then self.shadow_parallax.x = to_number(self.shadow_parallax.x) end
 end
 '''
 match_indent = true
@@ -410,10 +426,10 @@ pattern = "local letter = self.strings[self.focused_string].letters[k]"
 position = "after" # This is for Aiko's new mod menu interference with DynaText
 payload = '''
 if Big then
-	letter.dims.x = to_big(letter.dims.x):to_number()
-	letter.dims.y = to_big(letter.dims.y):to_number()
-	letter.offset.x = to_big(letter.offset.x):to_number()
-	letter.offset.y = to_big(letter.offset.y):to_number()
+	letter.dims.x = to_number(letter.dims.x)
+	letter.dims.y = to_number(letter.dims.y)
+	letter.offset.x = to_number(letter.offset.x)
+	letter.offset.y = to_number(letter.offset.y)
 end
 '''
 match_indent = true
@@ -426,8 +442,8 @@ pattern = "if _th and _tw then"
 position = "after"
 payload = '''
 if Big then
-	_th = to_big(_th):to_number()
-	_tw = to_big(_tw):to_number()
+	_th = to_number(_th)
+	_tw = to_number(_tw)
 end
 '''
 match_indent = true
@@ -439,7 +455,7 @@ overwrite = false
 target = "engine/ui.lua"
 pattern = "local _cw, _ch = w:set_wh()"
 position = "after"
-payload = "if Big and G.STATE == G.STATES.MENU then _cw = to_big(_cw):to_number(); _ch = to_big(_ch):to_number() end"
+payload = "if Big and G.STATE == G.STATES.MENU then _cw = to_number(_cw); _ch = to_number(_ch) end"
 match_indent = true
 
 [[patches]]
@@ -448,10 +464,10 @@ target = "engine/moveable.lua"
 pattern = "function Moveable:move_wh(dt)"
 position = "after"
 payload = '''
-if Big and G.STATE == G.STATES.MENU then self.T.w = to_big(self.T.w):to_number()
-self.T.h = to_big(self.T.h):to_number()
-self.VT.w = to_big(self.VT.w):to_number()
-self.VT.h = to_big(self.VT.h):to_number() end
+if Big and G.STATE == G.STATES.MENU then self.T.w = to_number(self.T.w)
+self.T.h = to_number(self.T.h)
+self.VT.w = to_number(self.VT.w)
+self.VT.h = to_number(self.VT.h) end
 '''
 match_indent = true
 
@@ -461,10 +477,10 @@ target = "functions/misc_functions.lua"
 pattern = "function prep_draw(moveable, scale, rotate, offset)"
 position = "after"
 payload = '''
-if Big and G.STATE == G.STATES.MENU then moveable.VT.x = to_big(moveable.VT.x):to_number()
-moveable.VT.y = to_big(moveable.VT.y):to_number()
-moveable.VT.w = to_big(moveable.VT.w):to_number()
-moveable.VT.h = to_big(moveable.VT.h):to_number() end
+if Big and G.STATE == G.STATES.MENU then moveable.VT.x = to_number(moveable.VT.x)
+moveable.VT.y = to_number(moveable.VT.y)
+moveable.VT.w = to_number(moveable.VT.w)
+moveable.VT.h = to_number(moveable.VT.h) end
 '''
 match_indent = true
 
@@ -474,7 +490,7 @@ target = "engine/ui.lua"
 pattern = "if self.config.vert then love.graphics.translate(0,self.VT.h); love.graphics.rotate(-math.pi/2) end"
 position = "before"
 payload = '''
-if Big and G.STATE == G.STATES.MENU then self.config.scale = to_big(self.config.scale):to_number() end
+if Big and G.STATE == G.STATES.MENU then self.config.scale = to_number(self.config.scale) end
 '''
 match_indent = true
 
@@ -508,7 +524,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(vals.level, 7)]"
 position = "at"
-payload = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[to_number(to_big(math.min(vals.level, 7)))]"
+payload = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(vals.level, 7)))]"
 match_indent = true
 
 [[patches]]
@@ -516,7 +532,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "colours = {(G.GAME.hands[cfg.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, G.GAME.hands[cfg.hand_type].level)])}"
 position = "at"
-payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==to_big(1) and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[to_number(to_big(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
+payload = "colours = {(to_big(G.GAME.hands[cfg.hand_type].level)==to_big(1) and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[cfg.hand_type].level)))])}"
 match_indent = true
 
 [[patches]]
@@ -524,7 +540,7 @@ match_indent = true
 target = "functions/UI_definitions.lua"
 pattern = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.min(7, G.GAME.hands[handname].level)], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
 position = "at"
-payload = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[to_number(to_big(math.min(7, G.GAME.hands[handname].level)))], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
+payload = '{n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(7, G.GAME.hands[handname].level)))], minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={'
 match_indent = true
 
 # money fixes
@@ -610,7 +626,7 @@ match_indent = true
 target = "cardarea.lua"
 pattern = '''self:change_size(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar))'''
 position = "at"
-payload = '''self:change_size(to_big(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar)):to_number())'''
+payload = '''self:change_size(to_number(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar)))'''
 match_indent = true
 
 # Current Round Interest Cap Streak 
@@ -1518,14 +1534,14 @@ if type(AC[k].vol) == "table" then
 	if AC[k].vol > to_big(1e300) then
 		AC[k].vol = 1e300
 	else
-		AC[k].vol = AC[k].vol:to_number()
+		AC[k].vol = to_number(AC[k].vol)
 	end
 end
 if type(AC[k].per) == "table" then
 	if AC[k].per > to_big(1e300) then
 		AC[k].per = 1e300
 	else
-		AC[k].per = AC[k].per:to_number()
+		AC[k].per = to_number(AC[k].per)
 	end
 end
 '''
@@ -1540,7 +1556,7 @@ payload = '''if type(_F.intensity) == "table" then
 	if _F.intensity > to_big(1e300) then
 		_F.intensity = 1e300
 	else
-		_F.intensity = _F.intensity:to_number()
+		_F.intensity = to_number(_F.intensity)
 	end
 end
 '''
@@ -1590,11 +1606,11 @@ times = 1
 [patches.pattern]
 target = 'functions/state_events.lua'
 pattern = '''
-if  SMODS.calculate_round_score()  > 0 then 
+if  SMODS.calculate_round_score()  > 0 then
 '''
 position = '''at'''
 payload = '''
-if  SMODS.calculate_round_score()  > to_big(0) then 
+if  SMODS.calculate_round_score()  > to_big(0) then
 '''
 match_indent = true
 times = 1
