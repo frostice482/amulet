@@ -126,7 +126,7 @@ function Big:compareTo(other)
         return other.sign
     end
     if ((self_array_size==1) and (self.array[1]==other.array[1]) and (other_array_size==1)) then
-        return 0
+        --return 0
     end
     if (self.sign~=other.sign) then
         return self.sign
@@ -1091,7 +1091,7 @@ function Big:tetrate(other)
     if (m:gt(Big:create("10^^^" .. tostring(R.MAX_SAFE_INTEGER)))) then
         return m
     end
-    if (m:gt(B.TETRATED_MAX_SAFE_INTEGER) or other:gt(MAX_SAFE_INTEGER)) then
+    if (m:gt(B.TETRATED_MAX_SAFE_INTEGER) or other:gt(R.MAX_SAFE_INTEGER)) then
         if (t:lt(math.exp(1/R.E))) then
             negln = t:ln():neg()
             return negln:lambertw():div(negln)
@@ -1169,10 +1169,11 @@ end
 
 function Big:arrow(arrows, other)
     local t = self:clone()
-    local oldarrows = arrows
-    if type(oldarrows) ~= "number" then --if too big return infinity
+    local oldarrows = Big:ensureBig(arrows)
+    if oldarrows > Big:ensureBig(1e308) then --if too big return infinity
         return Big:create(R.POSITIVE_INFINITY)
     end
+    oldarrows = oldarrows:to_number()
     arrows = Big:ensureBig(arrows)
     if oldarrows >= 1e6 then --needed to stop "Infinity"
         arrows = arrows:floor()
