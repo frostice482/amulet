@@ -924,8 +924,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'e_chips' or key == 'echips' or key == 'Echip_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
-      chips.current = mod_chips(chips.current ^ amount)
-      update_hand_text({delay = 0}, {chips = chips.current})
+      chips:modify(chips.current ^ amount - chips.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "^"..amount, colour =  G.C.EDITION, edition = true})
@@ -943,8 +942,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'ee_chips' or key == 'eechips' or key == 'EEchip_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
-      chips.current = mod_chips(to_big(chips.current):tetrate(amount))
-      update_hand_text({delay = 0}, {chips = chips.current})
+      chips:modify(to_big(chips.current):tetrate(amount) - chips.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "^^"..amount, colour =  G.C.EDITION, edition = true})
@@ -962,8 +960,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'eee_chips' or key == 'eeechips' or key == 'EEEchip_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
-      chips.current = mod_chips(to_big(chips.current):arrow(3, amount))
-      update_hand_text({delay = 0}, {chips = chips.current})
+      chips:modify(to_big(chips.current):arrow(3, amount) - chips.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "^^^"..amount, colour =  G.C.EDITION, edition = true})
@@ -981,8 +978,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'hyper_chips' or key == 'hyperchips' or key == 'hyperchip_mod') and type(amount) == 'table' then
       if effect.card then juice_card(effect.card) end
       local chips = SMODS.Scoring_Parameters["chips"]
-      chips.current = mod_chips(to_big(chips.current):arrow(amount[1], amount[2]))
-      update_hand_text({delay = 0}, {chips = chips.current})
+      chips:modify(to_big(chips.current):arrow(amount[1], amount[2]) - chips.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = (amount[1] > 5 and ('{' .. amount[1] .. '}') or string.rep('^', amount[1])) .. amount[2], colour =  G.C.EDITION, edition = true})
@@ -1000,8 +996,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'e_mult' or key == 'emult' or key == 'Emult_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
-      mult.current = mod_mult(mult.current ^ amount)
-      update_hand_text({delay = 0}, {mult = mult.current})
+      mult:modify(mult.current ^ amount - mult.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "^"..amount.." "..localize("k_mult"), colour =  G.C.EDITION, edition = true})
@@ -1019,8 +1014,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'ee_mult' or key == 'eemult' or key == 'EEmult_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
-      mult.current = mod_mult(to_big(mult.current):arrow(2, amount))
-      update_hand_text({delay = 0}, {mult = mult.current})
+      mult:modify(to_big(mult.current):arrow(2, amount) - mult.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "^^"..amount.." "..localize("k_mult"), colour =  G.C.EDITION, edition = true})
@@ -1038,8 +1032,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'eee_mult' or key == 'eeemult' or key == 'EEEmult_mod') and amount ~= 1 then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
-      mult.current = mod_mult(to_big(mult.current):arrow(3, amount))
-      update_hand_text({delay = 0}, {mult = mult.current})
+      mult:modify(to_big(mult.current):arrow(3, amount) - mult.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = "^^^"..amount.." "..localize("k_mult"), colour =  G.C.EDITION, edition = true})
@@ -1057,8 +1050,7 @@ if SMODS and SMODS.calculate_individual_effect then
     if (key == 'hyper_mult' or key == 'hypermult' or key == 'hypermult_mod') and type(amount) == 'table' then
       if effect.card then juice_card(effect.card) end
       local mult = SMODS.Scoring_Parameters["mult"]
-      mult.current = mod_mult(to_big(mult.current):arrow(amount[1], amount[2]))
-      update_hand_text({delay = 0}, {mult = mult.current})
+      mult:modify(to_big(mult.current):arrow(amount[1], amount[2]) - mult.current)
       if not effect.remove_default_message then
           if from_edition then
               card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = ((amount[1] > 5 and ('{' .. amount[1] .. '}') or string.rep('^', amount[1])) .. amount[2]).." "..localize("k_mult"), colour =  G.C.EDITION, edition = true})
