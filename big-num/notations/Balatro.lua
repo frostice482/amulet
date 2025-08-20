@@ -26,9 +26,6 @@ function BalaNotation:format(n, places)
         end
         return string.format(num ~= math.floor(num) and (num >= 100 and "%.0f" or num >= 10 and "%.1f" or "%.2f") or "%.0f", num):reverse():gsub("(%d%d%d)", "%1,"):gsub(",$", ""):reverse()
     end
-    if n.isNaN and n:isNaN() then
-        return "nan"
-    end
     --The notation here is Hyper-E notation, but with lowercase E.
     if to_big(n:log10()) < to_big(1000000) then
         --1.234e56789

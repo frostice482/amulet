@@ -45,11 +45,6 @@ function Big:normalized()
     return self
 end
 
-function Big:isNaN()
-    if not self.m or not self.e then return true end
-    if tostring(self.e) == "nan" or tostring(self.m) == "nan" then return true end
-end
-
 function Big:add(b)
     if type(b) == "number" then b = Big:new(b) end
     local delta = b.e - self.e
@@ -374,7 +369,7 @@ R.MAX_DISP_INTEGER=1000000
 R.NaN=0/0
 R.NEGATIVE_INFINITY = -1/0
 R.POSITIVE_INFINITY = 1/0
-R.E_MAX_SAFE_INTEGER = "e"..tostring(R.MAX_SAFE_INTEGER)
+R.E_MAX_SAFE_INTEGER="e"..tostring(R.MAX_SAFE_INTEGER)
 R.EE_MAX_SAFE_INTEGER="ee"..tostring(R.MAX_SAFE_INTEGER)
 R.TETRATED_MAX_SAFE_INTEGER="10^^"..tostring(R.MAX_SAFE_INTEGER)
 

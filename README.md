@@ -13,4 +13,4 @@ Talisman requires [Lovely](https://github.com/ethangreen-dev/lovely-injector) to
 - Depending on the amount of retriggers, there may be lag when computing a score with Talisman.
 - The largest ante before the new limit is approximately 1e300 due to BigNumber antes not being supported.
 - When using Talisman with other mods because of how Talisman works, comparison operations with numbers used by scoring will not work by default, a lot of interactions without explicit support will break with Talisman enabled.
-- [Luajit2 (Balatro Discord)]([https://discord.com/channels/1116389027176787968/1336473631483760791](https://discord.com/channels/1116389027176787968/1336473631483760791/1389177494678274148)) can be used to mitigate some of the issues but it will not fix everything.
+- [Luajit2 (Balatro Discord)](https://discord.com/channels/1116389027176787968/1336473631483760791) can be used to mitigate some of the issues but it will not fix everything.

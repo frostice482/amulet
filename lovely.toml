@@ -348,46 +348,22 @@ overwrite = true
 
 # For some reason Big leaks into the text engine, this mitigates it
 [[patches]]
-[patches.regex]
+[patches.pattern]
 target = "engine/text.lua"
-pattern = '''(?<indent>[\t ]*)if self\.strings\[k\]\.W > self\.config\.W then'''
+pattern = "if self.strings[k].W > self.config.W then self.config.W = self.strings[k].W; self.strings[k].W_offset = 0 end"
 position = "before"
-line_prepend = "$indent"
 payload = '''
-self.strings[k].W = to_number(self.strings[k].W)
-self.strings[k].H = to_number(self.strings[k].H)
+if Big then
+	if type(self.strings[k].W) == 'table' then
+		self.strings[k].W = to_number(self.strings[k].W)
+	end
+	if type(self.strings[k].H) == 'table' then
+		self.strings[k].H = to_number(self.strings[k].H)
+	end
+end
 '''
 match_indent = true
 overwrite = false
-
-[[patches]]
-[patches.pattern]
-target = "engine/text.lua"
-pattern = "if self.strings[k].W > self.config.W then"
-position = "before"
-payload = '''
-self.strings[k].W = to_number(self.strings[k].W)
-self.strings[k].H = to_number(self.strings[k].H)
-self.config.W = to_number(self.config.W)
-self.config.H = to_number(self.config.H)
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "engine/text.lua"
-pattern = "love.graphics.setColor(letter.prefix or letter.suffix or letter.colour or self.colours[k%#self.colours + 1])"
-position = "before"
-payload = '''
-_shadow_norm.x = to_number(_shadow_norm.x)
-letter.offset.x = to_number(letter.offset.x)
-letter.dims.x = to_number(letter.dims.x)
-_shadow_norm.y = to_number(_shadow_norm.y)
-letter.offset.y = to_number(letter.offset.y)
-letter.dims.y = to_number(letter.dims.y)
-letter.r= to_number(letter.r)
-'''
-match_indent = true
 
 [[patches]]
 [patches.pattern]
@@ -407,23 +383,7 @@ overwrite = false
 [patches.pattern]
 target = "engine/text.lua"
 pattern = "for k, letter in ipairs(self.strings[self.focused_string].letters) do"
-position = "after" # Keeping this for backward compat
-payload = '''
-	if Big then
-		letter.dims.x = to_big(letter.dims.x):to_number()
-		letter.dims.y = to_big(letter.dims.y):to_number()
-		letter.offset.x = to_big(letter.offset.x):to_number()
-		letter.offset.y = to_big(letter.offset.y):to_number()
-	end
-'''
-match_indent = true
-overwrite = false
-
-[[patches]]
-[patches.pattern]
-target = "engine/text.lua"
-pattern = "local letter = self.strings[self.focused_string].letters[k]"
-position = "after" # This is for Aiko's new mod menu interference with DynaText
+position = "after"
 payload = '''
 if Big then
 	letter.dims.x = to_number(letter.dims.x)
@@ -627,16 +587,6 @@ target = "cardarea.lua"
 pattern = '''self:change_size(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar))'''
 position = "at"
 payload = '''self:change_size(to_number(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar)))'''
-match_indent = true
-
-# Current Round Interest Cap Streak 
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = '''if G.GAME.interest_amount*math.min(math.floor(G.GAME.dollars/5), G.GAME.interest_cap/5) == G.GAME.interest_amount*G.GAME.interest_cap/5 then'''
-position = "at"
-payload = '''
-if to_big(G.GAME.interest_amount*math.min(math.floor(G.GAME.dollars/5), G.GAME.interest_cap/5)) == to_big(G.GAME.interest_amount*G.GAME.interest_cap/5) then'''
 match_indent = true
 
 # for now, I'm letting dollar eval ignore bignum, I'll patch it later
@@ -1403,34 +1353,26 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/common_events.lua'
-pattern = "if amt > 0 or amt < 0 then"
+pattern = "text = localize{type='variable',key='a_chips'..(amt<0 and '_minus' or ''),vars={math.abs(amt)}}"
 position = 'at'
-payload = "if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then"
+payload = "text = localize{type='variable',key='a_chips'..(to_big(amt)<to_big(0) and '_minus' or ''),vars={math.abs(amt)}}"
 match_indent = true
 
 [[patches]]
 [patches.pattern]
 target = 'functions/common_events.lua'
-pattern = "if amt > 0 or amt < 0 then"
+pattern = "text = localize{type='variable',key='a_mult'..(amt<0 and '_minus' or ''),vars={math.abs(amt)}}"
 position = 'at'
-payload = "if to_big(amt) > to_big(0) or to_big(amt) < to_big(0) then"
+payload = "text = localize{type='variable',key='a_mult'..(to_big(amt)<to_big(0) and '_minus' or ''),vars={math.abs(amt)}}"
 match_indent = true
 
 [[patches]]
-[patches.regex]
-target = "functions/common_events.lua"
-pattern = 'amt<0'
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = "text = localize{type='variable',key='a_xmult'..(amt<0 and '_minus' or ''),vars={math.abs(amt)}}"
 position = 'at'
-payload = 'to_big(amt)<to_big(0)'
-times = 5
-
-[[patches]]
-[patches.regex]
-target = '=[SMODS _ "src/utils.lua"]'
-pattern = '= amount > 0'
-position = 'at'
-payload = '= to_big(amount) > to_big(0)'
-times = 4
+payload = "text = localize{type='variable',key='a_xmult'..(to_big(amt)<to_big(0) and '_minus' or ''),vars={math.abs(amt)}}"
+match_indent = true
 
 # Fully split up evaluate_play
 # This allows mods' lovely patches to still work fine while also letting Talisman's abort feature work
@@ -1585,6 +1527,18 @@ G.E_MANAGER:add_event(Event({
         return true
     end
 }))
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+position = 'at'
+match_indent = true
+pattern = '''
+G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+'''
+payload = '''
+G.ARGS.score_intensity.earned_score = math.min(to_number(G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
 '''
 
 # G.FUNCS.flame_handler

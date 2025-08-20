@@ -38,7 +38,7 @@ R.MAX_DISP_INTEGER=1000000
 R.NaN=0/0
 R.NEGATIVE_INFINITY = -1/0
 R.POSITIVE_INFINITY = 1/0
-R.E_MAX_SAFE_INTEGER = "e"..tostring(R.MAX_SAFE_INTEGER)
+R.E_MAX_SAFE_INTEGER="e"..tostring(R.MAX_SAFE_INTEGER)
 R.EE_MAX_SAFE_INTEGER="ee"..tostring(R.MAX_SAFE_INTEGER)
 R.TETRATED_MAX_SAFE_INTEGER="10^^"..tostring(R.MAX_SAFE_INTEGER)
 
@@ -1304,7 +1304,7 @@ function Big:lambertw()
         x.array[1] = x.array[1] - 1
         return x:clone();
     end
-    if (x:gt(R and R.E_MAX_SAFE_INTEGER or 9e15)) then
+    if (x:gt(B.E_MAX_SAFE_INTEGER)) then
         return Big:d_lambertw(x)
     else
         return Big:create(Big:f_lambertw(x.sign*x.array[1]))
