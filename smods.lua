@@ -1,3 +1,7 @@
+if not _mod_dir_amulet then
+  error(string.format("Amulet is nested.\nPath: %s\nMod path: %s", SMODS.current_mod.path, require"lovely".mod_dir))
+end
+
 SMODS.Atlas({
   key = "modicon",
   path = "icon.png",
