@@ -1,8 +1,8 @@
 local nativefs = require("nativefs")
 local talisman_path = _mod_dir_amulet
 
-assert(nativefs.mount(talisman_path..'/talisman', 'talisman'))
-assert(nativefs.mount(talisman_path..'/big-num', 'big-num'))
+assert(nativefs.mount(talisman_path..'/talisman', 'talisman'), 'Amulet: Failed to mount talisman from '..talisman_path)
+assert(nativefs.mount(talisman_path..'/big-num', 'big-num'), 'Amulet: Failed to mount big-num from '..talisman_path)
 
 -- "Borrowed" from Trance
 local function load_file_with_fallback2(a, aa)

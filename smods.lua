@@ -1,6 +1,4 @@
-if not _mod_dir_amulet then
-  error(string.format("Amulet is nested.\nPath: %s\nMod path: %s", SMODS.current_mod.path, require"lovely".mod_dir))
-end
+assert(_mod_dir_amulet, string.format("Amulet is nested.\nPath: %s\nMods directory: %s", SMODS.current_mod.path, require"lovely".mod_dir))
 
 SMODS.Atlas({
   key = "modicon",
