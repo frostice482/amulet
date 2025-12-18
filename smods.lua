@@ -3,8 +3,8 @@ assert(_mod_dir_amulet, string.format("Amulet is nested.\nPath: %s\nMods directo
 SMODS.Atlas({
   key = "modicon",
   path = "icon.png",
-  px = 32,
-  py = 32
+  px = 27,
+  py = 27
 })
 
 SMODS.Sound({
