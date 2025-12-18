@@ -110,10 +110,9 @@ function get_blind_amount(ante)
     local a, b, c, d = amounts[8], 1.6, ante - 8, 1 + 0.2 * (ante - 8)
     local amount = a * (b + (k * c) ^ d) ^ c
     if (amount:lt(BigC.E_MAX_SAFE_INTEGER)) then
-        local exponent = to_big(10) ^ (math.floor(amount:log10() - to_big(1))):to_number()
+        local exponent = BigC.TEN ^ (math.floor(amount:log10() - BigC.ONE)):to_number()
         amount = math.floor(amount / exponent):to_number() * exponent
     end
-    amount:normalize()
     return amount
 end
 
@@ -210,10 +209,9 @@ if SMODS then
         end
 
         if (amount:lt(BigC.E_MAX_SAFE_INTEGER)) then
-            local exponent = to_big(10) ^ (math.floor(amount:log10() - to_big(1))):to_number()
+            local exponent = BigC.TEN ^ (math.floor(amount:log10() - BigC.ONE)):to_number()
             amount = math.floor(amount / exponent):to_number() * exponent
         end
-        amount:normalize()
         return amount
     end
 end
