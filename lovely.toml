@@ -11,14 +11,14 @@ priority = 0
 #payload = '''_mod_dir_amulet = "{{lovely_hack:patch_dir}}"'''
 
 [[patches]]
-[patches.regex]
+[patches.pattern]
 target = "main.lua"
-position = "after"
-pattern = ""
+position = "before"
+pattern = "function love.run()"
 payload = '''
 _mod_dir_amulet = "{{lovely_hack:patch_dir}}"
 '''
-times = 1
+match_indent = true
 
 [[patches]]
 [patches.copy]
