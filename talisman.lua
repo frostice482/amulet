@@ -37,6 +37,7 @@ Talisman = {
   F_NO_COROUTINE = false,
   Amulet = true
 }
+Talisman.current_calc = {}
 Talisman.config_file = {
   disable_anims = false,
   break_infinity = "omeganum",
