@@ -58,3 +58,19 @@ pattern = 'node.config.lang = node.config.lang or G.LANG'
 position = "after"
 payload = '''if type(node.config.text) ~= "string" then node.config.text = tostring(node.config.text) end'''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if num_dollars > 60 then"
+position = "at"
+payload = '''num_dollars = to_number(num_dollars); if math.abs(num_dollars) > 60 then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if num_dollars > 60 or num_dollars < -60 then"
+position = "at"
+payload = '''num_dollars = to_number(num_dollars); if math.abs(num_dollars) > 60 then'''
+match_indent = true
