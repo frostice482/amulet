@@ -63,7 +63,7 @@ end
 local gftsj = G.FUNCS.text_super_juice
 function G.FUNCS.text_super_juice(e, _amount)
     if Talisman.config_file.disable_anims and Talisman.scoring_coroutine then
-        _amount = 0
+        _amount = 0.5
     elseif is_big(_amount) then
         if _amount > BigC.BIG then
             _amount = constants.BIG
