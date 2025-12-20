@@ -49,3 +49,12 @@ pattern = 'G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(
 position = "at"
 payload = 'G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.floor(to_number(math.min(7, vals.level)))]'
 match_indent = true
+
+# getWidth table on UIE
+[[patches]]
+[patches.pattern]
+target = "engine/ui.lua"
+pattern = 'node.config.lang = node.config.lang or G.LANG'
+position = "after"
+payload = '''if type(node.config.text) ~= "string" then node.config.text = tostring(node.config.text) end'''
+match_indent = true
