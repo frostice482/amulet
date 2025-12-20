@@ -1,0 +1,17 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+# trip when getWidth table on UIE
+[[patches]]
+[patches.pattern]
+target = "engine/ui.lua"
+pattern = 'node.config.lang = node.config.lang or G.LANG'
+position = "after"
+payload = '''
+if type(node.config.text) ~= "string" then
+	local val = node.config.text -- to be inspected in stacktrace
+	error("[Amulet] node.config.text is not a string\n(For value detail see 'val' on stacktrace)")
+end
+'''
+match_indent = true
