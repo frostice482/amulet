@@ -81,9 +81,8 @@ payload = "func = (function() if eval_func(card) then if card and card.juice_up 
 match_indent = true
 
 [[patches]]
-[patches.pattern]
+[patches.regex]
 target = "functions/common_events.lua"
-pattern = "if not G.TAROT_INTERRUPT then G.hand_text_area.mult:juice_up() end"
+pattern = "not G.TAROT_INTERRUPT then"
 position = "at"
-payload = "if not G.TAROT_INTERRUPT and not Talisman.no_anims_calculating() then G.hand_text_area.mult:juice_up() end"
-match_indent = true
+payload = "not Talisman.no_anims_calculating() and not G.TAROT_INTERRUPT then"
