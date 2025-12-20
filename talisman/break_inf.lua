@@ -13,12 +13,6 @@ function type(v)
     return Talisman.config_file.enable_compat and Big and Big.is(v) and "table" or _t(v)
 end
 
-local tsj = G.FUNCS.text_super_juice
-function G.FUNCS.text_super_juice(e, _amount)
-    if _amount > 10 then _amount = 10 end
-    return tsj(e, _amount)
-end
-
 -- We call this after init_game_object to leave room for mods that add more poker hands
 Talisman.igo = function(obj)
     for _, v in pairs(obj.hands) do
@@ -68,13 +62,16 @@ end
 
 local gftsj = G.FUNCS.text_super_juice
 function G.FUNCS.text_super_juice(e, _amount)
-    if is_big(_amount) then
+    if Talisman.config_file.disable_anims and Talisman.scoring_coroutine then
+        _amount = 0
+    elseif is_big(_amount) then
         if _amount > BigC.BIG then
             _amount = constants.BIG
         else
             _amount = _amount:to_number()
         end
     end
+    if _amount == 0 then return end
     return gftsj(e, _amount)
 end
 

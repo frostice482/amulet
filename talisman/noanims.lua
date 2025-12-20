@@ -15,16 +15,23 @@ G.FUNCS.evaluate_play = function(e)
   if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = nil end
 end
 
-function Talisman.no_anims_calculating()
+function Talisman.no_anims_calculating_misc()
   return Talisman.config_file.disable_anims and (Talisman.current_calc.joker or Talisman.current_calc.score or Talisman.current_calc.card)
+end
+
+function Talisman.no_anims_calculating()
+  return Talisman.config_file.disable_anims and Talisman.scoring_coroutine
 end
 
 local upd = Game.update
 function Game:update(dt)
-    if Talisman.dollar_update then
+    if Talisman.temp_dollar_update then
       G.HUD:get_UIE_by_ID('dollar_text_UI').config.object:update()
       G.HUD:recalculate()
-      Talisman.dollar_update = false
+      Talisman.temp_dollar_update = false
+    end
+    if Talisman.temp_uht_config and Talisman.temp_uht_vals then
+      update_hand_text(Talisman.temp_uht_config, Talisman.temp_uht_vals)
     end
     return upd(self, dt)
 end
@@ -46,24 +53,24 @@ function ease_dollars(mod, instant)
   mod = mod or 0
   if to_big(mod) > BigC.ZERO then inc_career_stat('c_dollars_earned', mod) end
   G.GAME.dollars = G.GAME.dollars + mod
-  Talisman.dollar_update = true
+  Talisman.temp_dollar_update = true
 end
 
 local sm = Card.start_materialize
 function Card:start_materialize(a,b,c)
-    if Talisman.no_anims_calculating() then return end
+    if Talisman.no_anims_calculating_misc() then return end
     return sm(self,a,b,c)
 end
 
 local sd = Card.start_dissolve
 function Card:start_dissolve(a,b,c,d)
-    if Talisman.no_anims_calculating() then return self:remove() end
+    if Talisman.no_anims_calculating_misc() then return self:remove() end
     return sd(self,a,b,c,d)
 end
 
 local ss = Card.set_seal
 function Card:set_seal(a,b,immediate)
-    return ss(self,a,b,immediate or Talisman.no_anims_calculating())
+    return ss(self,a,b,immediate or Talisman.no_anims_calculating_misc())
 end
 
 local cest = card_eval_status_text
@@ -83,8 +90,15 @@ end
 
 local uht = update_hand_text
 function update_hand_text(config, vals)
-    if not Talisman.config_file.disable_anims then return uht(config, vals) end
+    if config.immediate or not (Talisman.config_file.disable_anims and Talisman.scoring_coroutine) then
+      Talisman.temp_uht_config = nil
+      Talisman.temp_uht_vals = nil
+      return uht(config, vals)
+    end
 
+    Talisman.temp_uht_config = config
+    Talisman.temp_uht_config.immediate = true
+    Talisman.temp_uht_vals = vals
 end
 
 local gfer = G.FUNCS.evaluate_round
