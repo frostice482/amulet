@@ -58,9 +58,9 @@ end
 
 local cuc = Card.use_consumable
 function Card:use_consumable(x,y)
-	Talisman.calculating_score = true
+	Talisman.current_calc.score = true
 	local ret = cuc(self, x,y)
-	Talisman.calculating_score = false
+	Talisman.current_calc.score = false
 	return ret
 end
 

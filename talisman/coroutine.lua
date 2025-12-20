@@ -38,9 +38,9 @@ function co.clear_state()
 	Talisman.scoring_coroutine = nil
 	G.SCORING_COROUTINE = nil
 
-	Talisman.calculating_score = nil
-	Talisman.calculating_joker = nil
-	Talisman.calculating_card = nil
+	Talisman.current_calc.score = nil
+	Talisman.current_calc.joker = nil
+	Talisman.current_calc.card = nil
 	co.aborted = nil
 end
 
@@ -194,8 +194,8 @@ local ec = eval_card
 function eval_card(card, ctx)
 	if not Talisman.scoring_coroutine then return ec(card, ctx) end
 
-	local iv = Talisman.calculating_card
-	Talisman.calculating_card = (iv or 0) + 1
+	local iv = Talisman.current_calc.card
+	Talisman.current_calc.card = (iv or 0) + 1
 	if not iv then
 		if card.area == G.hand or card.area == G.play then
 			Talisman.scoring_coroutine.card = card
@@ -207,7 +207,7 @@ function eval_card(card, ctx)
 
 	local ret, a, b = ec(card, ctx)
 
-	Talisman.calculating_card = iv
+	Talisman.current_calc.card = iv
 	return ret, a, b
 end
 
@@ -217,13 +217,13 @@ function Card:calculate_joker(context)
 	Talisman.scoring_coroutine.calculations = Talisman.scoring_coroutine.calculations + 1
 	if co.shouldyield() then coroutine.yield() end
 
-	local iv = Talisman.calculating_joker
-	Talisman.calculating_joker = (iv or 0) + 1
+	local iv = Talisman.current_calc.joker
+	Talisman.current_calc.joker = (iv or 0) + 1
 	--[[if not iv and self.area == G.jokers then
 		Talisman.scoring_coroutine.joker = self
 	end]]
 
 	local ret, trig = ccj(self, context)
-	Talisman.calculating_joker = iv
+	Talisman.current_calc.joker = iv
 	return ret, trig
 end
