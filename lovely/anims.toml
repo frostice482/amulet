@@ -1,0 +1,51 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.mult) == 'number' and G.GAME.current_round.current_hand.mult or 1)))) end"
+position = "at"
+payload = '''
+local v = G.GAME.current_round.current_hand.mult or 1
+local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.chips) == 'number' and G.GAME.current_round.current_hand.chips or 1)))) end"
+position = "at"
+payload = '''
+local v = G.GAME.current_round.current_hand.chips or 1
+local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
+if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+position = 'at'
+match_indent = true
+pattern = '''
+G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
+'''
+payload = '''
+G.ARGS.score_intensity.earned_score = math.min(to_number(G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+position = 'at'
+match_indent = true
+pattern = '''
+G.ARGS.score_intensity.earned_score = SMODS.calculate_round_score(true)
+'''
+payload = '''
+G.ARGS.score_intensity.earned_score = math.min(to_number(SMODS.calculate_round_score(true)), 1e300)
+'''
