@@ -35,6 +35,7 @@ end
 Talisman = {
   mod_path = talisman_path,
   F_NO_COROUTINE = false,
+  cdataman = true,
   Amulet = true
 }
 Talisman.current_calc = {}
