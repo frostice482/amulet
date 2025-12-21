@@ -27,6 +27,12 @@ position = "append"
 sources = [
 	"talisman.lua"
 ]
+[[patches]]
+[patches.module]
+source = "include/nativefs.lua"
+before = "main.lua"
+name = "nativefs"
+
 
 # Show a Gold Seal to confirm Talisman is Active
 [[patches]]
@@ -35,71 +41,6 @@ target = "game.lua"
 pattern = "replace_card.states.visible = false"
 position = "before"
 payload = "replace_card:set_seal('Gold', true, true)"
-match_indent = true
-
-[[patches]]
-[patches.module]
-source = "include/nativefs.lua"
-before = "main.lua"
-name = "nativefs"
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.mult) == 'number' and G.GAME.current_round.current_hand.mult or 1)))) end"
-position = "at"
-payload = '''
-local v = G.GAME.current_round.current_hand.mult or 1
-local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
-if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.chips) == 'number' and G.GAME.current_round.current_hand.chips or 1)))) end"
-position = "at"
-payload = '''
-local v = G.GAME.current_round.current_hand.chips or 1
-local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
-if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},"
-position = "at"
-payload = "{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = scale_number(G.GAME.round_resets.ante, 2*scale, 100)}),id = 'ante_UI_count'}},--{n=G.UIT.T, config={text = number_format(G.GAME.round_resets.ante), lang = G.LANGUAGES['en-us'], scale = scale_number(G.GAME.round_resets.ante, 2*scale, 100), colour = G.C.IMPORTANT, shadow = true,id = 'ante_UI_count'}},"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "engine/ui.lua"
-pattern = "if self.config.vert then love.graphics.translate(0,self.VT.h); love.graphics.rotate(-math.pi/2) end"
-position = "before"
-payload = '''
-if Big and G.STATE == G.STATES.MENU then self.config.scale = to_number(self.config.scale) end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "if type(vals.level) == 'number' then"
-position = "at"
-payload = "if is_number(vals.level) then"
-match_indent = true
-
-# Luxury Tax Challenge
-[[patches]]
-[patches.pattern]
-target = "cardarea.lua"
-pattern = '''self:change_size(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar))'''
-position = "at"
-payload = '''self:change_size(to_number(self.config.last_poll_size - math.floor(G.GAME.dollars/G.GAME.modifiers.minus_hand_size_per_X_dollar)))'''
 match_indent = true
 
 # call init game object appendum after init game object
@@ -118,47 +59,4 @@ target = "game.lua"
 pattern = "self.GAME = saveTable and saveTable.GAME or self:init_game_object()"
 position = "after"
 payload =  "if Talisman and Talisman.igo then self.GAME = Talisman.igo(self.GAME) end"
-match_indent = true
-
-# return eval_round value
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = "add_round_eval_row({name = 'bottom', dollars = dollars})"
-position = "after"
-payload = "Talisman.dollars = dollars"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-position = 'at'
-match_indent = true
-pattern = '''
-G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
-'''
-payload = '''
-G.ARGS.score_intensity.earned_score = math.min(to_number(G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
-'''
-
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-position = 'at'
-match_indent = true
-pattern = '''
-G.ARGS.score_intensity.earned_score = SMODS.calculate_round_score(true)
-'''
-payload = '''
-G.ARGS.score_intensity.earned_score = math.min(to_number(SMODS.calculate_round_score(true)), 1e300)
-'''
-
-# sfx
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or 'generic1'"
-position = "at"
-payload = '''sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or extra.Xchip_mod and 'talisman_xchip' or extra.Echip_mod and 'talisman_echip' or extra.Emult_mod and 'talisman_emult' or extra.EEchip_mod and 'talisman_eechip' or extra.EEmult_mod and 'talisman_eemult' or (extra.EEEchip_mod or extra.hyperchip_mod) and 'talisman_eeechip' or (extra.EEEmult_mod or extra.hypermult_mod) and 'talisman_eeemult' or 'generic1'
-'''
 match_indent = true
