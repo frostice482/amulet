@@ -4,34 +4,6 @@ local talisman_path = _mod_dir_amulet
 assert(nativefs.mount(talisman_path..'/talisman', 'talisman'), 'Amulet: Failed to mount talisman from '..talisman_path)
 assert(nativefs.mount(talisman_path..'/big-num', 'big-num'), 'Amulet: Failed to mount big-num from '..talisman_path)
 
--- "Borrowed" from Trance
-local function load_file_with_fallback2(a, aa)
-    local success, result = pcall(function() return assert(nativefs.load(a))() end)
-    if success then
-        return result
-    end
-    local fallback_success, fallback_result = pcall(function() return assert(nativefs.load(aa))() end)
-    if fallback_success then
-        return fallback_result
-    end
-end
-
-local talismanloc = init_localization
-function init_localization()
-	local abc = load_file_with_fallback2(
-		talisman_path.."/localization/" .. (G.SETTINGS.language or "en-us") .. ".lua",
-		talisman_path .. "/localization/en-us.lua"
-	)
-	for k, v in pairs(abc) do
-		if k ~= "descriptions" then
-			G.localization.misc.dictionary[k] = v
-		end
-		-- todo error messages(?)
-		G.localization.misc.dictionary[k] = v
-	end
-	talismanloc()
-end
-
 Talisman = {
   mod_path = talisman_path,
   F_NO_COROUTINE = false,
@@ -76,6 +48,7 @@ function Game:start_run(args)
   return ret
 end
 
+require("talisman.localization")
 require("talisman.globals")
 require("talisman.card")
 require("talisman.configtab")
