@@ -1,8 +1,10 @@
-local nativefs = require("nativefs")
-local talisman_path = _mod_dir_amulet
+local ffi = require("ffi")
+ffi.cdef[[int PHYSFS_mount(const char* dir, const char* mountPoint, int appendToPath)]]
+local tinymount = (pcall(function() return ffi.C.PHYSFS_mount end) and ffi.C or ffi.load("love")).PHYSFS_mount
 
-assert(nativefs.mount(talisman_path .. '/talisman', 'talisman'), 'Amulet: Failed to mount talisman from ' .. talisman_path)
-assert(nativefs.mount(talisman_path .. '/big-num', 'big-num'), 'Amulet: Failed to mount big-num from ' .. talisman_path)
+local talisman_path = _mod_dir_amulet
+assert(tinymount(talisman_path .. '/talisman', 'talisman', 0), 'Amulet: Failed to mount talisman from ' .. talisman_path)
+assert(tinymount(talisman_path .. '/big-num', 'big-num', 0), 'Amulet: Failed to mount big-num from ' .. talisman_path)
 
 Talisman = {
     mod_path = talisman_path,
