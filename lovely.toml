@@ -27,12 +27,6 @@ position = "append"
 sources = [
 	"talisman.lua"
 ]
-[[patches]]
-[patches.module]
-source = "include/nativefs.lua"
-before = "main.lua"
-name = "nativefs"
-
 
 # Show a Gold Seal to confirm Talisman is Active
 [[patches]]
