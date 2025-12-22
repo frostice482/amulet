@@ -1,5 +1,3 @@
-local nativefs = require("nativefs")
-
 if not SMODS then
     local createOptionsRef = create_UIBox_options
     function create_UIBox_options()
@@ -15,10 +13,6 @@ if not SMODS then
         table.insert(contents.nodes[1].nodes[1].nodes[1].nodes, m)
         return contents
     end
-end
-
-function Talisman.save_config()
-    nativefs.write(Talisman.mod_path .. "/config.lua", STR_PACK(Talisman.config_file))
 end
 
 Talisman.config_sections = {}
