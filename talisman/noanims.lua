@@ -1,20 +1,3 @@
-G.FUNCS.evaluate_play = function(e)
-	if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "intro" end
-	text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_intro()
-	if not G.GAME.blind:debuff_hand(G.play.cards, poker_hands, text) then
-		if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "main" end
-		text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_main(text,disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
-	else
-		if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "debuff" end
-		text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_debuff(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
-	end
-	if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "final_scoring" end
-	text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta = evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
-	if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = "after" end
-	evaluate_play_after(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
-	if Talisman.scoring_coroutine then Talisman.scoring_coroutine.state = nil end
-end
-
 function Talisman.no_anims_calculating_misc()
 	return Talisman.config_file.disable_anims and
 	(Talisman.current_calc.joker or Talisman.current_calc.score or Talisman.current_calc.card)
