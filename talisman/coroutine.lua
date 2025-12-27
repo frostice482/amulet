@@ -6,12 +6,30 @@ local co = {
 }
 Talisman.coroutine = co
 
+function co.func()
+	local f
+	f = oldplay
+
+	if Talisman.config_file.debug_coroutine then
+		local ff = f
+		function f(...)
+			return assert(xpcall(ff, function(err)
+				local handler = love.errorhandler(err)
+				function love.errorhandler() return handler end
+				return err
+			end))
+		end
+	end
+
+	return f
+end
+
 function co.create_state()
 	return {
-		coroutine = coroutine.create(oldplay),
+		coroutine = coroutine.create(co.func()),
 		yield = love.timer.getTime(),
 		time = 0,
-		calculations = 0
+		calculations = 0,
 	}
 end
 
@@ -49,7 +67,7 @@ function co.forcestop()
 
 	G.FUNCS.exit_overlay_menu()
 	if co.aborted and Talisman.scoring_coroutine.state == "main" then
-		evaluate_play_final_scoring(text, disp_text, poker_hands, scoring_hand, non_loc_disp_text, percent, percent_delta)
+		evaluate_play_final_scoring(unpack(Talisman.scoring_coroutine.astate, 1, 7))
 	end
 	G.GAME.LAST_CALCS = Talisman.scoring_coroutine.calculations
 	G.GAME.LAST_CALC_TIME = Talisman.scoring_coroutine.time
