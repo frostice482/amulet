@@ -2,7 +2,8 @@
 
 local oldplay = G.FUNCS.evaluate_play
 local co = {
-	TIME_BETWEEN_SCORING_FRAMES = 0.03
+	frametime = 0.03,
+	framecalc = 250,
 }
 Talisman.coroutine = co
 
@@ -41,14 +42,14 @@ end
 function co.resume(...)
 	if not Talisman.scoring_coroutine then return end
 	Talisman.scoring_coroutine.yield = love.timer.getTime()
-	assert(coroutine.resume(Talisman.scoring_coroutine.coroutine, ...))
+	return assert(coroutine.resume(Talisman.scoring_coroutine.coroutine, ...))
 end
 
 function co.shouldyield()
 	return Talisman.scoring_coroutine
-		and Talisman.scoring_coroutine.calculations % 250 == 0
+		and Talisman.scoring_coroutine.calculations % co.framecalc == 0
 		and Talisman.scoring_coroutine.yield
-		and love.timer.getTime() - Talisman.scoring_coroutine.yield > co.TIME_BETWEEN_SCORING_FRAMES
+		and love.timer.getTime() - Talisman.scoring_coroutine.yield > co.frametime
 		and coroutine.running()
 end
 
@@ -195,7 +196,7 @@ end
 
 function G.FUNCS.evaluate_play(...)
 	co.initialize_state()
-	co.resume(...)
+	return co.resume(...)
 end
 
 function G.FUNCS.tal_abort()
