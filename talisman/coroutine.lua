@@ -31,6 +31,7 @@ function co.create_state()
 		yield = love.timer.getTime(),
 		time = 0,
 		calculations = 0,
+		frames = 0
 	}
 end
 
@@ -42,6 +43,7 @@ end
 function co.resume(...)
 	if not Talisman.scoring_coroutine then return end
 	Talisman.scoring_coroutine.yield = love.timer.getTime()
+	Talisman.scoring_coroutine.frames = Talisman.scoring_coroutine.frames + 1
 	return assert(coroutine.resume(Talisman.scoring_coroutine.coroutine, ...))
 end
 
@@ -203,15 +205,15 @@ function G.FUNCS.tal_abort()
 	co.aborted = true
 end
 
-local oldupd = love.update
+local _update = love.update
 function love.update(dt, ...)
 	if Talisman.scoring_coroutine then co.update(dt) end
-	return oldupd(dt, ...)
+	return _update(dt, ...)
 end
 
-local ec = eval_card
+local _eval_card = eval_card
 function eval_card(card, ctx)
-	if not Talisman.scoring_coroutine then return ec(card, ctx) end
+	if not Talisman.scoring_coroutine then return _eval_card(card, ctx) end
 
 	local iv = Talisman.current_calc.card
 	Talisman.current_calc.card = (iv or 0) + 1
@@ -224,15 +226,15 @@ function eval_card(card, ctx)
 		end
 	end
 
-	local ret, a, b = ec(card, ctx)
+	local ret, a, b = _eval_card(card, ctx)
 
 	Talisman.current_calc.card = iv
 	return ret, a, b
 end
 
-local ccj = Card.calculate_joker
+local _calc_joker = Card.calculate_joker
 function Card:calculate_joker(context)
-	if not Talisman.scoring_coroutine then return ccj(self, context) end
+	if not Talisman.scoring_coroutine then return _calc_joker(self, context) end
 	Talisman.scoring_coroutine.calculations = Talisman.scoring_coroutine.calculations + 1
 	if co.shouldyield() then coroutine.yield() end
 
@@ -242,7 +244,32 @@ function Card:calculate_joker(context)
 		Talisman.scoring_coroutine.joker = self
 	end]]
 
-	local ret, trig = ccj(self, context)
+	local ret, trig = _calc_joker(self, context)
 	Talisman.current_calc.joker = iv
 	return ret, trig
+end
+
+local _ca_align = CardArea.align_cards
+function CardArea:align_cards(...)
+	if not Talisman.scoring_coroutine then return _ca_align(self, ...) end
+end
+
+local _c_move = Card.move
+function Card:move(...)
+	if not Talisman.scoring_coroutine then return _c_move(self, ...) end
+end
+
+local _m_move = Moveable.move
+function Moveable:move(...)
+	if not Talisman.scoring_coroutine then return _m_move(self, ...) end
+end
+
+local _m_align_major = Moveable.align_to_major
+function Moveable:align_to_major(...)
+	if not Talisman.scoring_coroutine or Talisman.scoring_coroutine.frames < 3 then return _m_align_major(self, ...) end
+end
+
+local _uie_update = UIElement.update
+function UIElement:update(...)
+	if not Talisman.scoring_coroutine or Talisman.scoring_coroutine.frames % 10 == 0 then return _uie_update(self, ...) end
 end
