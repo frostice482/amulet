@@ -9,7 +9,38 @@ priority = 0
 target = 'functions/state_events.lua'
 pattern = "G.FUNCS.evaluate_play = function(e)"
 position = 'at'
-payload = "function evaluate_play_intro()"
+payload = '''
+local lim = 7
+G.FUNCS.evaluate_play = function(e)
+	local state
+	local co = Talisman.scoring_coroutine
+
+	if co then co.state = "intro" end
+	state = {evaluate_play_intro()}
+	if co then co.astate = state end
+
+	if not G.GAME.blind:debuff_hand(G.play.cards, state[3], state[1]) then
+		if co then co.state = "main" end
+		state = {evaluate_play_main(unpack(state, 1, lim))}
+		if co then co.astate = state end
+	else
+		if co then co.state = "debuff" end
+		state = {evaluate_play_debuff(unpack(state, 1, lim))}
+		if co then co.astate = state end
+	end
+
+	if co then co.state = "final_scoring" end
+	state = {evaluate_play_final_scoring(unpack(state, 1, lim))}
+	if co then co.astate = state end
+
+	if co then co.state = "after" end
+	evaluate_play_after(unpack(state, 1, lim))
+
+	if co then co.state = nil end
+end
+
+function evaluate_play_intro()
+'''
 match_indent = true
 
 [[patches]]
