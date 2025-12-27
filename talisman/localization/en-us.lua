@@ -16,6 +16,13 @@ return {
         'Warning: Type compat does not work with some mods,',
         'and instead will cause unexpected crash when enabled.'
     },
+    tal_debug_coroutine = 'Debug Coroutine',
+    tal_debug_coroutine_warning = {
+        'Captures stack trace of the scoring coroutine when',
+        'crashed during calculation. Makes debugging slightly',
+        'easier when crashed'
+    },
+
     tal_calculating = 'Calculating...',
     tal_abort = 'Abort',
     tal_elapsed = 'Elapsed calculations',

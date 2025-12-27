@@ -74,7 +74,7 @@ function Talisman.config_sections.notation()
 end
 
 function Talisman.config_sections.enable_type_compat()
-    return create_toggle({
+    local t = create_toggle({
         label = localize("tal_enable_compat"),
         ref_table = Talisman.config_file,
         ref_value = "enable_compat",
@@ -82,31 +82,29 @@ function Talisman.config_sections.enable_type_compat()
             Talisman.save_config()
         end
     })
+    t.config.tooltip = { text = localize("tal_enable_compat_warning") }
+    return t
 end
 
-function Talisman.config_sections.type_compat_alert(nodes)
-    for i,chk in ipairs(localize('tal_enable_compat_warning')) do
-        table.insert(nodes, {
-            n = G.UIT.R,
-            config = { align = 'cm' },
-            nodes = {{
-                n = G.UIT.T,
-                config = {
-                    text = chk,
-                    scale = 0.3,
-                    colour = G.C.ORANGE
-                }
-            }}
-        })
-    end
+function Talisman.config_sections.debug_coroutine()
+    local t = create_toggle({
+        label = localize("tal_debug_coroutine"),
+        ref_table = Talisman.config_file,
+        ref_value = "debug_coroutine",
+        callback = function()
+            Talisman.save_config()
+        end
+    })
+    t.config.tooltip = { text = localize("tal_debug_coroutine_warning") }
+    return t
 end
 
 Talisman.config_sections_array = {
     Talisman.config_sections.disable_anim,
     Talisman.config_sections.disable_omega,
-    Talisman.config_sections.notation,
+    Talisman.config_sections.debug_coroutine,
     Talisman.config_sections.enable_type_compat,
-    Talisman.config_sections.type_compat_alert,
+    Talisman.config_sections.notation,
 }
 
 Talisman.config_ui_base = {

@@ -16,6 +16,12 @@ return {
         'Warning: Type compat does not work with some mods,', -- not localized yet
         'and instead will cause unexpected crash when enabled.' -- not localized yet
     },
+    tal_debug_coroutine = 'Debug Coroutine', -- not localized yet
+    tal_debug_coroutine_warning = {
+        'Captures stack trace of the scoring coroutine when', -- not localized yet
+        'crashed during calculation.' -- not localized yet
+    },
+
 	tal_calculating = 'Đang tính toán...',
 	tal_abort = 'Huỷ bỏ',
 	tal_elapsed = 'Phép tính đã thực hiện',

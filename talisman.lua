@@ -15,7 +15,11 @@ Talisman = {
 Talisman.current_calc = {}
 Talisman.config_file = {
     disable_anims = false,
-    break_infinity = "omeganum",
+    disable_omega = false,
+    enable_compat = false,
+    debug_coroutine = false,
+
+    break_infinity = "omeganum", -- unused
     notation = "Balatro"
 }
 Talisman.notations = {
