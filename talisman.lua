@@ -3,8 +3,8 @@ ffi.cdef[[int PHYSFS_mount(const char* dir, const char* mountPoint, int appendTo
 local tinymount = (pcall(function() return ffi.C.PHYSFS_mount end) and ffi.C or ffi.load("love")).PHYSFS_mount
 
 local talisman_path = _mod_dir_amulet
-assert(tinymount(talisman_path .. '/talisman', 'talisman', 0), 'Amulet: Failed to mount talisman from ' .. talisman_path)
-assert(tinymount(talisman_path .. '/big-num', 'big-num', 0), 'Amulet: Failed to mount big-num from ' .. talisman_path)
+assert(tinymount(talisman_path .. '/talisman', 'talisman', 0) ~= 0, 'Amulet: Failed to mount talisman from ' .. talisman_path)
+assert(tinymount(talisman_path .. '/big-num', 'big-num', 0) ~= 0, 'Amulet: Failed to mount big-num from ' .. talisman_path)
 
 Talisman = {
     mod_path = talisman_path,
