@@ -1249,9 +1249,6 @@ function Big:arrow(arrows, other)
     if oldarrows >= 1e6 then --needed to stop "Infinity"
         arrows = arrows:floor()
     end
-    if oldarrows == 1 then
-        return Big:create(self)
-    end
     if self:eq(B.ONE) then return B.ONE end
     if self:eq(B.ZERO) then return B.ZERO end
     --idk why but arrows above 1e6 just sometimes randomly get treated as non ints even though they are
