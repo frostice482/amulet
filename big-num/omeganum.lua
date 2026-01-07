@@ -254,7 +254,7 @@ function Big:compareTo(other)
         return self.sign
     end
     if ((arr[1]~=R.POSITIVE_INFINITY) and (other_arr[1]==R.POSITIVE_INFINITY)) then
-        return other.sign
+        return -1 * other.sign
     end
     if (self.sign~=other.sign) then
         return self.sign
