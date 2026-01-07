@@ -65,7 +65,7 @@ local bigs = {}
 setmetatable(bigs, { __mode = 'k' })
 
 function Big.is(instance)
-    return type(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
+    return instance and bigs[instance]
 end
 
 -- #region constructor
