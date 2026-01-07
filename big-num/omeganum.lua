@@ -6,10 +6,6 @@ local TalismanOmega = ffi.typeof("struct TalismanOmega")
 
 --OmegaNum port by Mathguy
 
---- @type table<t.Omega, number[]>
-local bigs = {}
-setmetatable(bigs, { __mode = 'k' })
-
 --- @alias t.Omega.Parsable string | number | t.Omega
 
 --- @class t.Omega
@@ -34,12 +30,13 @@ OmegaMeta = {
 
 _G.Big = Big
 
+local Big2 = Big
+Big2.array = {}
+
+--- constants
 local MAX_SAFE_INTEGER = 9007199254740991
 local MAX_E = math.log(MAX_SAFE_INTEGER, 10)
 local LONG_STRING_MIN_LENGTH = 17
-
-local Big2 = Big
-Big2.array = {}
 
 -- this will be populated with bignum equivalents of R's values at the end of the file
 --- @type table<string, t.Omega>
@@ -47,34 +44,59 @@ local B = {}
 local BCaches = {}
 local BFrames = {}
 
---------------make the numbers look good----------------------
-
-
-local function AThousandNotation(n, places)
-    local raw = string.format("%." .. places .."f", n)
-    local result = ""
-    local comma = string.find(raw, "%.")
-
-    if comma == nil then
-        comma = #raw
-    else
-        comma = comma - 1
-    end
-
-    for i = 1, #raw do
-        result = result .. string.sub(raw, i, i)
-        if (comma - i) % 3 == 0 and i < comma then
-            result = result .. ","
-        end
-    end
-    return result
-end
-
-------------------------------------------------------
+--- OmegaNum instances
+--- @type table<t.Omega, number[]>
+local bigs = {}
+setmetatable(bigs, { __mode = 'k' })
 
 local _t = type
 function Big.is(instance)
     return _t(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
+end
+
+-- #region constructor
+
+--- @return t.Omega
+function Big:new(arr)
+    --- @type t.Omega
+    local obj = TalismanOmega(1, 0) --- @diagnostic disable-line
+    bigs[obj] = arr
+    obj:normalize()
+    return obj
+end
+
+--- @return t.Omega
+function Big:create(input)
+    if ((type(input) == "number")) then
+        local obj = BCaches[input]
+        if obj then return obj end
+
+        local obj = Big:new({input})
+        if input == input then
+           BFrames[input] = (BFrames[input] or 0) + 1
+           if BFrames[input] > 100 then
+                BFrames[input] = nil
+                BCaches[input] = obj
+                print('cached number to bignum:', input)
+           end
+        end
+        return obj
+    elseif ((type(input) == "string")) then
+        return Big:parse(input)
+    elseif Big.is(input) then
+        return input
+    else
+        return Big:new(input)
+    end
+end
+
+--- @return t.Omega
+function Big:ensureBig(input)
+    if Big.is(input) then
+        return input
+    else
+        return Big:create(input)
+    end
 end
 
 local function arraySizeOf(arr)
@@ -88,13 +110,90 @@ local function arraySizeOf(arr)
 end
 
 --- @return t.Omega
-function Big:new(arr)
-    --- @type t.Omega
-    local obj = TalismanOmega(1, 0) --- @diagnostic disable-line
-    bigs[obj] = arr
-    obj:normalize()
-    return obj
+function Big:normalize()
+    local b = nil
+    local arr = self:get_array()
+    if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
+        arr = {}
+    end
+    local asize = arraySizeOf(arr)
+    if (asize == 1) and (arr[1] == 0) then
+        self.sign = 1
+        return self
+    end
+    if (asize == 1) and (arr[1] < 0) then
+        self.sign = -1
+        arr[1] = -arr[1]
+    end
+    if ((self.sign~=1) and (self.sign~=-1)) then
+        if (self.sign < 0) then
+            self.sign = -1;
+        else
+            self.sign = 1;
+        end
+    end
+    for i, v in pairs(arr) do
+        local e = arr[i] or 0;
+        if (e ~= e) then
+            arr={R.NaN};
+            return self
+        end
+        if (e == R.POSITIVE_INFINITY) or (e == R.NEGATIVE_INFINITY) then
+            arr = {R.POSITIVE_INFINITY};
+            return self
+        end
+        if (i ~= 1) then
+            arr[i]=math.floor(e)
+        end
+        --first 3 values kept because they are hardcoded in a few places
+        --it also doesnt hurt memory that much to keep them anyway
+        if ((e == 0)) and i > 3 then
+            arr[i] = nil
+        end
+    end
+    local doOnce = true
+    while (doOnce or b) do
+        b=false;
+        asize = arraySizeOf(arr)
+        while ((asize ~= 0) and (arr[asize]==0)) do
+            arr[asize] = nil;
+            b=true;
+        end
+        if ((arr[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
+            arr[2]=(arr[2] or 0) + 1;
+            arr[1]= math.log(arr[1], 10);
+            b=true;
+        end
+        while (((arr[1] or 0) < math.log(R.MAX_DISP_INTEGER,10)) and ((arr[2] ~= nil) and (arr[2] ~= 0))) do
+            arr[1] = math.pow(10,arr[1]);
+            arr[2] = arr[2] - 1
+            b=true;
+        end
+        doOnce = false;
+        for i, v in pairs(arr) do
+            if type(i) == "number" then
+                if ((arr[i] or 0)>R.MAX_SAFE_INTEGER) then
+                    arr[i+1]=(arr[i+1] or 0)+1;
+                    arr[1]=arr[i]+1;
+                    for j=2,i do
+                        arr[j]=0;
+                    end
+                    b=true;
+                end
+            end
+        end
+    end
+    if (arraySizeOf(arr) == 0) and #arr ~= 1 then
+        arr = {0}
+    end
+    bigs[self] = arr
+    self.asize = arraySizeOf(arr)
+    return self
 end
+
+-- #endregion
+
+-- #region booleans
 
 function Big:isNaN()
     local v = self:get_array()[1]
@@ -123,6 +222,10 @@ function Big:isint()
     end
     return Big:create(math.floor(self:to_number())) == self;
 end
+
+-- #endregion
+
+-- #region comparisons
 
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
@@ -193,6 +296,8 @@ function Big:eq(other)
     return self:compareTo(other) == 0
 end
 
+-- #endregion
+
 --- @return t.Omega
 function Big:neg()
     local x = self:clone();
@@ -229,384 +334,6 @@ function Big:max(other)
 end
 
 --- @return t.Omega
-function Big:normalize()
-    local b = nil
-    local arr = self:get_array()
-    if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
-        arr = {}
-    end
-    local asize = arraySizeOf(arr)
-    if (asize == 1) and (arr[1] == 0) then
-        self.sign = 1
-        return self
-    end
-    if (asize == 1) and (arr[1] < 0) then
-        self.sign = -1
-        arr[1] = -arr[1]
-    end
-    if ((self.sign~=1) and (self.sign~=-1)) then
-    --   if (typeof x.sign!="number") x.sign=Number(x.sign);
-        if (self.sign < 0) then
-            self.sign = -1;
-        else
-            self.sign = 1;
-        end
-    end
-    for i, v in pairs(arr) do
-        local e = arr[i] or 0;
-        if (e ~= e) then
-            arr={R.NaN};
-            return self
-        end
-        if (e == R.POSITIVE_INFINITY) or (e == R.NEGATIVE_INFINITY) then
-            arr = {R.POSITIVE_INFINITY};
-            return self
-        end
-        if (i ~= 1) then
-            arr[i]=math.floor(e)
-        end
-        --first 3 values kept because they are hardcoded in a few places
-        --it also doesnt hurt memory that much to keep them anyway
-        if ((e == 0)) and i > 3 then
-            arr[i] = nil
-        end
-    end
-    local doOnce = true
-    while (doOnce or b) do
-    --   if (OmegaNum.debug>=OmegaNum.ALL) console.log(x.toString());
-        b=false;
-        asize = arraySizeOf(arr)
-        while ((asize ~= 0) and (arr[asize]==0)) do
-            arr[asize] = nil;
-            b=true;
-        end
-        if ((arr[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
-            arr[2]=(arr[2] or 0) + 1;
-            arr[1]= math.log(arr[1], 10);
-            b=true;
-        end
-        while (((arr[1] or 0) < math.log(R.MAX_DISP_INTEGER,10)) and ((arr[2] ~= nil) and (arr[2] ~= 0))) do
-            arr[1] = math.pow(10,arr[1]);
-            arr[2] = arr[2] - 1
-            b=true;
-        end
-        -- if ((x.asize>2) and ((arr[2] == nil) or (arr[2] == 0))) then
-        --     local i = 3
-        --     while (arr[i] == nil) or (arr[i] == 0) do
-        --         i = i + 1
-        --     end
-        --     arr[i-1]=arr[1];
-        --     arr[1]=1;
-        --     arr[i] = arr[i] - 1
-        --     b=true;
-        -- end
-        doOnce = false;
-        --l = x.asize
-        for i, v in pairs(arr) do
-            if type(i) == "number" then
-                if ((arr[i] or 0)>R.MAX_SAFE_INTEGER) then
-                    arr[i+1]=(arr[i+1] or 0)+1;
-                    arr[1]=arr[i]+1;
-                    for j=2,i do
-                        arr[j]=0;
-                    end
-                    b=true;
-                end
-            end
-        end
-    end
-    if (arraySizeOf(arr) == 0) and #arr ~= 1 then
-        arr = {0}
-    end
-    bigs[self] = arr
-    self.asize = arraySizeOf(arr)
-    return self
-end
-
---- @return string
-function Big:toString()
-    local arr = self:get_array()
-    if (self.sign==-1) then
-        return "-" .. self:abs():toString()
-    end
-    if (arr[1] ~= arr[1]) then
-        return "NaN"
-    end
-    -- if (!isFinite(this.array[0])) return "Infinity";
-    local s = "";
-    if (self.asize>=2) then
-        for i=self.asize,3,-1 do
-            local q = nil
-            if (i >= 6) then
-                q = "{"..(i-1).."}"
-            else
-                q = string.rep("^", i-1)
-            end
-            if (arr[i]>1) then
-                s = s .."(10" .. q .. ")^" .. AThousandNotation(arr[i], 0) .. " "
-            elseif (arr[i]==1) then
-                s= s .."10" .. q;
-            end
-        end
-    end
-    if (arr[2] == nil) or (arr[2] == 0) then
-        if (arr[1] <= 9e9) then
-            s = s .. AThousandNotation(arr[1], 2)
-        else
-            local exponent = math.floor(math.log(arr[1], 10))
-            local mantissa = math.floor((arr[1] / (10^exponent))*100)/100
-            s = s .. AThousandNotation(mantissa, 2) .. "e" .. AThousandNotation(exponent, 0)
-        end
-    elseif (arr[2]<3) then
-        s = s .. string.rep("e", arr[2]-1) .. AThousandNotation(math.pow(10,arr[1]-math.floor(arr[1])), 2) .. "e" .. AThousandNotation(math.floor(arr[1]), 0);
-    elseif (arr[2]<8) then
-        s = s .. string.rep("e", arr[2]) .. AThousandNotation(arr[1], 0)
-    else
-        s = s .. "(10^)^" .. AThousandNotation(arr[2], 0) .. " " .. AThousandNotation(arr[1],0)
-    end
-    return s
-end
-
-local function log10LongString(str)
-    return math.log(tonumber(string.sub(str, 1, LONG_STRING_MIN_LENGTH)), 10)+(string.len(str)- LONG_STRING_MIN_LENGTH);
-end
-
---- @return t.Omega
-function Big:parse(input)
-    -- if (typeof input!="string") throw Error(invalidArgument+"Expected String");
-    -- var isJSON=false;
-    -- if (typeof input=="string"&&(input[0]=="["||input[0]=="{")){
-    --   try {
-    --     JSON.parse(input);
-    --   }finally{
-    --     isJSON=true;
-    --   }
-    -- }
-    -- if (isJSON){
-    --   return OmegaNum.fromJSON(input);
-    -- }
-    local t = Big:new({0})
-    local arr = t:get_array()
-    -- if (!isOmegaNum.test(input)){
-    --   console.warn(omegaNumError+"Malformed input: "+input);
-    --   x.array=[NaN];
-    --   return x;
-    -- }
-    local negateIt = false
-    while ((string.sub(input, 1, 1)=="-") or (string.sub(input, 1, 1)=="+")) do
-        if (string.sub(input, 1, 1)=="-") then
-            negateIt = not negateIt
-        end
-        input = string.sub(input, 2);
-    end
-    if (input=="NaN") or (input=="nan") then
-        arr = {R.NaN}
-        bigs[t] = arr
-    elseif (input=="Infinity") or (input=="inf") then
-        arr = {R.POSITIVE_INFINITY}
-        bigs[t] = arr
-    else
-        --- @type number | number[]
-        local a = 0
-        --- @type number | number[]
-        local b = 0
-        local c = 0
-        local d = 0
-        local i = 0
-        while (string.len(input) > 0) do
-            local passTest = false
-            if true then
-                local j = 1
-                if string.sub(input, 1, 1) == "(" then
-                    j = j + 1
-                end
-                if (string.sub(input, j, j+1) == "10") and ((string.sub(input, j+2, j+2) == "^") or (string.sub(input, j+2, j+2) == "{")) then
-                    passTest = true
-                end
-            end
-            if (passTest) then
-                if (string.sub(input, 1, 1) == "(") then
-                input = string.sub(input, 2);
-                end
-                local arrows = -1;
-                if (string.sub(input, 3, 3)=="^") then
-                    arrows = 3
-                    while (string.sub(input, arrows, arrows) == "^") do
-                        arrows = arrows + 1
-                    end
-                    arrows = arrows - 3
-                    a = arrows
-                    b = arrows + 2;
-                else
-                    a = 1
-                    while (string.sub(input, a, a) ~= "}") do
-                        a = a + 1
-                    end
-                    arrows=tonumber(string.sub(input, 4, a - 1))+1;
-                    b = a + 1
-                end
-                --[[if (arrows >= maxArrow) then
-                -- console.warn("Number too large to reasonably handle it: tried to "+arrows.add(2)+"-ate.");
-                    x.array = {R.POSITIVE_INFINITY};
-                    break;
-                end--]]
-                input = string.sub(input, b + 1);
-                if (string.sub(input, 1, 1) == ")") then
-                    a = 1
-                    while (string.sub(input, a, a) ~= " ") do
-                        a = a + 1
-                    end
-                    c = tonumber(string.sub(input, 3, a - 1)) or 0;
-                    input = string.sub(input, a+1);
-                else
-                    c = 1
-                end
-                if (arrows==1) then
-                    arr[2] = (arr[2] or 0) + c;
-                elseif (arrows==2) then
-                    a = arr[2] or 0;
-                    b = arr[1] or 0;
-                    if (b>=1e10) then
-                        a = a + 1
-                    end
-                    if (b>=10) then
-                        a = a + 1
-                    end
-                    arr[1]=a;
-                    arr[2]=0;
-                    arr[3]=(arr[3] or 0)+c;
-                else
-                    a=arr[arrows] or 0;
-                    b=arr[arrows-1] or 0;
-                    if (b>=10) then
-                        a = a + 1
-                    end
-                    for i=1, arrows do
-                        arr[i] = 0;
-                    end
-                    arr[1]=a;
-                    arr[arrows+1] = (arr[arrows+1] or 0) + c;
-                end
-            else
-                break
-            end
-        end
-        a = {""} --- @diagnostic disable-line
-        while (string.len(input) > 0) do
-            if ((string.sub(input, 1, 1) == "e") or (string.sub(input, 1, 1) == "E")) then
-                a[#a + 1] = ""
-            else
-                a[#a] = a[#a] .. string.sub(input, 1, 1)
-            end
-            input = string.sub(input, 2);
-        end
-        if a[#a] == "" then
-            a[#a] = nil
-        end
-        b={arr[1],0};
-        c=1;
-        for i=#a, 1, -1 do
-            if ((b[1] < MAX_E) and (b[2]==0)) then
-                b[1] = math.pow(10,c*b[1]);
-            elseif (c==-1) then
-                if (b[2]==0) then
-                    b[1]=math.pow(10,c*b[1]);
-                elseif ((b[2]==1) and (b[1]<=308)) then
-                    b[1] = math.pow(10,c*math.pow(10,b[1]));
-                else
-                    b[1]=0;
-                end
-                b[2]=0;
-            else
-                b[2] = b[2] + 1;
-            end
-            local decimalPointPos = 1;
-            while ((string.sub(a[i], decimalPointPos, decimalPointPos) ~= ".") and (decimalPointPos <= #a[i])) do
-                decimalPointPos = decimalPointPos + 1
-            end
-            if decimalPointPos == #a[i] + 1 then
-                decimalPointPos = -1
-            end
-            local intPartLen = -1
-            if (decimalPointPos == -1) then
-                intPartLen = #a[i] + 1
-            else
-                intPartLen = decimalPointPos
-            end
-            if (b[2] == 0) then
-                if (intPartLen - 1 >= LONG_STRING_MIN_LENGTH) then
-                    b[1] = math.log10(b[1]) + log10LongString(string.sub(a[i], 1, intPartLen - 1))
-                    b[2] = 1;
-                elseif ((a[i] ~= nil) and (a[i] ~= "") and (tonumber(a[i]) ~= nil)) then
-                    b[1] = b[1] * tonumber(a[i]);
-                end
-            else
-                d=-1
-                if (intPartLen - 1 >= LONG_STRING_MIN_LENGTH) then
-                    d = log10LongString(string.sub(a[i], 1,intPartLen - 1))
-                else
-                    if (a[i] ~= nil) and (a[i] ~= "") and (tonumber(a[i]) ~= nil) then
-                        d = math.log(tonumber(a[i]), 10)
-                    else
-                        d = 0
-                    end
-                end
-                if (b[2]==1) then
-                    b[1] = b[1] + d;
-                elseif ((b[2]==2) and (b[1]<MAX_E+math.log(d, 10))) then
-                    b[1] = b[1] + math.log(1+math.pow(10,math.log10(d)-b[0]), 10);
-                end
-            end
-            if ((b[1]<MAX_E) and (b[2] ~= 0) and (b[2] ~= nil)) then
-                b[1]=math.pow(10,b[1]);
-                b[2] = b[2] - 1;
-            elseif (b[1]>MAX_SAFE_INTEGER) then
-                b[1] = math.log(b[1], 10);
-                b[2] = b[2] + 1;
-            end
-        end
-        arr[1]= b[1];
-        arr[2]= (arr[2] or 0) + b[2];
-    end
-    if (negateIt) then
-        t.sign = t.sign * -1
-    end
-    t:normalize();
-    return t;
-end
-
---- @return number
-function Big:to_number()
-    local arr = self:get_array()
-    -- //console.log(this.array);
-    if (self.sign==-1) then
-        return -1*(self:neg():to_number());
-    end
-    if not arr[1] then return 0 end
-    if arr[2] == nil then arr[2] = 0 end
-    if ((self.asize>=2) and ((arr[2]>=2) or (arr[2]==1) and (arr[1]>308))) then
-        return R.POSITIVE_INFINITY;
-    end
-    if (self.asize >= 3) and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
-        return R.POSITIVE_INFINITY;
-    end
-    if (self.asize >= 4) and ((arr[1] > 1) or (arr[2] >= 1) or (arr[3] >= 1)) then
-        for i, v in pairs(arr) do
-            if arr[i] > 0 and i > 4 then
-                return R.POSITIVE_INFINITY;
-            end
-        end
-    end
-    if (Big.is(arr[1])) then
-        arr[1] = self.array[1]:to_number() --- @diagnostic disable-line
-    end
-    if (arr[2]==1) then
-        return math.pow(10,arr[1]);
-    end
-    return arr[1];
-end
-
---- @return t.Omega
 function Big:floor()
     if (self:isint()) then
         return self
@@ -633,48 +360,10 @@ function Big:clone()
     return result
 end
 
---- @return t.Omega
-function Big:create(input)
-    if ((type(input) == "number")) then
-        local obj = BCaches[input]
-        if obj then return obj end
-
-        local obj = Big:new({input})
-        if input == input then
-           BFrames[input] = (BFrames[input] or 0) + 1
-           if BFrames[input] > 100 then
-                BFrames[input] = nil
-                BCaches[input] = obj
-                print('cached number to bignum:', input)
-           end
-        end
-        return obj
-    elseif ((type(input) == "string")) then
-        return Big:parse(input)
-    elseif Big.is(input) then
-        return input
-    else
-        return Big:new(input)
-    end
-end
-
---- @return t.Omega
-function Big:ensureBig(input)
-    if Big.is(input) then
-        return input
-    else
-        return Big:create(input)
-    end
-end
-
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:add(other)
     local other = Big:ensureBig(other)
-    -- if (OmegaNum.debug>=OmegaNum.NORMAL){
-    --   console.log(this+"+"+other);
-    --   if (!debugMessageSent) console.warn(omegaNumError+"Debug output via 'debug' is being deprecated and will be removed in the future!"),debugMessageSent=true;
-    -- }
     if (self.sign==-1) then
         return self:neg():add(other:neg()):neg()
     end
@@ -732,7 +421,6 @@ end
 function Big:sub(other)
     local x = self
     other = Big:ensureBig(other)
-    -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(x+"-"+other);
     if (x.sign ==-1) then
         return x:neg():sub(other:neg()):neg()
     end
@@ -850,7 +538,6 @@ end
 function Big:mul(other)
     local x = Big:ensureBig(self);
     other = Big:ensureBig(other);
-    -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(x+"*"+other);
     if (x.sign*other.sign==-1) then
         return x:abs():mul(other:abs()):neg()
     end
@@ -906,7 +593,6 @@ Big.log = Big.logBase
 --- @return t.Omega
 function Big:log10()
     local x = self;
-    -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log("log"+this);
     if (x:lt(B.ZERO)) then
         return B.NaN
     end
@@ -937,7 +623,6 @@ end
 --- @return t.Omega
 function Big:pow(other)
     other = Big:ensureBig(other);
-    -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(this+"^"+other);
     if (other:eq(B.ZERO)) then
         return B.ONE
     end
@@ -997,7 +682,6 @@ end
 --- @return t.Omega
 function Big:root(other)
     other = Big:ensureBig(other)
-    -- if (OmegaNum.debug>=OmegaNum.NORMAL) console.log(this+"root"+other);
     if (other:eq(B.ONE)) then
         return self
     end
@@ -1284,9 +968,6 @@ function Big:arrow(arrows, other)
 
         return Big:create(4)
     end
-    --[[if (arrows:gte(maxArrow)) then
-        return B.POSITIVE_INFINITY
-    end--]]
 
     --remove potential error from before
     local arrowsNum = math.floor(oldarrows)
@@ -1300,16 +981,6 @@ function Big:arrow(arrows, other)
         return t:max(other)
     end
     local r = nil
-    -- if arrows >= Big:ensureBig(3500) then
-    --     if self:arrow(100, self) > other then
-    --         return Big:new({
-    --             [1] = math.min(to_number(math.log(other, 10)), 1e300),
-    --             [2] = 0,
-    --             [3] = 0,
-    --             [to_number(arrows)+1] = 1
-    --         })
-    --     end
-    -- end
     if (t:gt(limit) or other:gt(B.MAX_SAFE_INTEGER)) or arrows >= Big:ensureBig(350) then --just kinda chosen randomly
         if (t:gt(limit)) then
             r = t:clone()
@@ -1448,6 +1119,39 @@ function Big:d_lambertw(z)
     error("Iteration failed to converge: "+z)
 end
 
+-- #region conversions
+
+--- @return number
+function Big:to_number()
+    local arr = self:get_array()
+    -- //console.log(this.array);
+    if (self.sign==-1) then
+        return -1*(self:neg():to_number());
+    end
+    if not arr[1] then return 0 end
+    if arr[2] == nil then arr[2] = 0 end
+    if ((self.asize>=2) and ((arr[2]>=2) or (arr[2]==1) and (arr[1]>308))) then
+        return R.POSITIVE_INFINITY;
+    end
+    if (self.asize >= 3) and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
+        return R.POSITIVE_INFINITY;
+    end
+    if (self.asize >= 4) and ((arr[1] > 1) or (arr[2] >= 1) or (arr[3] >= 1)) then
+        for i, v in pairs(arr) do
+            if arr[i] > 0 and i > 4 then
+                return R.POSITIVE_INFINITY;
+            end
+        end
+    end
+    if (Big.is(arr[1])) then
+        arr[1] = self.array[1]:to_number() --- @diagnostic disable-line
+    end
+    if (arr[2]==1) then
+        return math.pow(10,arr[1]);
+    end
+    return arr[1];
+end
+
 --- @class t.Omega.Low
 --- @field array number[]
 --- @field sign number
@@ -1468,13 +1172,263 @@ function Big:get_array()
     return bigs[self]
 end
 
-for k,v in pairs(Big) do
-    if type(v) == "function" then
-        OmegaMeta.__index[k] = v --- @diagnostic disable-line
+-- #endregion
+
+-- #region strings
+
+local function AThousandNotation(n, places)
+    local raw = string.format("%." .. places .."f", n)
+    local result = ""
+    local comma = string.find(raw, "%.")
+
+    if comma == nil then
+        comma = #raw
+    else
+        comma = comma - 1
     end
+
+    for i = 1, #raw do
+        result = result .. string.sub(raw, i, i)
+        if (comma - i) % 3 == 0 and i < comma then
+            result = result .. ","
+        end
+    end
+    return result
 end
 
-------------------------metastuff----------------------------
+--- @return string
+function Big:toString()
+    local arr = self:get_array()
+    if (self.sign==-1) then
+        return "-" .. self:abs():toString()
+    end
+    if (arr[1] ~= arr[1]) then
+        return "NaN"
+    end
+    -- if (!isFinite(this.array[0])) return "Infinity";
+    local s = "";
+    if (self.asize>=2) then
+        for i=self.asize,3,-1 do
+            local q = nil
+            if (i >= 6) then
+                q = "{"..(i-1).."}"
+            else
+                q = string.rep("^", i-1)
+            end
+            if (arr[i]>1) then
+                s = s .."(10" .. q .. ")^" .. AThousandNotation(arr[i], 0) .. " "
+            elseif (arr[i]==1) then
+                s= s .."10" .. q;
+            end
+        end
+    end
+    if (arr[2] == nil) or (arr[2] == 0) then
+        if (arr[1] <= 9e9) then
+            s = s .. AThousandNotation(arr[1], 2)
+        else
+            local exponent = math.floor(math.log(arr[1], 10))
+            local mantissa = math.floor((arr[1] / (10^exponent))*100)/100
+            s = s .. AThousandNotation(mantissa, 2) .. "e" .. AThousandNotation(exponent, 0)
+        end
+    elseif (arr[2]<3) then
+        s = s .. string.rep("e", arr[2]-1) .. AThousandNotation(math.pow(10,arr[1]-math.floor(arr[1])), 2) .. "e" .. AThousandNotation(math.floor(arr[1]), 0);
+    elseif (arr[2]<8) then
+        s = s .. string.rep("e", arr[2]) .. AThousandNotation(arr[1], 0)
+    else
+        s = s .. "(10^)^" .. AThousandNotation(arr[2], 0) .. " " .. AThousandNotation(arr[1],0)
+    end
+    return s
+end
+
+local function log10LongString(str)
+    return math.log(tonumber(string.sub(str, 1, LONG_STRING_MIN_LENGTH)), 10)+(string.len(str)- LONG_STRING_MIN_LENGTH);
+end
+
+--- @return t.Omega
+function Big:parse(input)
+    local t = Big:new({0})
+    local arr = t:get_array()
+    local negateIt = false
+    while ((string.sub(input, 1, 1)=="-") or (string.sub(input, 1, 1)=="+")) do
+        if (string.sub(input, 1, 1)=="-") then
+            negateIt = not negateIt
+        end
+        input = string.sub(input, 2);
+    end
+    if (input=="NaN") or (input=="nan") then
+        arr = {R.NaN}
+        bigs[t] = arr
+    elseif (input=="Infinity") or (input=="inf") then
+        arr = {R.POSITIVE_INFINITY}
+        bigs[t] = arr
+    else
+        --- @type number | number[]
+        local a = 0
+        --- @type number | number[]
+        local b = 0
+        local c = 0
+        local d = 0
+        local i = 0
+        while (string.len(input) > 0) do
+            local passTest = false
+            if true then
+                local j = 1
+                if string.sub(input, 1, 1) == "(" then
+                    j = j + 1
+                end
+                if (string.sub(input, j, j+1) == "10") and ((string.sub(input, j+2, j+2) == "^") or (string.sub(input, j+2, j+2) == "{")) then
+                    passTest = true
+                end
+            end
+            if (passTest) then
+                if (string.sub(input, 1, 1) == "(") then
+                input = string.sub(input, 2);
+                end
+                local arrows = -1;
+                if (string.sub(input, 3, 3)=="^") then
+                    arrows = 3
+                    while (string.sub(input, arrows, arrows) == "^") do
+                        arrows = arrows + 1
+                    end
+                    arrows = arrows - 3
+                    a = arrows
+                    b = arrows + 2;
+                else
+                    a = 1
+                    while (string.sub(input, a, a) ~= "}") do
+                        a = a + 1
+                    end
+                    arrows=tonumber(string.sub(input, 4, a - 1))+1;
+                    b = a + 1
+                end
+                input = string.sub(input, b + 1);
+                if (string.sub(input, 1, 1) == ")") then
+                    a = 1
+                    while (string.sub(input, a, a) ~= " ") do
+                        a = a + 1
+                    end
+                    c = tonumber(string.sub(input, 3, a - 1)) or 0;
+                    input = string.sub(input, a+1);
+                else
+                    c = 1
+                end
+                if (arrows==1) then
+                    arr[2] = (arr[2] or 0) + c;
+                elseif (arrows==2) then
+                    a = arr[2] or 0;
+                    b = arr[1] or 0;
+                    if (b>=1e10) then
+                        a = a + 1
+                    end
+                    if (b>=10) then
+                        a = a + 1
+                    end
+                    arr[1]=a;
+                    arr[2]=0;
+                    arr[3]=(arr[3] or 0)+c;
+                else
+                    a=arr[arrows] or 0;
+                    b=arr[arrows-1] or 0;
+                    if (b>=10) then
+                        a = a + 1
+                    end
+                    for i=1, arrows do
+                        arr[i] = 0;
+                    end
+                    arr[1]=a;
+                    arr[arrows+1] = (arr[arrows+1] or 0) + c;
+                end
+            else
+                break
+            end
+        end
+        a = {""} --- @diagnostic disable-line
+        while (string.len(input) > 0) do
+            if ((string.sub(input, 1, 1) == "e") or (string.sub(input, 1, 1) == "E")) then
+                a[#a + 1] = ""
+            else
+                a[#a] = a[#a] .. string.sub(input, 1, 1)
+            end
+            input = string.sub(input, 2);
+        end
+        if a[#a] == "" then
+            a[#a] = nil
+        end
+        b={arr[1],0};
+        c=1;
+        for i=#a, 1, -1 do
+            if ((b[1] < MAX_E) and (b[2]==0)) then
+                b[1] = math.pow(10,c*b[1]);
+            elseif (c==-1) then
+                if (b[2]==0) then
+                    b[1]=math.pow(10,c*b[1]);
+                elseif ((b[2]==1) and (b[1]<=308)) then
+                    b[1] = math.pow(10,c*math.pow(10,b[1]));
+                else
+                    b[1]=0;
+                end
+                b[2]=0;
+            else
+                b[2] = b[2] + 1;
+            end
+            local decimalPointPos = 1;
+            while ((string.sub(a[i], decimalPointPos, decimalPointPos) ~= ".") and (decimalPointPos <= #a[i])) do
+                decimalPointPos = decimalPointPos + 1
+            end
+            if decimalPointPos == #a[i] + 1 then
+                decimalPointPos = -1
+            end
+            local intPartLen = -1
+            if (decimalPointPos == -1) then
+                intPartLen = #a[i] + 1
+            else
+                intPartLen = decimalPointPos
+            end
+            if (b[2] == 0) then
+                if (intPartLen - 1 >= LONG_STRING_MIN_LENGTH) then
+                    b[1] = math.log10(b[1]) + log10LongString(string.sub(a[i], 1, intPartLen - 1))
+                    b[2] = 1;
+                elseif ((a[i] ~= nil) and (a[i] ~= "") and (tonumber(a[i]) ~= nil)) then
+                    b[1] = b[1] * tonumber(a[i]);
+                end
+            else
+                d=-1
+                if (intPartLen - 1 >= LONG_STRING_MIN_LENGTH) then
+                    d = log10LongString(string.sub(a[i], 1,intPartLen - 1))
+                else
+                    if (a[i] ~= nil) and (a[i] ~= "") and (tonumber(a[i]) ~= nil) then
+                        d = math.log(tonumber(a[i]), 10)
+                    else
+                        d = 0
+                    end
+                end
+                if (b[2]==1) then
+                    b[1] = b[1] + d;
+                elseif ((b[2]==2) and (b[1]<MAX_E+math.log(d, 10))) then
+                    b[1] = b[1] + math.log(1+math.pow(10,math.log10(d)-b[0]), 10);
+                end
+            end
+            if ((b[1]<MAX_E) and (b[2] ~= 0) and (b[2] ~= nil)) then
+                b[1]=math.pow(10,b[1]);
+                b[2] = b[2] - 1;
+            elseif (b[1]>MAX_SAFE_INTEGER) then
+                b[1] = math.log(b[1], 10);
+                b[2] = b[2] + 1;
+            end
+        end
+        arr[1]= b[1];
+        arr[2]= (arr[2] or 0) + b[2];
+    end
+    if (negateIt) then
+        t.sign = t.sign * -1
+    end
+    t:normalize();
+    return t;
+end
+
+-- #endregion
+
+-- #region metastuff
 
 function OmegaMeta.__add(b1, b2)
     if type(b1) == "number" then
@@ -1556,7 +1510,13 @@ end
 
 ffi.metatype(TalismanOmega, OmegaMeta)
 
----------------------------------------
+for k,v in pairs(Big) do
+    if type(v) == "function" then
+        OmegaMeta.__index[k] = v --- @diagnostic disable-line
+    end
+end
+
+-- #endregion
 
 for i,v in pairs(R) do
     B[i] = Big:create(v)
