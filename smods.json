@@ -11,9 +11,9 @@
 	"priority": 0,
 	"badge_colour": "",
 	"badge_text_colour": "",
-	"version": "3.2.6",
+	"version": "3.2.7",
 	"provides": [
 		"cdataman",
-		"Talisman (2.6)"
+		"Talisman (2.7)"
 	]
 }
