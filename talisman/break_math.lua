@@ -20,14 +20,17 @@ local E = math.exp(1)
 
 local log = math.log
 function math.log(x, y)
-	if is_big(x) then x = x:to_number() end
-	if is_big(y) then y = y:to_number() end
+	if is_big(x) then
+        return not y and x:ln()
+            or y == 10 and x:log10()
+            or x:logBase(Big:ensureBig(y))
+    end
     if y then return log(x, y) end
     return log(x)
 end
 
 function math.exp(x)
-	if is_big(x) then x = x:to_number() end
+	if is_big(x) then return BigC.E:pow(x) end
     return E ^ x
 end
 
