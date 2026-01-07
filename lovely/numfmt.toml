@@ -55,7 +55,7 @@ pattern = '''
 position = "at"
 payload = '''
 {n=G.UIT.R, config={align = "cm", r = 0.1, minw = 1.2, minh = 0.668, colour = temp_col2}, nodes={
-	{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = scale_number(G.GAME.round_resets.ante, 2*scale, 100)}),id = 'ante_UI_count'}},
+    {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, maxw = 1.2, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},
 '''
 match_indent = true
 
@@ -70,11 +70,21 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
-pattern = "G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod"
-position = "after"
+pattern = "ante_UI.config.object:update()"
+position = "at"
 payload = '''
 G.GAME.round_resets.ante_disp = number_format(G.GAME.round_resets.ante, Talisman.ante_switch_point)
-G.HUD:get_UIE_by_ID"ante_UI_count".config.object.scale = scale_number(G.GAME.round_resets.ante, 2*0.4, 100)
+
+local ao = ante_UI.config.object
+ao.scale = ao.config.scale
+ao:update_text(true)
+ao:align_letters()
+
+if ao.config.maxw and ao.config.W > ao.config.maxw then
+	ao.start_pop_in = ao.config.pop_in
+	ao.scale = ao.scale*(ao.config.maxw/ao.config.W)
+	ao:update_text(true)
+end
 '''
 match_indent = true
 
