@@ -1428,74 +1428,52 @@ end
 
 -- #region metastuff
 
-function OmegaMeta.__add(b1, b2)
-    if type(b1) == "number" then
-        return Big:create(b1):add(b2)
-    end
-    return b1:add(b2)
-end
-
-function OmegaMeta.__sub(b1, b2)
-    if type(b1) == "number" then
-        return Big:create(b1):sub(b2)
-    end
-    return b1:sub(b2)
-end
-
-function OmegaMeta.__mul(b1, b2)
-    if type(b1) == "number" then
-        return Big:create(b1):mul(b2)
-    end
-    return b1:mul(b2)
-end
-
-function OmegaMeta.__div(b1, b2)
-    if type(b1) == "number" then
-        return Big:create(b1):div(b2)
-    end
-    return b1:div(b2)
-end
-function OmegaMeta.__mod(b1, b2)
-    if type(b1) == "number" then
-        return Big:create(b1):mod(b2)
-    end
-    return b1:mod(b2)
-end
-
 function OmegaMeta.__unm(b)
     return b:neg()
 end
 
+function OmegaMeta.__add(b1, b2)
+    return Big:ensureBig(b1):add(b2)
+end
+
+function OmegaMeta.__sub(b1, b2)
+    return Big:ensureBig(b1):sub(b2)
+end
+
+function OmegaMeta.__mul(b1, b2)
+    return Big:ensureBig(b1):mul(b2)
+end
+
+function OmegaMeta.__div(b1, b2)
+    return Big:ensureBig(b1):div(b2)
+end
+
+function OmegaMeta.__mod(b1, b2)
+    return Big:ensureBig(b1):mod(b2)
+end
+
 function OmegaMeta.__pow(b1, b2)
-    if type(b1) == "number" then
-        return Big:ensureBig(b1):pow(b2)
-    end
-    return b1:pow(b2)
+    return Big:ensureBig(b1):pow(b2)
 end
 
 function OmegaMeta.__le(b1, b2)
-    b1 = Big:ensureBig(b1)
-    return b1:lte(b2)
+    return Big:ensureBig(b1):lte(b2)
 end
 
 function OmegaMeta.__lt(b1, b2)
-    b1 = Big:ensureBig(b1)
-    return b1:lt(b2)
+    return Big:ensureBig(b1):lt(b2)
 end
 
 function OmegaMeta.__ge(b1, b2)
-    b1 = Big:ensureBig(b1)
-    return b1:gte(b2)
+    return Big:ensureBig(b1):gte(b2)
 end
 
 function OmegaMeta.__gt(b1, b2)
-    b1 = Big:ensureBig(b1)
-    return b1:gt(b2)
+    return Big:ensureBig(b1):gt(b2)
 end
 
 function OmegaMeta.__eq(b1, b2)
-    b1 = Big:ensureBig(b1)
-    return b1:eq(b2)
+    return Big:ensureBig(b1):eq(b2)
 end
 
 function OmegaMeta.__tostring(b)
