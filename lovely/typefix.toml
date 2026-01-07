@@ -5,6 +5,14 @@ priority = 0
 [[patches]]
 [patches.pattern]
 target = "functions/misc_functions.lua"
+pattern = "if type(amt) ~= 'number' then return 0.7*(scale or 1) end"
+position = "at"
+payload = "if not is_number(amt) then return 0.7*(scale or 1) end"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
 pattern = "if type(G.GAME.current_round.current_hand.chips) ~= 'number' or type(G.GAME.current_round.current_hand.mult) ~= 'number' then"
 position = "at"
 payload = "if not is_number(G.GAME.current_round.current_hand.chips) or not is_number(G.GAME.current_round.current_hand.mult) then"
