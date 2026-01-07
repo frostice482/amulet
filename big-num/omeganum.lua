@@ -1,7 +1,9 @@
 local ffi = require("ffi")
 local R = require("big-num.constants")
 
-ffi.cdef[[ struct TalismanOmega { int8_t sign; uint32_t asize; }; ]]
+ffi.cdef[[
+struct TalismanOmega { uint32_t asize; int8_t sign; };
+]]
 local TalismanOmega = ffi.typeof("struct TalismanOmega")
 
 --OmegaNum port by Mathguy
@@ -19,6 +21,8 @@ local TalismanOmega = ffi.typeof("struct TalismanOmega")
 --- @operator pow(t.Omega|number): t.Omega
 --- @operator unm(): t.Omega
 local Big = {}
+;(Big).array = {} -- lsp hack, assign without recognized by lsp
+
 OmegaMeta = {
     __index = {
         m = false,
@@ -30,9 +34,6 @@ OmegaMeta = {
 
 _G.Big = Big
 
-local Big2 = Big
-Big2.array = {}
-
 --- constants
 local MAX_SAFE_INTEGER = 9007199254740991
 local MAX_E = math.log(MAX_SAFE_INTEGER, 10)
@@ -41,17 +42,30 @@ local LONG_STRING_MIN_LENGTH = 17
 -- this will be populated with bignum equivalents of R's values at the end of the file
 --- @type table<string, t.Omega>
 local B = {}
-local BCaches = {}
-local BFrames = {}
+
+-- prevent multiple allocation of same number at a frame
+local caches = {
+    --- @type table<number, t.Omega>
+    list = {},
+    --- @type table<number, number>
+    frames = {}
+}
+
+-- prevent overrides
+local type = type
+local _math = math
+--- @type mathlib
+--- @diagnostic disable-next-line
+local math = {}
+for k,v in pairs(_math) do math[k] = v end
 
 --- OmegaNum instances
 --- @type table<t.Omega, number[]>
 local bigs = {}
 setmetatable(bigs, { __mode = 'k' })
 
-local _t = type
 function Big.is(instance)
-    return _t(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
+    return type(instance) == "cdata" and ffi.istype(instance, TalismanOmega)
 end
 
 -- #region constructor
@@ -68,15 +82,15 @@ end
 --- @return t.Omega
 function Big:create(input)
     if ((type(input) == "number")) then
-        local obj = BCaches[input]
+        local obj = caches.list[input]
         if obj then return obj end
 
         local obj = Big:new({input})
         if input == input then
-           BFrames[input] = (BFrames[input] or 0) + 1
-           if BFrames[input] > 100 then
-                BFrames[input] = nil
-                BCaches[input] = obj
+           caches.frames[input] = (caches.frames[input] or 0) + 1
+           if caches.frames[input] > 100 then
+                caches.frames[input] = nil
+                caches.list[input] = obj
                 print('cached number to bignum:', input)
            end
         end
@@ -1505,7 +1519,7 @@ end
 for i,v in pairs(R) do
     B[i] = Big:create(v)
     if v == v then
-        BCaches[v] = B[i]
+        caches.list[v] = B[i]
     end
 end
 
@@ -1515,7 +1529,7 @@ B.B2E323 = Big:create("2e323")
 
 local update = love.update
 function love.update(...)
-    BFrames = {}
+    caches.frames = {}
     return update(...)
 end
 
