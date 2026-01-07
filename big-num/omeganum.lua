@@ -233,8 +233,6 @@ function Big:compareTo(other)
     local other = Big:ensureBig(other)
     local other_arr = other:get_array()
 
-    local other_array_size = other.asize
-    local self_array_size = self.asize
     if ((arr[1] ~= arr[1]) or (other_arr[1] ~= other_arr[1])) then
         return R.NaN;
     end
@@ -244,31 +242,17 @@ function Big:compareTo(other)
     if ((arr[1]~=R.POSITIVE_INFINITY) and (other_arr[1]==R.POSITIVE_INFINITY)) then
         return other.sign
     end
-    if ((self.asize==1) and (arr[1]==other_arr[1]) and (other.asize==1)) then
-        --return 0
-    end
     if (self.sign~=other.sign) then
         return self.sign
     end
-    local m = self.sign;
-    local r = 0;
-    if (self.asize>other.asize) then
-        r = 1;
-    elseif (self.asize<other.asize) then
-        r = -2;
-    else
-        for i=self_array_size, 1, -1 do
-            local a, b = arr[i] or 0, other_arr[i] or 0
-            if a > b then
-                r = 3
-                break
-            elseif a < b then
-                r = -4
-                break
-            end
-        end
+    if (self.asize~=other.asize) then
+        return self.asize-other.asize
     end
-    return r * m;
+    for i=self.asize, 1, -1 do
+        local d = (arr[i] or 0) - (other_arr[i] or 0)
+        if d ~= 0 then return d * self.sign end
+    end
+    return 0;
 end
 
 --- @param other t.Omega.Parsable
