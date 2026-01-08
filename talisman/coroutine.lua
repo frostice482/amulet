@@ -236,7 +236,7 @@ local _calc_joker = Card.calculate_joker
 function Card:calculate_joker(context)
 	if not Talisman.scoring_coroutine then return _calc_joker(self, context) end
 	Talisman.scoring_coroutine.calculations = Talisman.scoring_coroutine.calculations + 1
-	if co.shouldyield() then coroutine.yield() end
+	if co.shouldyield() then pcall(coroutine.yield) end
 
 	local iv = Talisman.current_calc.joker
 	Talisman.current_calc.joker = (iv or 0) + 1
