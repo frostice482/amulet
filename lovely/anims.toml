@@ -73,3 +73,24 @@ if type(G.GAME.current_round.current_hand[name]) ~= 'number' then all_numbers = 
 payload = '''
 all_numbers = all_numbers and is_number(G.GAME.current_round.current_hand[name])
 '''
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = '''local AC = G.SETTINGS.ambient_control'''
+position = "before"
+payload = '''
+G.ARGS.score_intensity.organ = to_number(G.ARGS.score_intensity.organ)
+G.ARGS.score_intensity.earned_score = math.min(to_number(G.ARGS.score_intensity.earned_score), 1e300)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''_F.timer = _F.timer + G.real_dt*(1 + _F.intensity*0.2)'''
+position = "before"
+payload = '''
+_F.intensity = to_number(_F.intensity)
+'''
+match_indent = true
