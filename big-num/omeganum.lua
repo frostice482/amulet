@@ -1139,6 +1139,7 @@ function Big:to_number()
     end
     if not arr[1] then return 0 end
     if arr[2] == nil then arr[2] = 0 end
+    if arr[3] == nil then arr[3] = 0 end
     if ((self.asize>=2) and ((arr[2]>=2) or (arr[2]==1) and (arr[1]>308))) then
         return R.POSITIVE_INFINITY;
     end
