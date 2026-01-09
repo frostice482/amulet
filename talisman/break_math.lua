@@ -12,7 +12,7 @@ end
 
 local l10 = math.log10
 function math.log10(x)
-    if is_big(x) then x = x:to_number() end
+    if is_big(x) then return x:log10() end
     return l10(x)
 end
 
