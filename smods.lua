@@ -1,4 +1,6 @@
-assert(_mod_dir_amulet, string.format("Amulet is nested.\nPath: %s\nMods directory: %s", SMODS.current_mod.path, require "lovely".mod_dir))
+Talisman.smods = SMODS.current_mod
+local curmod = SMODS.current_mod
+assert(_mod_dir_amulet, string.format("Amulet is nested.\nPath: %s\nMods directory: %s", curmod and curmod.path, require "lovely".mod_dir))
 
 if SMODS.Atlas then
 	SMODS.Atlas({
@@ -40,21 +42,21 @@ if SMODS.Sound then
 	})
 end
 
-if SMODS.current_mod then
-	function SMODS.current_mod.load_mod_config() end
-	function SMODS.current_mod.save_mod_config() end
+if curmod then
+	function curmod.load_mod_config() end
+	function curmod.save_mod_config() end
 
-	SMODS.current_mod.config_tab = function()
+	curmod.config_tab = function()
 		if Talisman and Talisman.config_tab then
 			return Talisman.config_tab()
 		end
 		return nil
 	end
-	SMODS.current_mod.description_loc_vars = function()
+	curmod.description_loc_vars = function()
 		return { background_colour = G.C.CLEAR, text_colour = G.C.WHITE, scale = 1.2 }
 	end
 
-	SMODS.current_mod.extra_tabs = function()
+	curmod.extra_tabs = function()
 		return {
 			{
 				label = 'Credits',
@@ -62,6 +64,8 @@ if SMODS.current_mod then
 			}
 		}
 	end
+
+	curmod.debug_info = {}
 end
 
 if SMODS.calculate_individual_effect then
@@ -70,6 +74,17 @@ end
 
 if SMODS.Scoring_Calculation then
 	require("talisman.smods.scoring_calc")
+end
+
+-- check to_big overrides
+local mainmenu = G.main_menu
+function G:main_menu()
+	if to_big ~= Talisman.to_big then
+		local f = debug.getinfo(to_big, "S")
+		curmod.debug_info["To big override"] = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
+	end
+
+    return mainmenu(self)
 end
 
 --[[SMODS.Joker{

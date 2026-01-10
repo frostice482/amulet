@@ -58,3 +58,5 @@ end
 function lenient_bignum(x)
 	return x
 end
+
+Talisman.to_big = to_big
