@@ -90,13 +90,14 @@ Update Overflow from here: https://github.com/lord-ruby/Overflow/releases
 crashmsgs.signatureFail = [[
 Amulet's OmegaNum is not working.
 This is because to_big is overriden by %s and does not return OmegaNum.
-Contact the developer to fix this issue. In the meantime, remove this mod.
+Try updating the mod. If the mod is in its latest version, contact the developer to fix it.
 
 (override source: %s)
 ]]
 
 local function checkbig()
 	if to_big == Talisman.to_big then return end
+
 	local f = debug.getinfo(to_big, "S")
 	local overrideInfo = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
 	curmod.debug_info["To big override"] = f
