@@ -76,14 +76,29 @@ if SMODS.Scoring_Calculation then
 	require("talisman.smods.scoring_calc")
 end
 
+local m1 = [[
+
+[ :( ]
+
+Amulet's OmegaNum is not working.
+This is because Amulet is incompatible with old Overflow (<1.1.4).
+Update Overflow from here: https://github.com/lord-ruby/Overflow/releases
+]]
+
+local function checkbig()
+	if to_big == Talisman.to_big then return end
+	local f = debug.getinfo(to_big, "S")
+	curmod.debug_info["To big override"] = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
+
+	if f.source == '=[SMODS Overflow "main.lua"]' and f.linedefined == 61 and f.lastlinedefined == 61 then
+		error(m1, 0)
+	end
+end
+
 -- check to_big overrides
 local mainmenu = G.main_menu
 function G:main_menu()
-	if to_big ~= Talisman.to_big then
-		local f = debug.getinfo(to_big, "S")
-		curmod.debug_info["To big override"] = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
-	end
-
+	checkbig()
     return mainmenu(self)
 end
 
