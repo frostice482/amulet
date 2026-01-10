@@ -76,22 +76,44 @@ if SMODS.Scoring_Calculation then
 	require("talisman.smods.scoring_calc")
 end
 
-local m1 = [[
+local crashmsgs = {}
+crashmsgs.title = [[
 
 [ :( ]
 
+]]
+crashmsgs.oldOverflow = [[
 Amulet's OmegaNum is not working.
 This is because Amulet is incompatible with old Overflow (<1.1.4).
 Update Overflow from here: https://github.com/lord-ruby/Overflow/releases
+]]
+crashmsgs.signatureFail = [[
+Amulet's OmegaNum is not working.
+This is because to_big is overriden by %s and does not return OmegaNum.
+Contact the developer to fix this issue. In the meantime, remove this mod.
+
+(override source: %s)
 ]]
 
 local function checkbig()
 	if to_big == Talisman.to_big then return end
 	local f = debug.getinfo(to_big, "S")
-	curmod.debug_info["To big override"] = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
+	local overrideInfo = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
+	curmod.debug_info["To big override"] = f
 
-	if f.source == '=[SMODS Overflow "main.lua"]' and f.linedefined == 61 and f.lastlinedefined == 61 then
-		error(m1, 0)
+	local modid = f.source:match('=%[SMODS ([%w_]+)')
+	local mod = modid and SMODS.Mods[modid]
+
+	if f.source == '=[SMODS Overflow "main.lua"]' then
+		return error(crashmsgs.title..crashmsgs.oldOverflow, 0)
+	end
+
+	if Big and not is_big(to_big(12315345)) then
+		local fmt = crashmsgs.signatureFail:format(
+			mod and mod.name..' '..mod.version or overrideInfo,
+			overrideInfo
+		)
+		return error(crashmsgs.title..fmt, 0)
 	end
 end
 
