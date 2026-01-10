@@ -100,7 +100,7 @@ local function checkbig()
 
 	local f = debug.getinfo(to_big, "S")
 	local overrideInfo = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
-	curmod.debug_info["To big override"] = f
+	curmod.debug_info["To big override"] = overrideInfo
 
 	local modid = f.source:match('=%[SMODS ([%w_]+)')
 	local mod = modid and SMODS.Mods[modid]
