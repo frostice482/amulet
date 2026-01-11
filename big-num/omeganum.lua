@@ -91,7 +91,6 @@ function Big:create(input)
            if caches.frames[input] > 100 then
                 caches.frames[input] = nil
                 caches.list[input] = obj
-                print('cached number to bignum:', input)
            end
         end
         return obj
