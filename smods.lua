@@ -119,8 +119,8 @@ local function checkbig()
 end
 
 -- check to_big overrides
-local mainmenu = G.main_menu
-function G:main_menu()
+local mainmenu = Game.main_menu
+function Game:main_menu()
 	checkbig()
     return mainmenu(self)
 end
