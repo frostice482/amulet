@@ -8,9 +8,7 @@ target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.mult) == 'number' and G.GAME.current_round.current_hand.mult or 1)))) end"
 position = "at"
 payload = '''
-local v = G.GAME.current_round.current_hand.mult or 1
-local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
-if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
+Talisman.juice_elm(e, G.GAME.current_round.current_hand.mult)
 '''
 match_indent = true
 
@@ -20,9 +18,27 @@ target = "functions/button_callbacks.lua"
 pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand.chips) == 'number' and G.GAME.current_round.current_hand.chips or 1)))) end"
 position = "at"
 payload = '''
-local v = G.GAME.current_round.current_hand.chips or 1
-local juice = is_number(v) and (v < BigC.BIG and math.min(10, math.max(0, math.log(v, 1000) )) or 10) or 0
-if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, juice) end
+Talisman.juice_elm(e, G.GAME.current_round.current_hand.chips)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.FUNCS.text_super_juice(e, math.floor(math.log10(G.GAME.current_round.current_hand.chip_total)))"
+position = "at"
+payload = '''
+Talisman.juice_elm(e, G.GAME.current_round.current_hand.chip_total)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/ui.lua"]'
+pattern = "if not G.TAROT_INTERRUPT_PULSE then G.FUNCS.text_super_juice(e, math.max(0,math.floor(math.log10(type(G.GAME.current_round.current_hand[e.config.type]) == 'number' and math.abs(G.GAME.current_round.current_hand[e.config.type]) or 1)))) end"
+position = "at"
+payload = '''
+Talisman.juice_elm(e, G.GAME.current_round.current_hand[e.config.type])
 '''
 match_indent = true
 
