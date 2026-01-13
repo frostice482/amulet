@@ -60,21 +60,6 @@ function score_number_scale(scale, amt)
     return ret
 end
 
-local gftsj = G.FUNCS.text_super_juice
-function G.FUNCS.text_super_juice(e, _amount)
-    if Talisman.config_file.disable_anims and Talisman.scoring_coroutine then
-        _amount = 0.5
-    elseif is_big(_amount) then
-        if _amount > BigC.BIG then
-            _amount = constants.BIG
-        else
-            _amount = _amount:to_number()
-        end
-    end
-    if _amount == 0 then return end
-    return gftsj(e, _amount)
-end
-
 local B100 = to_big(100)
 local k = to_big(0.75)
 

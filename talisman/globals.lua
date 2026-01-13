@@ -59,4 +59,16 @@ function lenient_bignum(x)
 	return x
 end
 
+function Talisman.juice(v)
+	v = to_number(v) or 1
+	return (G.TAROT_INTERRUPT_PULSE or type(v) ~= "number") and 0
+		or v > math.huge and 10
+		or v < 1 and 0
+		or math.min(10, math.log(v, 1000 ))
+end
+
+function Talisman.juice_elm(e, v)
+	return G.FUNCS.text_super_juice(e, Talisman.juice(v))
+end
+
 Talisman.to_big = to_big
