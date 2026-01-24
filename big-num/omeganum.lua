@@ -230,10 +230,7 @@ function Big:isint()
         return true;
     end
     local num = self:to_number()
-    if (math.floor(num) == num) then
-        return true
-    end
-    return Big:create(math.floor(self:to_number())) == self;
+    return math.floor(num) == num
 end
 
 -- #endregion
@@ -388,7 +385,7 @@ function Big:add(other)
     local p=pw:get_array();
     local qw=self:max(other);
     local q=qw:get_array();
-    local t = B.NEG_ONE;
+
     if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
         p = pw:clone():get_array()
         p[2] = 1
@@ -399,10 +396,11 @@ function Big:add(other)
         q[2] = 1
         q[1] = 10 ^ q[1]
     end
+
     if (qw:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
-        t = qw;
+        return qw;
     elseif (q[2] == nil) or (q[2] == 0) then
-        t= Big:create(self:to_number()+other:to_number());
+        return Big:create(self:to_number()+other:to_number());
     elseif (q[2]==1) then
         local a
         if (p[2] ~= nil) and (p[2] ~= 0) then
@@ -410,9 +408,10 @@ function Big:add(other)
         else
             a = math.log(p[1], 10)
         end
-        t = Big:new({a+math.log(math.pow(10,q[1]-a)+1, 10),1});
+        return Big:new({a+math.log(math.pow(10,q[1]-a)+1, 10),1});
     end
-    return t;
+
+    return B.NEG_ONE;
 end
 
 --- @param other t.Omega.Parsable
@@ -446,8 +445,8 @@ function Big:sub(other)
     local p=pw:get_array();
     local qw=self:max(other);
     local q=qw:get_array();
+
     local n = other:gt(self);
-    local t = B.NEG_ONE;
     if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
         p = pw:clone():get_array()
         p[2] = 1
@@ -458,15 +457,13 @@ function Big:sub(other)
         q[2] = 1
         q[1] = 10 ^ q[1]
     end
+
     if (qw:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
-        t = qw;
-        if n then
-            t = t:neg()
-        else
-            t = t
-        end
+        local t = qw;
+        if n then t = t:neg() end
+        return t
     elseif (q[2] == nil) or (q[2] == 0) then
-        t = Big:create(self:to_number()-other:to_number());
+        return Big:create(self:to_number()-other:to_number());
     elseif (q[2]==1) then
         local a
         if (p[2] ~= nil) and (p[2] ~= 0) then
@@ -475,14 +472,12 @@ function Big:sub(other)
             a = math.log(p[1], 10)
         end
 
-        t = Big:new({a+math.log(math.pow(10,q[1]-a)-1, 10),1});
-        if n then
-            t = t:neg()
-        else
-            t = t
-        end
+        local t = Big:new({a+math.log(math.pow(10,q[1]-a)-1, 10),1});
+        if n then t = t:neg() end
+        return t
     end
-    return t;
+
+    return B.NEG_ONE;
 end
 
 --- @param other t.Omega.Parsable
@@ -528,7 +523,7 @@ function Big:div(other)
     end
     local pw = B.TEN:pow(self:log10():sub(other:log10()))
     local fp = pw:floor()
-    if (pw:sub(fp):lt(Big:create(1e-9))) then
+    if (pw:sub(fp):lt(1e-9)) then
         return fp
     end
     return pw
@@ -937,7 +932,7 @@ end
 function Big:arrow(arrows, other)
     arrows = to_number(arrows)
     if arrows > 1e308 then --if too big return infinity
-        return Big:create(R.POSITIVE_INFINITY)
+        return B.POSITIVE_INFINITY
     end
 
     if self:eq(B.ONE) then return B.ONE end
@@ -966,7 +961,6 @@ function Big:arrow(arrows, other)
         return self
     end
     if other == 2 and self == 2 then
-        if arrows:isInfinite() then return Big:create(R.POSITIVE_INFINITY) end
         return Big:create(4)
     end
 
