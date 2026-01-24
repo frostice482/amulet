@@ -1,6 +1,7 @@
 --- @meta
 
 BigC = copy_table(require('big-num.constants'))
+local type = type
 
 function is_big(x)
 	return Big and Big.is(x)

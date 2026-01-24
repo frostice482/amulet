@@ -248,6 +248,9 @@ end
 
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
+    if not is_number(self) then self = Big:ensureBig(self) end
+    if not is_number(other) then other = Big:ensureBig(other) end
+
     if not Big.is(self) then
         if not Big.is(other) then
             return signcomp(self, other)
@@ -934,10 +937,10 @@ function Big:max_for_op(arrows)
     local arr = {}
     arr[1] = 10e9
     arr[arrows] = R.MAX_SAFE_INTEGER - 2
-    for i = 2, math.min(arrows - 1, 1e6) do
+    for i = 2, math.min(arrows - 1, 1e2) do
         arr[i] = 8
     end
-    if arrows > 1e6 then
+    if arrows > 1e2 then
         local limit = math.floor(math.log(arrows, 10))
         for i = 6, limit do
             arr[10^i] = 8
