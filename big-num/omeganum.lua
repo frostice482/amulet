@@ -927,7 +927,9 @@ function Big:max_for_op(arrows)
     end
     arr[arrows - 1] = 8
 
-    local res = Big:new(arr)
+    local res = Big:new({0})
+    res.asize = arrows
+    bigs[res] = arr
     return res
 end
 
