@@ -15,5 +15,8 @@
 	"provides": [
 		"cdataman",
 		"Talisman (2.7)"
+	],
+	"conflicts": [
+		"Multiplayer"
 	]
 }
