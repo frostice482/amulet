@@ -70,12 +70,32 @@ end
 
 -- #region constructor
 
+local function arraySizeOf(arr)
+    local total = 0
+    for i, v in pairs(arr) do
+        if type(i) == "number" and v ~= 0 and i > total then
+            total = i
+        end
+    end
+    return total
+end
+
 --- @return t.Omega
-function Big:new(arr)
+--- @param sign? number
+--- @param asize? number | boolean If set, OmegaNum will not be normalized
+function Big:new(arr, sign, asize)
     --- @type t.Omega
-    local obj = TalismanOmega(1, 0) --- @diagnostic disable-line
+    local obj = TalismanOmega(1, sign or 0) --- @diagnostic disable-line
     bigs[obj] = arr
-    obj:normalize()
+
+    if not asize then
+        obj:normalize()
+    elseif asize == true then
+        obj.asize = arraySizeOf(arr)
+    else
+        obj.asize = 1
+    end
+
     return obj
 end
 
@@ -110,16 +130,6 @@ function Big:ensureBig(input)
     else
         return Big:create(input)
     end
-end
-
-local function arraySizeOf(arr)
-    local total = 0
-    for i, v in pairs(arr) do
-        if type(i) == "number" and v ~= 0 and i > total then
-            total = i
-        end
-    end
-    return total
 end
 
 --- @return t.Omega
@@ -294,7 +304,7 @@ end
 
 --- @return t.Omega
 function Big:neg()
-    local x = self:clone();
+    local x = self:clone(true);
     x.sign = x.sign * -1;
     return x;
 end
@@ -302,7 +312,7 @@ end
 --- @return t.Omega
 function Big:abs()
     if self.sign == 1 then return self end
-    local x = self:clone();
+    local x = self:clone(true);
     x.sign = 1;
     return x;
 end
@@ -343,16 +353,24 @@ function Big:ceil()
     return Big:create(math.ceil(self:to_number()));
 end
 
---- @return t.Omega
-function Big:clone()
-    local newArr = {}
+--- @param target? number[]
+--- @return number[]
+function Big:clone_array(target)
+    if not target then target = {} end
     for i, j in pairs(self:get_array()) do
-        newArr[i] = j
+        target[i] = j
     end
-    local result = Big:new(newArr)
-    result.sign = self.sign
-    return result
+    return target
 end
+
+--- @return t.Omega
+--- @param sameArray? boolean
+function Big:clone(sameArray)
+    return Big:new(sameArray and self:get_array() or self:clone_array(), self.sign, self.asize)
+end
+
+local c1 = {}
+local c2 = {}
 
 --- @param other t.Omega.Parsable
 --- @return t.Omega
@@ -387,12 +405,12 @@ function Big:add(other)
     local q=qw:get_array();
 
     if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
-        p = pw:clone():get_array()
+        p = pw:clone_array(c1)
         p[2] = 1
         p[1] = 10 ^ p[1]
     end
     if (q[2] == 2) and not qw:gt(B.E_MAX_SAFE_INTEGER) then
-        q = qw:clone():get_array()
+        q = qw:clone_array(c2)
         q[2] = 1
         q[1] = 10 ^ q[1]
     end
@@ -448,12 +466,12 @@ function Big:sub(other)
 
     local n = other:gt(self);
     if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
-        p = pw:clone():get_array()
+        p = pw:clone_array(c1)
         p[2] = 1
         p[1] = 10 ^ p[1]
     end
     if (q[2] == 2) and not qw:gt(B.E_MAX_SAFE_INTEGER) then
-        q = qw:clone():get_array()
+        q = qw:clone_array(c2)
         q[2] = 1
         q[1] = 10 ^ q[1]
     end
