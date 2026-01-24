@@ -919,6 +919,8 @@ function Big:tetrate(other)
     return r;
 end
 
+local maxoparray = { __index = setmetatable({ 10e9 }, { __index = function () return 8 end }) }
+
 --- @return t.Omega
 function Big:max_for_op(arrows)
     if Big.is(arrows) then
@@ -934,23 +936,9 @@ function Big:max_for_op(arrows)
         return B.TETRATED_MAX_SAFE_INTEGER
     end
 
-    local arr = {}
-    arr[1] = 10e9
-    arr[arrows] = R.MAX_SAFE_INTEGER - 2
-    for i = 2, math.min(arrows - 1, 1e2) do
-        arr[i] = 8
-    end
-    if arrows > 1e2 then
-        local limit = math.floor(math.log(arrows, 10))
-        for i = 6, limit do
-            arr[10^i] = 8
-        end
-    end
-    arr[arrows - 1] = 8
-
     local res = Big:new({0})
     res.asize = arrows
-    bigs[res] = arr
+    bigs[res] = setmetatable({ [arrows] = R.MAX_SAFE_INTEGER - 2 }, maxoparray)
     return res
 end
 
@@ -991,33 +979,33 @@ function Big:arrow(arrows, other)
     end
 
     --remove potential error from before
-    local arrowsNum = math.floor(arrows)
-    if (other == 2) then
-        return self:arrow(arrowsNum - 1, self)
-    end
-    local limit_plus = Big:max_for_op(arrowsNum+1)
-    local limit = Big:max_for_op(arrowsNum)
-    local limit_minus = Big:max_for_op(arrowsNum-1)
+    local arrowint = math.floor(arrows)
+    if (other == 2) then return self:arrow(arrowint - 1, self) end
+
+    local limit_plus = Big:max_for_op(arrowint+1)
+    local limit = Big:max_for_op(arrowint)
+    local limit_minus = Big:max_for_op(arrowint-1)
     if (self:max(other):gt(limit_plus)) then
         return self:max(other)
     end
+
     local r = nil
     if (self:gt(limit) or other > B.MAX_SAFE_INTEGER) or arrows >= 350 then --just kinda chosen randomly
         if (self:gt(limit)) then
             r = self:clone()
             local w = r:get_array()
-            w[arrowsNum + 1] = w[arrowsNum + 1] - 1
-            if arrowsNum < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
+            w[arrowint + 1] = w[arrowint + 1] - 1
+            if arrowint < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
                 r:normalize()
             end
         elseif (self:gt(limit_minus)) then
-            r = Big:create(self:get_array()[arrowsNum])
+            r = Big:create(self:get_array()[arrowint])
         else
             r = B.ZERO
         end
         local j = r:add(other)
         local w = j:get_array()
-        w[arrowsNum+1] = (w[arrowsNum+1] or 0) + 1
+        w[arrowint+1] = (w[arrowint+1] or 0) + 1
         j:normalize()
         return j
     end
@@ -1039,7 +1027,7 @@ function Big:arrow(arrows, other)
         f = 0
     end
     local w = r:get_array()
-    w[arrowsNum] = (w[arrowsNum] or 0) + f
+    w[arrowint] = (w[arrowint] or 0) + f
     r:normalize()
     return r
 end
