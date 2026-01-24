@@ -249,27 +249,34 @@ end
 
 -- #region comparisons
 
+local function signcomp(a, b)
+    return a > b and 1 or a < b and -1 or a == b and 0 or R.NaN
+end
+
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
-    local arr = self:get_array()
-    local other = Big:ensureBig(other)
-    local other_arr = other:get_array()
+    if not Big.is(self) then
+        if not Big.is(other) then
+            return signcomp(self, other)
+        end
+        return signcomp(self, other.number)
+    end
+    if not Big.is(other) then
+        return signcomp(self.number, other)
+    end
 
-    if ((arr[1] ~= arr[1]) or (other_arr[1] ~= other_arr[1])) then
-        return R.NaN;
-    end
-    if ((arr[1]==R.POSITIVE_INFINITY) and (other_arr[1]~=R.POSITIVE_INFINITY)) then
+    if self.sign ~= other.sign then
         return self.sign
     end
-    if ((arr[1]~=R.POSITIVE_INFINITY) and (other_arr[1]==R.POSITIVE_INFINITY)) then
-        return -1 * other.sign
+    if self.asize ~= other.asize then
+        return self.asize - other.asize
     end
-    if (self.sign~=other.sign) then
-        return self.sign
+    if self.asize == 1 and other.asize == 1 then
+        return signcomp(self.number, other.number)
     end
-    if (self.asize~=other.asize) then
-        return self.asize-other.asize
-    end
+
+    local arr = self:get_array()
+    local other_arr = other:get_array()
     for i=self.asize, 1, -1 do
         local d = (arr[i] or 0) - (other_arr[i] or 0)
         if d ~= 0 then return d * self.sign end
@@ -279,27 +286,27 @@ end
 
 --- @param other t.Omega.Parsable
 function Big:lt(other)
-    return self:compareTo(other) < 0
+    return Big.compareTo(self, other) < 0
 end
 
 --- @param other t.Omega.Parsable
 function Big:gt(other)
-    return self:compareTo(other) > 0
+    return Big.compareTo(self, other) > 0
 end
 
 --- @param other t.Omega.Parsable
 function Big:lte(other)
-    return self:compareTo(other) <= 0
+    return Big.compareTo(self, other) <= 0
 end
 
 --- @param other t.Omega.Parsable
 function Big:gte(other)
-    return self:compareTo(other) >= 0
+    return Big.compareTo(self, other) >= 0
 end
 
 --- @param other t.Omega.Parsable
 function Big:eq(other)
-    return self:compareTo(other) == 0
+    return Big.compareTo(self, other) == 0
 end
 
 -- #endregion
@@ -1482,25 +1489,11 @@ function OmegaMeta.__pow(b1, b2)
     return Big:ensureBig(b1):pow(b2)
 end
 
-function OmegaMeta.__le(b1, b2)
-    return Big:ensureBig(b1):lte(b2)
-end
-
-function OmegaMeta.__lt(b1, b2)
-    return Big:ensureBig(b1):lt(b2)
-end
-
-function OmegaMeta.__ge(b1, b2)
-    return Big:ensureBig(b1):gte(b2)
-end
-
-function OmegaMeta.__gt(b1, b2)
-    return Big:ensureBig(b1):gt(b2)
-end
-
-function OmegaMeta.__eq(b1, b2)
-    return Big:ensureBig(b1):eq(b2)
-end
+OmegaMeta.__le = Big.lte
+OmegaMeta.__lt = Big.lt
+OmegaMeta.__ge = Big.gte
+OmegaMeta.__gt = Big.gt
+OmegaMeta.__eq = Big.eq
 
 function OmegaMeta.__tostring(b)
     return number_format(b)
