@@ -222,8 +222,7 @@ end
 -- #region booleans
 
 function Big:isNaN()
-    local v = self:get_array()[1]
-    return v ~= v
+    return self.number ~= self.number
 end
 
 function Big:isInfinite()
@@ -236,12 +235,6 @@ function Big:isFinite()
 end
 
 function Big:isint()
-    if (self.sign==-1) then
-        return self:abs():isint()
-    end
-    if (self:gt(B.MAX_SAFE_INTEGER)) then
-        return true;
-    end
     return math.floor(self.number) == self.number
 end
 
@@ -1156,13 +1149,16 @@ function Big:_to_number()
     if arr[2] == nil then arr[2] = 0 end
     if arr[3] == nil then arr[3] = 0 end
 
-    if (self.asize >= 2) and ((arr[2] >= 2) or (arr[2] == 1) and (arr[1] > 308)) then
+    if self.asize == 1 then
+        return arr[1]
+    end
+    if self.asize >= 2 and ((arr[2] >= 2) or (arr[2] == 1) and (arr[1] > 308)) then
         return R.POSITIVE_INFINITY;
     end
-    if (self.asize >= 3) and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
+    if self.asize >= 3 and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
         return R.POSITIVE_INFINITY;
     end
-    if (self.asize >= 4) and ((arr[1] > 1) or (arr[2] >= 1) or (arr[3] >= 1)) then
+    if self.asize >= 4 and ((arr[1] > 1) or (arr[2] >= 1) or (arr[3] >= 1)) then
         for i, v in pairs(arr) do
             if arr[i] > 0 and i > 4 then
                 return R.POSITIVE_INFINITY;
