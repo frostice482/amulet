@@ -315,15 +315,14 @@ end
 function Big:neg()
     local x = self:clone(true);
     x.sign = x.sign * -1;
+    x.number = -x.number
     return x;
 end
 
 --- @return t.Omega
 function Big:abs()
     if self.sign == 1 then return self end
-    local x = self:clone(true);
-    x.sign = 1;
-    return x;
+    return self:neg()
 end
 
 --- @param other t.Omega.Parsable
@@ -376,6 +375,7 @@ end
 --- @param sameArray? boolean
 function Big:clone(sameArray)
     local n = Big:new(sameArray and self:get_array() or self:clone_array(), true)
+    n.sign = self.sign
     n.asize = self.asize
     n.number = self.number
     return n
@@ -779,7 +779,7 @@ function Big:slog(base)
             return B.NaN
         end
     end
-    if (self:max(base):gt("10^^^" .. R.MAX_SAFE_INTEGER)) then
+    if (self:max(base):gt(B.SLOGLIM)) then
         if (self:gt(base)) then
             return self;
         end
@@ -1150,14 +1150,13 @@ end
 --- @return number
 function Big:_to_number()
     local arr = self:get_array()
-    -- //console.log(this.array);
-    if (self.sign==-1) then
-        return -1*(self:neg().number);
-    end
+    if self.sign == -1 then return -1 * self:neg():_to_number() end
+
     if not arr[1] then return 0 end
     if arr[2] == nil then arr[2] = 0 end
     if arr[3] == nil then arr[3] = 0 end
-    if ((self.asize>=2) and ((arr[2]>=2) or (arr[2]==1) and (arr[1]>308))) then
+
+    if (self.asize >= 2) and ((arr[2] >= 2) or (arr[2] == 1) and (arr[1] > 308)) then
         return R.POSITIVE_INFINITY;
     end
     if (self.asize >= 3) and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
@@ -1523,6 +1522,7 @@ end
 B.LOMEGA = Big:create(0.56714329040978387299997)
 B.E_LOG = B.E:log10()
 B.B2E323 = Big:create("2e323")
+B.SLOGLIM = Big:create("10^^^" .. R.MAX_SAFE_INTEGER)
 
 local update = love.update
 function love.update(...)
