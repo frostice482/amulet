@@ -935,53 +935,44 @@ end
 
 --- @return t.Omega
 function Big:arrow(arrows, other)
+    arrows = to_number(arrows)
     if arrows > 1e308 then --if too big return infinity
         return Big:create(R.POSITIVE_INFINITY)
     end
-    local oldarrows = to_number(arrows)
-    arrows = Big:ensureBig(arrows)
-    if oldarrows >= 1e6 then --needed to stop "Infinity"
-        arrows = arrows:floor()
-    end
+
     if self:eq(B.ONE) then return B.ONE end
     if self:eq(B.ZERO) then return B.ZERO end
-    --idk why but arrows above 1e6 just sometimes randomly get treated as non ints even though they are
-    --this is technically inaccurate now but i think 1e7 +0.1 counting as an integer amount of arrow here is fine
-    if (not arrows:isint() or arrows:lt(B.ZERO)) and arrows:lt(1e6) then
+
+    if arrows < 0 then
         return B.NaN
     end
-    if type(oldarrows) == "number" and oldarrows ~= math.floor(oldarrows) and oldarrows < 1e6 then
-        return B.NaN
-    end
-    if arrows:eq(B.ZERO) then
+    if arrows == 0 then
         return self:mul(other)
     end
-    if arrows:eq(B.ONE) or oldarrows == 1 then
-        return self ^ other--t:pow(other) idk why this was causing issues but it was so now theres this
+    if arrows == 1 then
+        return self:pow(other)
     end
-    if arrows:eq(2) or oldarrows == 2 then
+    if arrows == 2 then
         return self:tetrate(other)
     end
-    other = Big:create(other)
-    if (other:lt(B.ZERO)) then
+
+    if other < 0 then
         return B.NaN
     end
-    if (other:eq(B.ZERO)) then
+    if other == 0 then
         return B.ONE
     end
-    if (other:eq(B.ONE)) then
+    if other == 1 then
         return self
     end
-    if self:eq(2) and other:eq(2) then
-        -- handle infinite arrows
+    if other == 2 and self == 2 then
         if arrows:isInfinite() then return Big:create(R.POSITIVE_INFINITY) end
-
         return Big:create(4)
     end
 
     --remove potential error from before
-    local arrowsNum = math.floor(oldarrows)
-    if (other:eq(2)) then
+    local arrowsNum = math.floor(arrows)
+    if (other == 2) then
         return self:arrow(arrowsNum - 1, self)
     end
     local limit_plus = Big:max_for_op(arrowsNum+1)
@@ -991,7 +982,7 @@ function Big:arrow(arrows, other)
         return self:max(other)
     end
     local r = nil
-    if (self:gt(limit) or other:gt(B.MAX_SAFE_INTEGER)) or arrows >= Big:ensureBig(350) then --just kinda chosen randomly
+    if (self:gt(limit) or other > B.MAX_SAFE_INTEGER) or arrows >= 350 then --just kinda chosen randomly
         if (self:gt(limit)) then
             r = self:clone()
             local w = r:get_array()
@@ -1010,9 +1001,10 @@ function Big:arrow(arrows, other)
         j:normalize()
         return j
     end
-    local y = other:to_number()
+
+    local y = Big.is(other) and other:to_number() or other
     local f = math.floor(y)
-    local arrows_m1 = arrows:sub(B.ONE)
+    local arrows_m1 = arrows - 1
     local i = 0
     local m = limit_minus
     r = self:arrow(arrows_m1, y-f)
@@ -1226,7 +1218,7 @@ function Big:toString()
             else
                 q = string.rep("^", i-1)
             end
-            if (arr[i]>1) then
+            if (arr[i] and arr[i]>1) then
                 s = s .."(10" .. q .. ")^" .. AThousandNotation(arr[i], 0) .. " "
             elseif (arr[i]==1) then
                 s= s .."10" .. q;
