@@ -2,7 +2,11 @@ local ffi = require("ffi")
 local R = require("big-num.constants")
 
 ffi.cdef[[
-struct TalismanOmega { uint32_t asize; int8_t sign; };
+struct TalismanOmega {
+    uint32_t asize;
+    int8_t sign;
+    double number;
+};
 ]]
 local TalismanOmega = ffi.typeof("struct TalismanOmega")
 
@@ -13,6 +17,8 @@ local TalismanOmega = ffi.typeof("struct TalismanOmega")
 --- @class t.Omega
 --- @field sign number
 --- @field asize number
+--- @field number number
+---
 --- @operator add(t.Omega|number): t.Omega
 --- @operator sub(t.Omega|number): t.Omega
 --- @operator mul(t.Omega|number): t.Omega
@@ -81,21 +87,11 @@ local function arraySizeOf(arr)
 end
 
 --- @return t.Omega
---- @param sign? number
---- @param asize? number | boolean If set, OmegaNum will not be normalized
-function Big:new(arr, sign, asize)
+function Big:new(arr, noNormalize)
     --- @type t.Omega
-    local obj = TalismanOmega(1, sign or 0) --- @diagnostic disable-line
+    local obj = TalismanOmega(1, 0) --- @diagnostic disable-line
     bigs[obj] = arr
-
-    if not asize then
-        obj:normalize()
-    elseif asize == true then
-        obj.asize = arraySizeOf(arr)
-    else
-        obj.asize = 1
-    end
-
+    if not noNormalize then obj:normalize() end
     return obj
 end
 
@@ -132,8 +128,7 @@ function Big:ensureBig(input)
     end
 end
 
---- @return t.Omega
-function Big:normalize()
+function Big:_normalize()
     local b = nil
     local arr = self:get_array()
     if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
@@ -159,11 +154,13 @@ function Big:normalize()
         local e = arr[i] or 0;
         if (e ~= e) then
             arr={R.NaN};
-            return self
+            bigs[self] = arr
+            return
         end
         if (e == R.POSITIVE_INFINITY) or (e == R.NEGATIVE_INFINITY) then
             arr = {R.POSITIVE_INFINITY};
-            return self
+            bigs[self] = arr
+            return
         end
         if (i ~= 1) then
             arr[i]=math.floor(e)
@@ -211,6 +208,12 @@ function Big:normalize()
     end
     bigs[self] = arr
     self.asize = arraySizeOf(arr)
+    return
+end
+
+function Big:normalize()
+    self:_normalize()
+    self.number = self:_to_number()
     return self
 end
 
@@ -239,8 +242,7 @@ function Big:isint()
     if (self:gt(B.MAX_SAFE_INTEGER)) then
         return true;
     end
-    local num = self:to_number()
-    return math.floor(num) == num
+    return math.floor(self.number) == self.number
 end
 
 -- #endregion
@@ -342,7 +344,7 @@ function Big:floor()
     if (self:isint()) then
         return self
     end
-    return Big:create(math.floor(self:to_number()));
+    return Big:create(math.floor(self.number));
 end
 
 --- @return t.Omega
@@ -350,7 +352,7 @@ function Big:ceil()
     if (self:isint()) then
         return self
     end
-    return Big:create(math.ceil(self:to_number()));
+    return Big:create(math.ceil(self.number));
 end
 
 --- @param target? number[]
@@ -366,7 +368,10 @@ end
 --- @return t.Omega
 --- @param sameArray? boolean
 function Big:clone(sameArray)
-    return Big:new(sameArray and self:get_array() or self:clone_array(), self.sign, self.asize)
+    local n = Big:new(sameArray and self:get_array() or self:clone_array(), true)
+    n.asize = self.asize
+    n.number = self.number
+    return n
 end
 
 local c1 = {}
@@ -418,7 +423,7 @@ function Big:add(other)
     if (qw:gt(B.E_MAX_SAFE_INTEGER) or qw:div(pw):gt(B.MAX_SAFE_INTEGER)) then
         return qw;
     elseif (q[2] == nil) or (q[2] == 0) then
-        return Big:create(self:to_number()+other:to_number());
+        return Big:create(self.number+other.number);
     elseif (q[2]==1) then
         local a
         if (p[2] ~= nil) and (p[2] ~= 0) then
@@ -481,7 +486,7 @@ function Big:sub(other)
         if n then t = t:neg() end
         return t
     elseif (q[2] == nil) or (q[2] == 0) then
-        return Big:create(self:to_number()-other:to_number());
+        return Big:create(self.number-other.number);
     elseif (q[2]==1) then
         local a
         if (p[2] ~= nil) and (p[2] ~= 0) then
@@ -535,7 +540,7 @@ function Big:div(other)
         end
     end
 
-    local n = self:to_number()/other:to_number();
+    local n = self.number/other.number;
     if (n<=MAX_SAFE_INTEGER) then
         return Big:create(n)
     end
@@ -580,7 +585,7 @@ function Big:mul(other)
         return self:max(other)
     end
 
-    local n = self:to_number()*other:to_number()
+    local n = self.number*other.number
     if (n<=MAX_SAFE_INTEGER) then
         return Big:create(n)
     end
@@ -615,7 +620,7 @@ function Big:log10()
         return B.NEGATIVE_INFINITY
     end
     if (self:lte(B.MAX_SAFE_INTEGER)) then
-        return Big:create(math.log(self:to_number(), 10))
+        return Big:create(math.log(self.number, 10))
     end
     if (not self:isFinite()) then
         return self
@@ -677,14 +682,14 @@ function Big:pow(other)
             other:normalize();
             return other;
         else
-            return Big:create(math.pow(10,other:to_number()));
+            return Big:create(math.pow(10,other.number));
         end
     end
 
     if (other:lt(B.ONE)) then
         return self:root(other:rec())
     end
-    local n = math.pow(self:to_number(),other:to_number())
+    local n = math.pow(self.number,other.number)
     if (n<=MAX_SAFE_INTEGER) then
         return Big:create(n);
     end
@@ -798,7 +803,7 @@ function Big:slog(base)
             x = base:pow(x)
             r = r - 1
         elseif (x:lte(B.ONE)) then
-            return Big:create(r + x:to_number() - 1)
+            return Big:create(r + x.number - 1)
         else
             r = r + 1
             x = x:logBase(base)
@@ -877,7 +882,7 @@ function Big:tetrate(other)
         j:normalize()
         return j
     end
-    local y = other:to_number()
+    local y = other.number
     local f = math.floor(y)
     local r = self:pow(y-f)
     local l = B.NaN
@@ -914,7 +919,7 @@ end
 --- @return t.Omega
 function Big:max_for_op(arrows)
     if Big.is(arrows) then
-        arrows = arrows:to_number()
+        arrows = arrows.number
     end
     if arrows < 1 or arrows ~= arrows or arrows == R.POSITIVE_INFINITY then
         return B.NaN
@@ -1014,7 +1019,7 @@ function Big:arrow(arrows, other)
         return j
     end
 
-    local y = Big.is(other) and other:to_number() or other
+    local y = Big.is(other) and other.number or other
     local f = math.floor(y)
     local arrows_m1 = arrows - 1
     local i = 0
@@ -1136,11 +1141,11 @@ end
 -- #region conversions
 
 --- @return number
-function Big:to_number()
+function Big:_to_number()
     local arr = self:get_array()
     -- //console.log(this.array);
     if (self.sign==-1) then
-        return -1*(self:neg():to_number());
+        return -1*(self:neg().number);
     end
     if not arr[1] then return 0 end
     if arr[2] == nil then arr[2] = 0 end
@@ -1159,12 +1164,16 @@ function Big:to_number()
         end
     end
     if (Big.is(arr[1])) then
-        arr[1] = self.array[1]:to_number() --- @diagnostic disable-line
+        arr[1] = self.array[1].number --- @diagnostic disable-line
     end
     if (arr[2]==1) then
         return math.pow(10,arr[1]);
     end
     return arr[1];
+end
+
+function Big:to_number()
+    return self.number
 end
 
 --- @class t.Omega.Low
@@ -1178,7 +1187,7 @@ function Big:as_table()
     return {
         array = bigs[self],
         sign = self.sign,
-        val = self:min(B.MAX_VALUE):to_number(),
+        val = self:min(B.MAX_VALUE).number,
         __talisman = true
     }
 end
