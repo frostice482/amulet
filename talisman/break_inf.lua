@@ -144,17 +144,18 @@ function scale_number(number, scale, max, e_switch_point)
     if not max then max = 10000 end
     scale = Big:ensureBig(scale)
     number = Big:ensureBig(number)
+    local nabs = number:abs()
 
     local maxl = math.floor(math.log(max * 10, 10))
 
-    if (not e_switch_point and number.asize > 2) or (number:abs() >= (e_switch_point or G.E_SWITCH_POINT)) then
+    if (not e_switch_point and number.asize > 2) or (nabs >= (e_switch_point or G.E_SWITCH_POINT)) then
         if number.asize <= 2 and (number:get_array()[1] or 0) <= 999 then
             scale = scale * maxl / 7
         else
             scale = scale * maxl / math.floor(math.max(7, string.len(number_format(number)) - 1))
         end
-    elseif number:abs() >= max then
-        scale = scale * maxl / math.floor(math.log(number * 10, 10))
+    elseif nabs >= max then
+        scale = scale * maxl / nabs:mul(10):log10():floor()
     end
 
     scale = math.min(3, scale:to_number())
