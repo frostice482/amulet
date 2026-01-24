@@ -14,31 +14,31 @@ end
 if SMODS.Sound then
 	SMODS.Sound({
 		key = "xchip",
-		path = "MultiplicativeChips.wav"
+		path = "MultiplicativeChips.ogg"
 	})
 	SMODS.Sound({
 		key = "echip",
-		path = "ExponentialChips.wav"
+		path = "ExponentialChips.ogg"
 	})
 	SMODS.Sound({
 		key = "eechip",
-		path = "TetrationalChips.wav"
+		path = "TetrationalChips.ogg"
 	})
 	SMODS.Sound({
 		key = "eeechip",
-		path = "PentationalChips.wav"
+		path = "PentationalChips.ogg"
 	})
 	SMODS.Sound({
 		key = "emult",
-		path = "ExponentialMult.wav"
+		path = "ExponentialMult.ogg"
 	})
 	SMODS.Sound({
 		key = "eemult",
-		path = "TetrationalMult.wav"
+		path = "TetrationalMult.ogg"
 	})
 	SMODS.Sound({
 		key = "eeemult",
-		path = "PentationalMult.wav"
+		path = "PentationalMult.ogg"
 	})
 end
 
