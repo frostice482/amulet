@@ -10,10 +10,11 @@ pattern = 'if type_v == "table" then'
 position = "after"
 payload = '''
 if v.__talisman then
+	local arr = {}
 	for i, val in pairs(v.array) do
-    v.array[i] = string.format("[%s]=%s,", i, val or 0)
+    	arr[i] = string.format("[%s]=%s,", i, val or 0)
 	end
-  v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(v.array), v.sign, v.val)
+	v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(arr), v.sign, v.val)
 '''
 match_indent = true
 
