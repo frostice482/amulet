@@ -377,6 +377,12 @@ function Big:clone(sameArray)
     return n
 end
 
+--- @protected
+--- @param obj t.Omega
+function Big:clone_if(obj)
+    return self:get_array() == obj:get_array() and self:clone() or obj
+end
+
 local c1 = {}
 local c2 = {}
 
@@ -879,7 +885,7 @@ function Big:tetrate(other)
             negln = self:ln():neg()
             return negln:lambertw():div(negln)
         end
-        local j = self:slog(10):add(other)
+        local j = self:slog(10):add(other):clone_if(self)
         local w = j:get_array()
         w[3]=(w[3] or 0) + 1
         j:normalize()
@@ -913,7 +919,7 @@ function Big:tetrate(other)
     if ((i == 100) or self:lt(math.exp(1/R.E))) then
         f = 0
     end
-    local w = r:get_array()
+    local w = r:clone_if(self):get_array()
     w[2] = (w[2] or 0) + f
     r:normalize()
     return r;
@@ -1003,7 +1009,7 @@ function Big:arrow(arrows, other)
         else
             r = B.ZERO
         end
-        local j = r:add(other)
+        local j = r:add(other):clone_if(r)
         local w = j:get_array()
         w[arrowint+1] = (w[arrowint+1] or 0) + 1
         j:normalize()
@@ -1026,7 +1032,7 @@ function Big:arrow(arrows, other)
     if (i == 100) then
         f = 0
     end
-    local w = r:get_array()
+    local w = r:clone_if(self):get_array()
     w[arrowint] = (w[arrowint] or 0) + f
     r:normalize()
     return r
