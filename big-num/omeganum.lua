@@ -364,6 +364,7 @@ function Big:clone_array(target)
     for i, j in pairs(self:get_array()) do
         target[i] = j
     end
+    setmetatable(target, getmetatable(self:get_array()))
     return target
 end
 
@@ -380,7 +381,7 @@ end
 --- @protected
 --- @param obj t.Omega
 function Big:clone_if(obj)
-    return self:get_array() == obj:get_array() and self:clone() or obj
+    return self:get_array() == obj:get_array() and self:clone() or self
 end
 
 local c1 = {}
@@ -919,7 +920,8 @@ function Big:tetrate(other)
     if ((i == 100) or self:lt(math.exp(1/R.E))) then
         f = 0
     end
-    local w = r:clone_if(self):get_array()
+    r = r:clone_if(self)
+    local w = r:get_array()
     w[2] = (w[2] or 0) + f
     r:normalize()
     return r;
@@ -1009,7 +1011,8 @@ function Big:arrow(arrows, other)
         else
             r = B.ZERO
         end
-        local j = r:add(other):clone_if(r)
+        local j = r:add(other)
+        j = j:clone_if(self)
         local w = j:get_array()
         w[arrowint+1] = (w[arrowint+1] or 0) + 1
         j:normalize()
@@ -1032,7 +1035,8 @@ function Big:arrow(arrows, other)
     if (i == 100) then
         f = 0
     end
-    local w = r:clone_if(self):get_array()
+    r = r:clone_if(self)
+    local w = r:get_array()
     w[arrowint] = (w[arrowint] or 0) + f
     r:normalize()
     return r
