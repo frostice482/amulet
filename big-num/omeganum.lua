@@ -1180,7 +1180,7 @@ function Big:as_table()
     return {
         array = bigs[self],
         sign = self.sign,
-        val = self:min(B.MAX_VALUE).number,
+        val = math.min(self.number, 1e305),
         __talisman = true
     }
 end
