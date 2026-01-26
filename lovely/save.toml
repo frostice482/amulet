@@ -7,23 +7,24 @@ priority = 0
 [patches.pattern]
 target = "engine/string_packer.lua"
 pattern = 'if type_v == "table" then'
-position = "after"
+position = "at"
 payload = '''
-if v.__talisman then
+if Big and Big.is(v) then
+	local arr = {}
+	for i, val in pairs(v:get_array()) do
+		table.insert(arr, string.format("[%s]=%s,", i, val or 0))
+	end
+	v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(arr), v.sign, math.min(v.number,1e305))
+
+elseif type_v == "table" and v.__talisman then
 	local arr = {}
 	for i, val in pairs(v.array) do
-    	arr[i] = string.format("[%s]=%s,", i, val or 0)
+		table.insert(arr, string.format("[%s]=%s,", i, val or 0))
 	end
 	v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(arr), v.sign, v.val)
-'''
-match_indent = true
 
-[[patches]]
-[patches.pattern]
-target = "engine/string_packer.lua"
-pattern = 'if v.is and v:is(Object) then'
-position = "at"
-payload = 'elseif v.is and v:is(Object) then'
+elseif type_v == "table" then
+'''
 match_indent = true
 
 [[patches]]
