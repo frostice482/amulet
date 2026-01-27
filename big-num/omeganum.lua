@@ -3,9 +3,9 @@ local R = require("big-num.constants")
 
 ffi.cdef[[
 struct TalismanOmega {
-    uint32_t asize;
-    int8_t sign;
+    double asize;
     double number;
+    int8_t sign;
 };
 ]]
 local TalismanOmega = ffi.typeof("struct TalismanOmega")
