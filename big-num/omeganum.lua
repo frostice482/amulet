@@ -65,6 +65,10 @@ for k,v in pairs(_math) do math[k] = v end
 local bigs = {}
 setmetatable(bigs, { __mode = 'k' })
 
+local function isfinite(n)
+    return n ~= math.huge and n ~= -math.huge and n == n
+end
+
 function Big.is(instance)
     return instance and bigs[instance]
 end
@@ -376,7 +380,7 @@ local c2 = {}
 function Big:add(other)
     if is_number(other) then
         local n = self.number + to_number(other)
-        if n ~= math.huge and n ~= -math.huge or n ~= n then return Big:create(n) end
+        if n ~= math.huge and n ~= -math.huge and n == n then return Big:create(n) end
     end
     other = Big:ensureBig(other)
 
@@ -438,7 +442,7 @@ end
 function Big:sub(other)
     if is_number(other) then
         local n = self.number - to_number(other)
-        if n ~= math.huge and n ~= -math.huge or n ~= n then return Big:create(n) end
+        if n ~= math.huge and n ~= -math.huge and n == n then return Big:create(n) end
     end
     other = Big:ensureBig(other)
 
@@ -508,7 +512,7 @@ end
 function Big:div(other)
     if is_number(other) then
         local n = self.number / to_number(other)
-        if n ~= math.huge and n ~= -math.huge or n ~= n then return Big:create(n) end
+        if n ~= math.huge and n ~= -math.huge and n == n then return Big:create(n) end
     end
     other = Big:ensureBig(other);
 
@@ -552,7 +556,7 @@ end
 function Big:mul(other)
     if is_number(other) then
         local n = self.number * to_number(other)
-        if n ~= math.huge and n ~= -math.huge or n ~= n then return Big:create(n) end
+        if n ~= math.huge and n ~= -math.huge and n == n then return Big:create(n) end
     end
     other = Big:ensureBig(other);
 
@@ -642,7 +646,7 @@ end
 function Big:pow(other)
     if is_number(other) then
         local n = self.number ^ to_number(other)
-        if n ~= math.huge and n ~= -math.huge or n ~= n then return Big:create(n) end
+        if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other);
 
