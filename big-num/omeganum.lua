@@ -686,7 +686,7 @@ function Big:pow(other)
     if (self.number == 1) then
         return B.ONE
     end
-    if (self:eq(10)) then
+    if (self.number == 10) then
         return other:pow10()
     end
 
@@ -698,7 +698,7 @@ function Big:pow(other)
 end
 
 function Big:pow10()
-    if self:lt(300) then
+    if self.number < 300 then
         return Big:create(math.pow(10,self.number))
     end
 
@@ -824,7 +824,7 @@ function Big:slog(base)
             x = x:logBase(base)
         end
     end
-    if (x:gt(10)) then
+    if (x.number > 10) then
         return Big:create(r)
     end
     error('?')
@@ -854,24 +854,24 @@ function Big:tetrate(other)
         return B.ONE
     end
     if (self.number == 1) then
-        if (other:eq(-1)) then
+        if (other.number == -1) then
             return B.NaN
         end
         return B.ONE
     end
-    if self:eq(2) then
-        if other:eq(3) then
+    if self.number == 2 then
+        if other.number == 3 then
             return Big:create({16})
         end
-        if other:eq(4) then
+        if other.number == 4 then
             return Big:create({65536})
         end
     end
 
-    if (other:lte(-2)) then
+    if (other.number <= -2) then
         return B.NaN
     end
-    if (other:eq(-1)) then
+    if (other.number == -1) then
         return B.ZERO
     end
     if (other.number == 0) then
@@ -880,7 +880,7 @@ function Big:tetrate(other)
     if (other.number == 1) then
         return self
     end
-    if (other:eq(2)) then
+    if (other.number == 2) then
         return self:pow(self)
     end
 
@@ -1071,7 +1071,7 @@ function Big:lambertw()
     if (self:isNaN()) then
         return self
     end
-    if (self:lt(-0.3678794411710499)) then
+    if (self.number < -0.3678794411710499) then
         error("lambertw is unimplemented for results less than -1, sorry!")
     end
     if (self:gt(B.TETRATED_MAX_SAFE_INTEGER)) then
