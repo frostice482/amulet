@@ -37,11 +37,7 @@ function to_big(x, y)
 end
 
 function to_number(x)
-	if Big and Big.is(x) then
-		return x:to_number()
-	else
-		return x
-	end
+	return Big and Big.is(x) and x.number or x
 end
 
 function uncompress_big(str, sign)
