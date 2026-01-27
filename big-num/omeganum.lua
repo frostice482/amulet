@@ -40,11 +40,6 @@ OmegaMeta = {
 
 _G.Big = Big
 
---- constants
-local MAX_SAFE_INTEGER = 9007199254740991
-local MAX_E = math.log(MAX_SAFE_INTEGER, 10)
-local LONG_STRING_MIN_LENGTH = 17
-
 -- this will be populated with bignum equivalents of R's values at the end of the file
 --- @type table<string, t.Omega>
 local B = {}
@@ -134,75 +129,70 @@ function Big:_normalize()
     if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
         arr = {}
     end
+
     local asize = arraySizeOf(arr)
-    if (asize == 1) and (arr[1] == 0) then
+    if asize == 1 and arr[1] == 0 then
         self.sign = 1
         return self
     end
-    if (asize == 1) and (arr[1] < 0) then
+    if asize == 1 and arr[1] < 0 then
         self.sign = -1
         arr[1] = -arr[1]
     end
-    if ((self.sign~=1) and (self.sign~=-1)) then
+    if self.sign ~= 1 and self.sign ~= -1 then
         if (self.sign < 0) then
             self.sign = -1;
         else
             self.sign = 1;
         end
     end
+
     for i, v in pairs(arr) do
-        local e = arr[i] or 0;
-        if (e ~= e) then
-            arr={R.NaN};
+        if v ~= v then
+            arr = {R.NaN};
             bigs[self] = arr
             return
         end
-        if (e == R.POSITIVE_INFINITY) or (e == R.NEGATIVE_INFINITY) then
+        if v == R.POSITIVE_INFINITY or v == R.NEGATIVE_INFINITY then
             arr = {R.POSITIVE_INFINITY};
             bigs[self] = arr
             return
         end
-        if (i ~= 1) then
-            arr[i]=math.floor(e)
+        if i ~= 1 then
+            arr[i] = math.floor(v)
         end
-        --first 3 values kept because they are hardcoded in a few places
-        --it also doesnt hurt memory that much to keep them anyway
-        if ((e == 0)) and i > 3 then
+        if v == 0 then
             arr[i] = nil
         end
     end
-    local doOnce = true
-    while (doOnce or b) do
+
+    local b = true
+    repeat
         b=false;
         asize = arraySizeOf(arr)
-        while ((asize ~= 0) and (arr[asize]==0)) do
-            arr[asize] = nil;
-            b=true;
+
+        if arr[1] and arr[1] > R.MAX_SAFE_INTEGER then
+            arr[2] = (arr[2] or 0) + 1;
+            arr[1] = math.log(arr[1], 10);
+            b = true;
         end
-        if ((arr[1] or 0) > R.MAX_DISP_INTEGER) then --modified, should make printed values easier to display
-            arr[2]=(arr[2] or 0) + 1;
-            arr[1]= math.log(arr[1], 10);
-            b=true;
-        end
-        while (((arr[1] or 0) < math.log(R.MAX_DISP_INTEGER,10)) and ((arr[2] ~= nil) and (arr[2] ~= 0))) do
-            arr[1] = math.pow(10,arr[1]);
+
+        while (arr[1] or 0) < R.LOG_MAX_SAFE_INTEGER and arr[2] ~= nil and arr[2] ~= 0 do
+            arr[1] = math.pow(10, arr[1]);
             arr[2] = arr[2] - 1
-            b=true;
+            b = true;
         end
-        doOnce = false;
+
         for i, v in pairs(arr) do
-            if type(i) == "number" then
-                if ((arr[i] or 0)>R.MAX_SAFE_INTEGER) then
-                    arr[i+1]=(arr[i+1] or 0)+1;
-                    arr[1]=arr[i]+1;
-                    for j=2,i do
-                        arr[j]=0;
-                    end
-                    b=true;
-                end
+            if v > R.MAX_SAFE_INTEGER then
+                arr[i+1] = (arr[i+1] or 0)+1;
+                arr[1] = v+1;
+                for j = 2, i do arr[j] = 0 end
+                b = true;
             end
         end
-    end
+    until not b
+
     if (arraySizeOf(arr) == 0) and #arr ~= 1 then
         arr = {0}
     end
@@ -962,7 +952,7 @@ end
 --- @return t.Omega
 function Big:arrow(arrows, other)
     arrows = to_number(arrows)
-    if arrows > 1e308 then --if too big return infinity
+    if arrows > R.MAX_VALUE then --if too big return infinity
         return B.POSITIVE_INFINITY
     end
 
@@ -1161,7 +1151,7 @@ function Big:_to_number()
     if self.asize == 1 then
         return a1
     end
-    if self.asize >= 2 and ((a2 >= 2) or (a2 == 1) and (a1 > 308)) then
+    if self.asize >= 2 and ((a2 >= 2) or (a2 == 1) and (a1 > R.LOG_MAX_VALUE)) then
         return R.POSITIVE_INFINITY;
     end
     if self.asize >= 3 and ((a1 >= 3) or (a2 >= 1) or (a3 >= 1)) then
@@ -1195,7 +1185,7 @@ function Big:as_table()
     return {
         array = bigs[self],
         sign = self.sign,
-        val = math.min(self.number, 1e305),
+        val = math.min(self.number, R.MAX_VALUE),
         __talisman = true
     }
 end
@@ -1271,6 +1261,8 @@ function Big:toString()
     end
     return s
 end
+
+local LONG_STRING_MIN_LENGTH = 17
 
 local function log10LongString(str)
     return math.log(tonumber(string.sub(str, 1, LONG_STRING_MIN_LENGTH)), 10)+(string.len(str)- LONG_STRING_MIN_LENGTH);
@@ -1389,7 +1381,7 @@ function Big:parse(input)
         b={arr[1],0};
         c=1;
         for i=#a, 1, -1 do
-            if ((b[1] < MAX_E) and (b[2]==0)) then
+            if ((b[1] < R.LOG_MAX_SAFE_INTEGER) and (b[2]==0)) then
                 b[1] = math.pow(10,c*b[1]);
             elseif (c==-1) then
                 if (b[2]==0) then
@@ -1436,14 +1428,14 @@ function Big:parse(input)
                 end
                 if (b[2]==1) then
                     b[1] = b[1] + d;
-                elseif ((b[2]==2) and (b[1]<MAX_E+math.log(d, 10))) then
+                elseif ((b[2]==2) and (b[1]<R.LOG_MAX_SAFE_INTEGER+math.log(d, 10))) then
                     b[1] = b[1] + math.log(1+math.pow(10,math.log10(d)-b[0]), 10);
                 end
             end
-            if ((b[1]<MAX_E) and (b[2] ~= 0) and (b[2] ~= nil)) then
+            if ((b[1]<R.LOG_MAX_SAFE_INTEGER) and (b[2] ~= 0) and (b[2] ~= nil)) then
                 b[1]=math.pow(10,b[1]);
                 b[2] = b[2] - 1;
-            elseif (b[1]>MAX_SAFE_INTEGER) then
+            elseif (b[1]>R.MAX_SAFE_INTEGER) then
                 b[1] = math.log(b[1], 10);
                 b[2] = b[2] + 1;
             end
