@@ -1154,33 +1154,30 @@ function Big:_to_number()
     local arr = self:get_array()
     if self.sign == -1 then return -1 * self:neg():_to_number() end
 
-    if not arr[1] then return 0 end
-    if arr[2] == nil then arr[2] = 0 end
-    if arr[3] == nil then arr[3] = 0 end
+    local a1 = arr[1] or 0
+    local a2 = arr[2] or 0
+    local a3 = arr[3] or 0
 
     if self.asize == 1 then
-        return arr[1]
+        return a1
     end
-    if self.asize >= 2 and ((arr[2] >= 2) or (arr[2] == 1) and (arr[1] > 308)) then
+    if self.asize >= 2 and ((a2 >= 2) or (a2 == 1) and (a1 > 308)) then
         return R.POSITIVE_INFINITY;
     end
-    if self.asize >= 3 and ((arr[1] >= 3) or (arr[2] >= 1) or (arr[3] >= 1)) then
+    if self.asize >= 3 and ((a1 >= 3) or (a2 >= 1) or (a3 >= 1)) then
         return R.POSITIVE_INFINITY;
     end
-    if self.asize >= 4 and ((arr[1] > 1) or (arr[2] >= 1) or (arr[3] >= 1)) then
+    if self.asize >= 4 and ((a1 > 1) or (a2 >= 1) or (a3 >= 1)) then
         for i, v in pairs(arr) do
             if arr[i] > 0 and i > 4 then
                 return R.POSITIVE_INFINITY;
             end
         end
     end
-    if (Big.is(arr[1])) then
-        arr[1] = self.array[1].number --- @diagnostic disable-line
+    if (a2==1) then
+        return math.pow(10,a1);
     end
-    if (arr[2]==1) then
-        return math.pow(10,arr[1]);
-    end
-    return arr[1];
+    return a1;
 end
 
 function Big:to_number()
