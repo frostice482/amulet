@@ -396,10 +396,10 @@ function Big:add(other)
     if (other.sign==-1) then
         return self:sub(other:neg());
     end
-    if (self:eq(R.ZERO)) then
+    if (self.number == 0) then
         return other
     end
-    if (other:eq(R.ZERO)) then
+    if (other.number == 0) then
         return self
     end
     if (self:isNaN() or other:isNaN() or (self:isInfinite() and other:isInfinite() and self:eq(other:neg()))) then
@@ -461,7 +461,7 @@ function Big:sub(other)
     if (self:eq(other)) then
         return B.ZERO
     end
-    if (other:eq(R.ZERO)) then
+    if (other.number == 0) then
         return self
     end
     if (self:isNaN() or other:isNaN() or (self:isInfinite() and other:isInfinite() and self:eq(other:neg()))) then
@@ -531,10 +531,10 @@ function Big:div(other)
     if (self:isNaN() or other:isNaN() or (self:isInfinite() and other:isInfinite() and self:eq(other:neg()))) then
         return B.NaN
     end
-    if (other:eq(R.ZERO)) then
+    if (other.number == 0) then
         return B.POSITIVE_INFINITY
     end
-    if (other:eq(R.ONE)) then
+    if (other.number == 1) then
         return self
     end
     if (self:eq(other)) then
@@ -575,13 +575,13 @@ function Big:mul(other)
     if (self:isNaN() or other:isNaN() or (self:isInfinite() and other:isInfinite() and self:eq(other:neg()))) then
         return B.NaN
     end
-    if (other:eq(R.ZERO)) or self:eq(R.ZERO) then
+    if (other.number == 0) or self.number == 0 then
         return B.ZERO
     end
-    if (other:eq(R.ONE)) then
+    if (other.number == 1) then
         return self
     end
-    if (self:eq(R.ONE)) then
+    if (self.number == 1) then
         return other
     end
     if (self:isInfinite()) then
@@ -599,7 +599,7 @@ end
 
 --- @return t.Omega
 function Big:rec()
-    if (self:isNaN() or self:eq(R.ZERO)) then
+    if (self:isNaN() or self.number == 0) then
         return B.NaN
     end
     if (self:abs():gt(B.B2E323)) then
@@ -629,7 +629,7 @@ function Big:log10()
     if (not self:isFinite()) then
         return self
     end
-    if (self:lte(R.MAX_SAFE_INTEGER)) then
+    if (self.number <= R.MAX_SAFE_INTEGER) then
         return Big:create(math.log(self.number, 10))
     end
     if (self:gt(B.TETRATED_MAX_SAFE_INTEGER)) then
@@ -675,7 +675,7 @@ function Big:pow(other)
     local s0 = self:compareTo(R.ZERO)
     if (s0 < 0) then
         local p = self:abs():pow(other)
-        if other:isint() and not other:mod(2):lt(R.ONE) then
+        if other:isint() and not other:mod(2).number < 1 then
             return p:neg()
         end
         return p
@@ -683,7 +683,7 @@ function Big:pow(other)
     if (s0 == 0) then
         return B.ZERO
     end
-    if (self:eq(R.ONE)) then
+    if (self.number == 1) then
         return B.ONE
     end
     if (self:eq(10)) then
@@ -719,26 +719,26 @@ end
 function Big:root(other)
     other = Big:ensureBig(other)
 
-    if (other:eq(R.ONE)) then
+    if (other.number == 1) then
         return self
     end
-    if (other:lt(R.ZERO)) then
+    if (other.number < 0) then
         return self:root(other:neg()):rec()
     end
-    if (other:lt(R.ONE)) then
+    if (other.number < 1) then
         return self:pow(other:rec())
     end
 
-    if (self:lt(R.ZERO) and other:isint() and other:mod(2):eq(R.ONE)) then
+    if (self.number < 0 and other:isint() and other:mod(2).number == 1) then
         return self:neg():root(other):neg()
     end
-    if (self:lt(R.ZERO)) then
+    if (self.number < 0) then
         return B.NaN
     end
-    if (self:eq(R.ONE)) then
+    if (self.number == 1) then
         return B.ONE
     end
-    if (self:eq(R.ZERO)) then
+    if (self.number == 0) then
         return B.ZERO
     end
 
@@ -769,10 +769,10 @@ function Big:slog(base)
     if (base:isInfinite()) then
         return B.ZERO
     end
-    if (self:lt(R.ZERO)) then
+    if (self.number < 0) then
         return Big:create(-R.ONE)
     end
-    if (self:lt(R.ONE)) then
+    if (self.number < 1) then
         return B.ZERO
     end
     if (self:eq(base)) then
@@ -814,10 +814,10 @@ function Big:slog(base)
         w[2] = w[2] - l
     end
     for i = 0, 99 do
-        if x:lt(R.ZERO) then
+        if x.number < 0 then
             x = base:pow(x)
             r = r - 1
-        elseif (x:lte(R.ONE)) then
+        elseif (x.number <= 1) then
             return Big:create(r + x.number - 1)
         else
             r = r + 1
@@ -844,16 +844,16 @@ function Big:tetrate(other)
         return negln:lambertw():div(negln)
     end
 
-    if (self:eq(R.ZERO)) then
-        if (other:eq(R.ZERO)) then
+    if (self.number == 0) then
+        if (other.number == 0) then
             return B.NaN
         end
-        if (other:mod(2):eq(R.ZERO)) then
+        if (other:mod(2).number == 0) then
             return B.ZERO
         end
         return B.ONE
     end
-    if (self:eq(R.ONE)) then
+    if (self.number == 1) then
         if (other:eq(-1)) then
             return B.NaN
         end
@@ -874,10 +874,10 @@ function Big:tetrate(other)
     if (other:eq(-1)) then
         return B.ZERO
     end
-    if (other:eq(R.ZERO)) then
+    if (other.number == 0) then
         return B.ONE
     end
-    if (other:eq(R.ONE)) then
+    if (other.number == 1) then
         return self
     end
     if (other:eq(2)) then
@@ -888,7 +888,7 @@ function Big:tetrate(other)
     if (m:gt(B.SLOGLIM)) then
         return m
     end
-    if (m:gt(B.TETRATED_MAX_SAFE_INTEGER) or other:gt(R.MAX_SAFE_INTEGER)) then
+    if (m:gt(B.TETRATED_MAX_SAFE_INTEGER) or other.number > R.MAX_SAFE_INTEGER) then
         if (self:lt(math.exp(1/R.E))) then
             negln = self:ln():neg()
             return negln:lambertw():div(negln)
@@ -966,8 +966,8 @@ function Big:arrow(arrows, other)
         return B.POSITIVE_INFINITY
     end
 
-    if self:eq(R.ONE) then return B.ONE end
-    if self:eq(R.ZERO) then return B.ZERO end
+    if self.number == 1 then return B.ONE end
+    if self.number == 0 then return B.ZERO end
 
     if arrows < 0 then
         return B.NaN
@@ -1053,7 +1053,7 @@ end
 --- @return t.Omega
 function Big:mod(other)
     other = Big:ensureBig(other)
-    if (other:eq(R.ZERO)) then
+    if (other.number == R.ZERO) then
         return B.NaN
     end
     if (self.sign*other.sign == -1) then
