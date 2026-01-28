@@ -91,7 +91,7 @@ local _push = Channel.push
 function Channel:push(obj)
 	if Talisman.config_file.thread_sanitize == "copy" then
 		obj = Talisman.copy_table(obj, Talisman.copy_for_thread)
-	elseif Talisman.config_file.thread_sanitize == "inplace" then
+	elseif Talisman.config_file.thread_sanitize == "modify" then
 		obj = Talisman.sanitize(obj)
 	end
 	return _push(self, obj)

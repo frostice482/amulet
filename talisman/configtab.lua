@@ -77,7 +77,7 @@ function Talisman.config_sections.thread_sanitize()
     return create_option_cycle({
         label = localize("tal_thread_sanitation"),
         options = Talisman.thread_sanitations,
-        current_option = get_index(Talisman.thread_sanitations, Talisman.config_file.thread_sanitize or 'inplace') or 1,
+        current_option = get_index(Talisman.thread_sanitations, Talisman.config_file.thread_sanitize or 'modify') or 1,
         scale = 0.8,
         text_scale = 0.5,
         opt_callback = 'tal_update_thread_sanitize',
