@@ -23,6 +23,14 @@ return {
         'easier when crashed'
     },
 
+    tal_thread_sanitation = 'Thread Fix',
+    tal_thread_sanitation_warning = {
+        'Amulet\'s fix for OmegaNum getting into threads.',
+        'copy: fast, guarantees compability, but can use more memory',
+        'modify: faster, but can cause crash/corruption',
+        'noop: fastest, does nothing, but can cause crash',
+    },
+
     tal_calculating = 'Calculating...',
     tal_abort = 'Abort',
     tal_elapsed = 'Elapsed calculations',

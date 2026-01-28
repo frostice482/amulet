@@ -3,10 +3,18 @@ function Talisman.sanitize(obj, done)
 	if done[obj] then return obj end
 	done[obj] = true
 
-	if Big and Big.is(obj) then return obj end
+	if Big and Big.is(obj) then return obj:as_table() end
 	if type(obj) ~= 'table' then return obj end
 
 	for k,v in pairs(obj) do
+		if Big and Big.is(k) then
+			obj[k] = nil
+			k = k:as_table()
+			obj[k] = v
+		else
+			Talisman.sanitize(k, done)
+		end
+
 		if Big and Big.is(v) then
 			obj[k] = v:as_table()
 		else
@@ -27,12 +35,20 @@ function Talisman.create_unpack_env()
 	}
 end
 
-function Talisman.copy_table(obj, sanitize, reflist)
+--- @class t.CopyTableConfig
+--- @field reflist? table
+--- @field sanitizze? boolean
+--- @field nometa? boolean
+
+--- @param obj any
+--- @param config? t.CopyTableConfig
+--- @param reflist any
+function Talisman.copy_table(obj, config, reflist)
 	if not reflist then reflist = {} end
 	if reflist[obj] then return reflist[obj] end
 
 	if Big and Big.is(obj) then
-		if sanitize then return obj:as_table() end
+		if config and config.sanitizze then return obj:as_table() end
 		return obj
 	end
 	if type(obj) ~= 'table' then return obj end
@@ -40,12 +56,20 @@ function Talisman.copy_table(obj, sanitize, reflist)
 	local copy = {}
 	reflist[obj] = copy
 	for k, v in pairs(obj) do
-		copy[Talisman.copy_table(k, sanitize, reflist)] = Talisman.copy_table(v, sanitize, reflist)
+		copy[Talisman.copy_table(k, config, reflist)] = Talisman.copy_table(v, config, reflist)
 	end
-	setmetatable(copy, Talisman.copy_table(getmetatable(obj), sanitize, reflist))
+	if not (config and config.nometa) then
+		setmetatable(copy, Talisman.copy_table(getmetatable(obj), config, reflist))
+	end
 
 	return copy
 end
+
+--- @type t.CopyTableConfig
+Talisman.copy_for_thread = {
+	sanitizze = true,
+	nometa = true
+}
 
 local copy_table_hook = copy_table
 function copy_table(v)
@@ -65,5 +89,10 @@ local Channel = reg.Channel
 local _push = Channel.push
 
 function Channel:push(obj)
-	return _push(self, Talisman.sanitize(obj))
+	if Talisman.config_file.thread_sanitize == "copy" then
+		obj = Talisman.copy_table(obj, Talisman.copy_for_thread)
+	elseif Talisman.config_file.thread_sanitize == "inplace" then
+		obj = Talisman.sanitize(obj)
+	end
+	return _push(self, obj)
 end
