@@ -66,19 +66,18 @@ function Talisman.config_sections.notation()
         label = localize("talisman_notation"),
         options = opts,
         current_option = get_index(Talisman.notations.filenames, Talisman.config_file.notation or 'Balatro') or 1,
-        w = 8,
+        w = 6,
         scale = 0.8,
         text_scale = 0.5,
         opt_callback = 'tal_update_notation'
     })
 end
 
-function Talisman.config_sections.notation()
+function Talisman.config_sections.thread_sanitize()
     return create_option_cycle({
         label = localize("tal_thread_sanitation"),
         options = Talisman.thread_sanitations,
         current_option = get_index(Talisman.thread_sanitations, Talisman.config_file.thread_sanitize or 'inplace') or 1,
-        w = 8,
         scale = 0.8,
         text_scale = 0.5,
         opt_callback = 'tal_update_thread_sanitize',
@@ -118,6 +117,7 @@ Talisman.config_sections_array = {
     Talisman.config_sections.debug_coroutine,
     Talisman.config_sections.enable_type_compat,
     Talisman.config_sections.notation,
+    Talisman.config_sections.thread_sanitize,
 }
 
 Talisman.config_ui_base = {
