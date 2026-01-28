@@ -18,6 +18,7 @@ Talisman.config_file = {
     disable_omega = false,
     enable_compat = false,
     debug_coroutine = false,
+    thread_sanitize = 'inplace',
 
     break_infinity = "omeganum", -- unused
     notation = "Balatro"
@@ -35,6 +36,11 @@ Talisman.notations = {
         "ArrayNotation",
         --"AnteNotation",
     }
+}
+Talisman.thread_sanitations = {
+    'modify',
+    'copy',
+    'noop'
 }
 
 Talisman.config_file_name = 'config/amulet.lua'

@@ -73,6 +73,19 @@ function Talisman.config_sections.notation()
     })
 end
 
+function Talisman.config_sections.notation()
+    return create_option_cycle({
+        label = localize("tal_thread_sanitation"),
+        options = Talisman.thread_sanitations,
+        current_option = get_index(Talisman.thread_sanitations, Talisman.config_file.thread_sanitize or 'inplace') or 1,
+        w = 8,
+        scale = 0.8,
+        text_scale = 0.5,
+        opt_callback = 'tal_update_thread_sanitize',
+        on_demand_tooltip = { text = localize("tal_thread_sanitation_warning") }
+    })
+end
+
 function Talisman.config_sections.enable_type_compat()
     local t = create_toggle({
         label = localize("tal_enable_compat"),
@@ -176,6 +189,11 @@ end
 
 function G.FUNCS.tal_update_notation(arg)
     Talisman.config_file.notation = Talisman.notations.filenames[arg.to_key]
+    Talisman.save_config()
+end
+
+function G.FUNCS.tal_update_thread_sanitize(arg)
+    Talisman.config_file.thread_sanitize = Talisman.thread_sanitations[arg.to_key]
     Talisman.save_config()
 end
 
