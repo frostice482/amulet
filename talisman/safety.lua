@@ -3,11 +3,13 @@ function Talisman.sanitize(obj, done)
 	if done[obj] then return obj end
 	done[obj] = true
 
+	if Big and Big.is(obj) then return obj end
+	if type(obj) ~= 'table' then return obj end
+
 	for k,v in pairs(obj) do
-		local t = type(v)
 		if Big and Big.is(v) then
 			obj[k] = v:as_table()
-		elseif t == "table" then
+		else
 			Talisman.sanitize(v, done)
 		end
 	end
@@ -25,18 +27,22 @@ function Talisman.create_unpack_env()
 	}
 end
 
-function Talisman.copy_table(obj, reflist)
+function Talisman.copy_table(obj, sanitize, reflist)
 	if not reflist then reflist = {} end
-	if type(obj) ~= 'table' then return obj end
-	if Big and Big.is(obj) then return obj end
 	if reflist[obj] then return reflist[obj] end
+
+	if Big and Big.is(obj) then
+		if sanitize then return obj:as_table() end
+		return obj
+	end
+	if type(obj) ~= 'table' then return obj end
 
 	local copy = {}
 	reflist[obj] = copy
 	for k, v in pairs(obj) do
-		copy[Talisman.copy_table(k, reflist)] = Talisman.copy_table(v, reflist)
+		copy[Talisman.copy_table(k, sanitize, reflist)] = Talisman.copy_table(v, sanitize, reflist)
 	end
-	setmetatable(copy, Talisman.copy_table(getmetatable(obj), reflist))
+	setmetatable(copy, Talisman.copy_table(getmetatable(obj), sanitize, reflist))
 
 	return copy
 end
@@ -54,50 +60,10 @@ function STR_UNPACK(str)
 	return chunk()
 end
 
--- scan for non-transferable objects for Channel.push
--- for easier debugging
-
 local reg = debug.getregistry()
 local Channel = reg.Channel
 local _push = Channel.push
 
-local stack = {}
-local refs = {}
-local testch = love.thread.newChannel()
-
-local function scantransferable(val, i)
-	local t = type(val)
-	if t == "nil" or t == "number" or t == "string" or t == "boolean" then
-		return
-	end
-	if t == "userdata" then
-		if not pcall(_push, testch, val) then
-			error(string.format("%s: userdata is not transferable", table.concat(stack, '.', 1, i)))
-		end
-		testch:clear()
-		return
-	end
-	if t == "table" then
-		if refs[val] then
-			error(string.format("%s: cyclic", table.concat(stack, '.', 1, i)))
-		end
-
-		refs[val] = true
-		for k,v in pairs(val) do
-			stack[i+1] = tostring(k)
-			scantransferable(k, i+1)
-			scantransferable(v, i+1)
-		end
-		stack[i+1] = nil
-		refs[val] = nil
-		return
-	end
-
-	error(string.format("%s: type %s is not transferable", table.concat(stack, '.', 1, i), t))
-end
-
 function Channel:push(obj)
-	refs = {}
-	scantransferable(obj, 0)
-	return _push(self, obj)
+	return _push(self, Talisman.sanitize(obj))
 end
