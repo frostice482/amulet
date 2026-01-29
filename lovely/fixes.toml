@@ -59,6 +59,18 @@ position = "after"
 payload = '''if type(node.config.text) ~= "string" then node.config.text = tostring(node.config.text) end'''
 match_indent = true
 
+# string.length on cdata
+[[patches]]
+[patches.pattern]
+target = "engine/ui.lua"
+pattern = 'if not self.config.no_recalc and self.config.prev_value and string.len(self.config.prev_value) ~= string.len(self.config.text) then self.UIBox:recalculate() end'
+position = "at"
+payload = '''
+if not self.config.no_recalc and self.config.prev_text and string.len(self.config.prev_text) ~= string.len(self.config.text) then self.UIBox:recalculate() end
+self.config.prev_text = self.config.text
+'''
+match_indent = true
+
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
