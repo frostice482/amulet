@@ -48,31 +48,21 @@ end
 
 --don't return a Big unless we have to - it causes nativefs to break
 local max = math.max
-function math.max(x, y)
-    if is_big(x) or is_big(y) then
-        x = to_big(x)
-        y = to_big(y)
-        if (x > y) then
-            return x
-        else
-            return y
-        end
-    else
-        return max(x, y)
+function math.max(...)
+    local list = {...}
+    local max = -math.huge
+    for i=1, select('#', ...) do
+        if max < list[i] then max = list[i] end
     end
+    return max
 end
 
 local min = math.min
-function math.min(x, y)
-    if is_big(x) or is_big(y) then
-        x = to_big(x)
-        y = to_big(y)
-        if (x < y) then
-            return x
-        else
-            return y
-        end
-    else
-        return min(x, y)
+function math.min(...)
+    local list = {...}
+    local max = math.huge
+    for i=1, select('#', ...) do
+        if max > list[i] then max = list[i] end
     end
+    return max
 end
