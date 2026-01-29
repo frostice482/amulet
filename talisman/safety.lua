@@ -1,10 +1,10 @@
 function Talisman.sanitize(obj, done)
+	if Big and Big.is(obj) then return obj:as_table() end
+	if type(obj) ~= 'table' then return obj end
+
 	if not done then done = {} end
 	if done[obj] then return obj end
 	done[obj] = true
-
-	if Big and Big.is(obj) then return obj:as_table() end
-	if type(obj) ~= 'table' then return obj end
 
 	for k,v in pairs(obj) do
 		if Big and Big.is(k) then
@@ -44,9 +44,6 @@ end
 --- @param config? t.CopyTableConfig
 --- @param reflist any
 function Talisman.copy_table(obj, config, reflist)
-	if not reflist then reflist = {} end
-	if reflist[obj] then return reflist[obj] end
-
 	if Big and Big.is(obj) then
 		if config and config.sanitizze then return obj:as_table() end
 		return obj
@@ -54,7 +51,10 @@ function Talisman.copy_table(obj, config, reflist)
 	if type(obj) ~= 'table' then return obj end
 
 	local copy = {}
+	if not reflist then reflist = {} end
+	if reflist[obj] then return reflist[obj] end
 	reflist[obj] = copy
+
 	for k, v in pairs(obj) do
 		copy[Talisman.copy_table(k, config, reflist)] = Talisman.copy_table(v, config, reflist)
 	end
