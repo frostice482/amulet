@@ -262,6 +262,10 @@ function Big:compareTo(other)
         return signcomp(self.number, other)
     end
 
+    if self._inf or other._inf then
+        return signcomp(self.number, other.number)
+    end
+
     if self.asize == 1 and other.asize == 1 then
         return signcomp(self.number, other.number)
     end
