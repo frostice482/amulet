@@ -1,5 +1,8 @@
-function Talisman.sanitize(obj, done)
-	if Big and Big.is(obj) then return obj:as_table() end
+function Talisman.sanitize(obj, tonum, done)
+	if not Big then return end
+	if Big.is(obj) then
+		return tonum and obj.number or obj:as_table()
+	end
 	if type(obj) ~= 'table' then return obj end
 
 	if not done then done = {} end
@@ -9,17 +12,13 @@ function Talisman.sanitize(obj, done)
 	for k,v in pairs(obj) do
 		if Big and Big.is(k) then
 			obj[k] = nil
-			k = k:as_table()
+			k = tonum and k.number or k:as_table()
 			obj[k] = v
 		else
-			Talisman.sanitize(k, done)
+			Talisman.sanitize(k, tonum, done)
 		end
 
-		if Big and Big.is(v) then
-			obj[k] = v:as_table()
-		else
-			Talisman.sanitize(v, done)
-		end
+		obj[k] = Talisman.sanitize(v, tonum, done)
 	end
 
 	return obj
@@ -36,8 +35,8 @@ function Talisman.create_unpack_env()
 end
 
 --- @class t.CopyTableConfig
---- @field reflist? table
---- @field sanitizze? boolean
+--- @field sanitize? boolean
+--- @field sanitizeToNumber? boolean
 --- @field nometa? boolean
 
 --- @param obj any
@@ -45,8 +44,9 @@ end
 --- @param reflist any
 function Talisman.copy_table(obj, config, reflist)
 	if Big and Big.is(obj) then
-		if config and config.sanitizze then return obj:as_table() end
-		return obj
+		if not (config and config.sanitize) then return obj end
+		if config.sanitizeToNumber then return obj.number end
+		return obj:as_table()
 	end
 	if type(obj) ~= 'table' then return obj end
 
@@ -67,7 +67,14 @@ end
 
 --- @type t.CopyTableConfig
 Talisman.copy_for_thread = {
-	sanitizze = true,
+	sanitize = true,
+	nometa = true
+}
+
+--- @type t.CopyTableConfig
+Talisman.copy_for_thread_num = {
+	sanitize = true,
+	sanitizeToNumber = true,
 	nometa = true
 }
 
@@ -90,9 +97,9 @@ local _push = Channel.push
 
 function Channel:push(obj)
 	if Talisman.config_file.thread_sanitize == "copy" then
-		obj = Talisman.copy_table(obj, Talisman.copy_for_thread)
+		obj = Talisman.copy_table(obj, Talisman.config_file.thread_sanitize_num and Talisman.copy_for_thread_num or Talisman.copy_for_thread)
 	elseif Talisman.config_file.thread_sanitize == "modify" then
-		obj = Talisman.sanitize(obj)
+		obj = Talisman.sanitize(obj, Talisman.config_file.thread_sanitize_num)
 	end
 	return _push(self, obj)
 end

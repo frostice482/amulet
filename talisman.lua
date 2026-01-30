@@ -19,6 +19,7 @@ Talisman.config_file = {
     enable_compat = false,
     debug_coroutine = false,
     thread_sanitize = 'modify',
+    thread_sanitize_num = true,
 
     break_infinity = "omeganum", -- unused
     notation = "Balatro"
