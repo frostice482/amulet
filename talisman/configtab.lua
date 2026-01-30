@@ -16,8 +16,9 @@ if not SMODS then
 end
 
 Talisman.config_sections = {}
+local conf = Talisman.config_sections
 
-function Talisman.config_sections.title()
+function conf.title()
     return {
         n = G.UIT.R,
         config = { align = "cm" },
@@ -27,32 +28,42 @@ function Talisman.config_sections.title()
     }
 end
 
-function Talisman.config_sections.disable_anim()
-    return create_toggle({
-        label = localize("tal_disable_anim"),
+--- @param refval string
+--- @param title? string | boolean
+--- @param tooltip? string | boolean
+--- @param cb? fun(val: boolean)
+function conf.create_toggle(refval, title, tooltip, cb)
+    title = title == true and 'tal_'..refval or title or nil
+    tooltip = tooltip == true and title..'_warning' or tooltip or nil
+
+    local ui = create_toggle({
+        label = title and localize(title),
         ref_table = Talisman.config_file,
-        ref_value = "disable_anims",
-        callback = function()
+        ref_value = refval,
+        callback = function(arg)
+            if cb then cb(arg) end
             Talisman.save_config()
-        end
+        end,
     })
+    if tooltip then
+        ui.config.on_demand_tooltip = { text = localize(tooltip) }
+    end
+    return ui
 end
 
-function Talisman.config_sections.disable_omega()
-    return create_toggle({
-        label = localize("tal_disable_omega"),
-        ref_table = Talisman.config_file,
-        ref_value = "disable_omega",
-        callback = function(val)
-            if val == false then
-                require("talisman.break_inf")
-            end
-            Talisman.save_config()
-        end
-    })
+function conf.disable_anim()
+    return conf.create_toggle("disable_anims", true)
 end
 
-function Talisman.config_sections.notation()
+function conf.disable_omega()
+    return conf.create_toggle("disable_omega", true, nil, function (val)
+        if val == false then
+            require("talisman.break_inf")
+        end
+    end)
+end
+
+function conf.notation()
     local b = to_big(1e20)
     if not (Big and Notations and is_big(b)) then return { n = G.UIT.R } end
 
@@ -73,7 +84,7 @@ function Talisman.config_sections.notation()
     })
 end
 
-function Talisman.config_sections.thread_sanitize()
+function conf.thread_sanitize()
     return create_option_cycle({
         label = localize("tal_thread_sanitation"),
         options = Talisman.thread_sanitations,
@@ -85,42 +96,32 @@ function Talisman.config_sections.thread_sanitize()
     })
 end
 
-function Talisman.config_sections.enable_type_compat()
-    local t = create_toggle({
-        label = localize("tal_enable_compat"),
-        ref_table = Talisman.config_file,
-        ref_value = "enable_compat",
-        callback = function()
-            Talisman.save_config()
-        end
-    })
-    t.config.tooltip = { text = localize("tal_enable_compat_warning") }
-    return t
+function conf.thread_sanitize_num()
+    return conf.create_toggle("thread_sanitize_num", true)
 end
 
-function Talisman.config_sections.debug_coroutine()
-    local t = create_toggle({
-        label = localize("tal_debug_coroutine"),
-        ref_table = Talisman.config_file,
-        ref_value = "debug_coroutine",
-        callback = function()
-            Talisman.save_config()
-        end
-    })
-    t.config.tooltip = { text = localize("tal_debug_coroutine_warning") }
-    return t
+function conf.enable_type_compat()
+    return conf.create_toggle("enable_compat", true, true)
 end
 
-Talisman.config_sections_array = {
-    Talisman.config_sections.disable_anim,
-    Talisman.config_sections.disable_omega,
-    Talisman.config_sections.debug_coroutine,
-    Talisman.config_sections.enable_type_compat,
-    Talisman.config_sections.notation,
-    Talisman.config_sections.thread_sanitize,
+function conf.debug_coroutine()
+    return conf.create_toggle("debug_coroutine", true, true)
+end
+
+conf.array = {
+    conf.disable_anim,
+    conf.disable_omega,
+    conf.notation,
+    conf.debug_coroutine,
 }
 
-Talisman.config_ui_base = {
+conf.compat_array = {
+    conf.thread_sanitize,
+    conf.thread_sanitize_num,
+    conf.enable_type_compat,
+}
+
+conf.ui_base = {
     emboss = 0.05,
     minh = 6,
     r = 0.1,
@@ -130,9 +131,9 @@ Talisman.config_ui_base = {
     colour = G.C.BLACK
 }
 
-function Talisman.config_tab()
+function conf.generate_tab(array)
     local nodes = {}
-    for i,v in ipairs(Talisman.config_sections_array) do
+    for i,v in ipairs(array) do
         local n = v(nodes)
         if n then
             table.insert(nodes, n)
@@ -140,15 +141,23 @@ function Talisman.config_tab()
     end
     return {
         n = G.UIT.ROOT,
-        config = Talisman.config_ui_base,
+        config = conf.ui_base,
         nodes = nodes
     }
 end
 
-function Talisman.credits_tab()
+function conf.config_tab()
+    return conf.generate_tab(conf.array)
+end
+
+function conf.compat_config_tab()
+    return conf.generate_tab(conf.compat_array)
+end
+
+function conf.credits_tab()
     return {
         n = G.UIT.ROOT,
-        config = Talisman.config_ui_base,
+        config = conf.ui_base,
         nodes = {
             { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "Amulet devs:", scale = 0.4 } }}, config = { padding = 0.1 } },
             { n = G.UIT.R, nodes = {{ n = G.UIT.T, config = { text = "- frostice482", scale = 0.4 } }} },
@@ -166,17 +175,17 @@ end
 function G.FUNCS.talismanMenu(e)
     local tabs = create_tabs({
         snap_to_nav = true,
-        tabs = {
-            {
-                label = "Amulet",
-                chosen = true,
-                tab_definition_function = Talisman.config_tab
-            },
-            {
-                label = "Credits",
-                tab_definition_function = Talisman.credits_tab
-            }
-        }
+        tabs = {{
+            label = "Amulet",
+            chosen = true,
+            tab_definition_function = conf.config_tab
+        },{
+            label = "Compat",
+            tab_definition_function = conf.compat_config_tab
+        },{
+            label = "Credits",
+            tab_definition_function = conf.credits_tab
+        }}
     })
     G.FUNCS.overlay_menu {
         definition = create_UIBox_generic_options({
@@ -197,4 +206,5 @@ function G.FUNCS.tal_update_thread_sanitize(arg)
     Talisman.save_config()
 end
 
-G.UIDEF.tal_credits = Talisman.credits_tab
+G.UIDEF.tal_credits = conf.credits_tab
+G.UIDEF.tal_compat_config = conf.compat_config_tab
