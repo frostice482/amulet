@@ -33,7 +33,7 @@ target = "game.lua"
 pattern = 'if G.FILE_HANDLER.progress then'
 position = "after"
 payload = '''
-G.ARGS.save_progress.PROFILE = Talisman.copy_table(G.ARGS.save_progress.PROFILE, Talisman.copy_for_thread)
+G.ARGS.save_progress.PROFILE = Talisman.sanitizer.copy_table(G.ARGS.save_progress.PROFILE, Talisman.sanitizer.copy_for_thread)
 '''
 match_indent = true
 
@@ -42,7 +42,7 @@ match_indent = true
 target = "game.lua"
 pattern = 'if G.FILE_HANDLER.run then'
 position = "after"
-payload = 'Talisman.sanitize(G.ARGS.save_run)'
+payload = 'Talisman.sanitizer.sanitize(G.ARGS.save_run)'
 match_indent = true
 
 [[patches]]
@@ -50,5 +50,5 @@ match_indent = true
 target = "game.lua"
 pattern = 'save_profile = G.PROFILES[G.SETTINGS.profile]'
 position = "at"
-payload = 'save_profile = Talisman.copy_table(G.PROFILES[G.SETTINGS.profile], Talisman.copy_for_thread)'
+payload = 'save_profile = Talisman.sanitizer.copy_table(G.PROFILES[G.SETTINGS.profile], Talisman.sanitizer.copy_for_thread)'
 match_indent = true
