@@ -57,12 +57,13 @@ if curmod then
 	end
 
 	curmod.extra_tabs = function()
-		return {
-			{
-				label = 'Credits',
-				tab_definition_function = G.UIDEF.tal_credits
-			}
-		}
+		return {{
+			label = 'Compability',
+			tab_definition_function = G.UIDEF.tal_compat_config
+		}, {
+			label = 'Credits',
+			tab_definition_function = G.UIDEF.tal_credits
+		}}
 	end
 
 	curmod.debug_info = {}
