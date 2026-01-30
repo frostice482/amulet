@@ -2,27 +2,66 @@
 version = "1.0.0"
 priority = 0
 
-# AAAAAAAAAAAAAA FUCK
+[[patches]]
+[patches.pattern]
+target = "engine/string_packer.lua"
+pattern = 'function STR_PACK(data, recursive)'
+position = "before"
+payload = '''
+local function STR_BIG(v)
+	local arr, sign, num
+	if Big and Big.is(v) then
+		arr, sign, num = v:get_array(), v.sign, math.min(v.number, 1e308)
+	elseif type(v) == "table" and v.__talisman then
+		arr, sign, num = v.array, v.sign, v.val
+	else
+		return
+	end
+
+	local arrstr = {}
+	for i, val in pairs(arr) do
+		table.insert(arrstr, string.format("[%s]=%s,", i, val or 0))
+	end
+	return string.format("(Big and to_big({%s}, %s) or %s)", table.concat(arrstr), sign, num)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "engine/string_packer.lua"
+pattern = '''
+assert((type_i ~= "table"), "Data table cannot have an table as a key reference")
+if type_i == "string" then
+	i = '['..string.format("%q",i)..']'
+else
+	i = "["..i.."]"
+end
+'''
+payload = '''
+local bigi = STR_BIG(i)
+if bigi then
+	i = "["..bigi.."]"
+else
+	assert((type_i ~= "table"), "Data table cannot have an table as a key reference")
+	if type_i == "string" then
+		i = '['..string.format("%q",i)..']'
+	else
+		i = "["..i.."]"
+	end
+end
+'''
+match_indent = true
+
 [[patches]]
 [patches.pattern]
 target = "engine/string_packer.lua"
 pattern = 'if type_v == "table" then'
 position = "at"
 payload = '''
-if Big and Big.is(v) then
-	local arr = {}
-	for i, val in pairs(v:get_array()) do
-		table.insert(arr, string.format("[%s]=%s,", i, val or 0))
-	end
-	v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(arr), v.sign, math.min(v.number,1e305))
-
-elseif type_v == "table" and v.__talisman then
-	local arr = {}
-	for i, val in pairs(v.array) do
-		table.insert(arr, string.format("[%s]=%s,", i, val or 0))
-	end
-	v = string.format("(Big and to_big({%s}, %s) or %s)", table.concat(arr), v.sign, v.val)
-
+local bigv = STR_BIG(v)
+if bigv then
+	v = bigv
 elseif type_v == "table" then
 '''
 match_indent = true
