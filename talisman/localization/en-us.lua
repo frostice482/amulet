@@ -29,7 +29,7 @@ return {
     tal_big_ante_warning = {
         'Allows ante over 1e308.',
         'Note that not all mods supports this.',
-        '',
+        ' ',
         '"but why tho"'
     },
 

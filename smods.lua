@@ -47,8 +47,8 @@ if curmod then
 	function curmod.save_mod_config() end
 
 	curmod.config_tab = function()
-		if Talisman and Talisman.config_tab then
-			return Talisman.config_tab()
+		if Talisman and Talisman.config_sections then
+			return Talisman.config_sections.config_tab()
 		end
 		return nil
 	end
