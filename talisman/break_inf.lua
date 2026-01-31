@@ -14,6 +14,7 @@ function type(v)
 end
 
 -- We call this after init_game_object to leave room for mods that add more poker hands
+--- @param obj balatro.Game.Current
 Talisman.igo = function(obj)
     for _, v in pairs(obj.hands) do
         v.chips = to_big(v.chips)
@@ -25,6 +26,9 @@ Talisman.igo = function(obj)
         v.level = to_big(v.level)
     end
     obj.starting_params.dollars = to_big(obj.starting_params.dollars)
+    if Talisman.config_file.big_ante then
+        obj.round_resets.ante = to_big(obj.round_resets.ante)
+    end
     return obj
 end
 
@@ -87,7 +91,7 @@ function get_blind_amount(ante)
     end
 
     if ante < 1 then return B100 end
-    if ante <= 8 then return amounts[ante] end
+    if ante <= 8 then return amounts[to_number(ante)] end
 
     local a, b, c, d = amounts[8], 1.6, ante - 8, 1 + 0.2 * (ante - 8)
     local amount = a * (b + (k * c) ^ d) ^ c
@@ -165,6 +169,7 @@ end
 if SMODS then
     function SMODS.get_blind_amount(ante)
         if ante < 1 then return to_big(100) end
+
         local scale = G.GAME.modifiers.scaling
         local amounts = {
             to_big(300),
@@ -179,7 +184,7 @@ if SMODS then
 
         local amount
         if ante <= 8 then
-            amount = amounts[ante]
+            amount = amounts[to_number(ante)]
         else
             local a, b, c, d = amounts[8], amounts[8] / amounts[7], ante - 8, 1 + 0.2 * (ante - 8)
             amount = math.floor(a * (b + (b * k * c) ^ d) ^ c)
