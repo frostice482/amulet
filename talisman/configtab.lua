@@ -15,7 +15,9 @@ if not SMODS then --- @diagnostic disable-line
     end
 end
 
+---@class t.ConfigSection
 Talisman.config_sections = {}
+---@class t.ConfigSection
 local conf = Talisman.config_sections
 
 conf.notations = {

@@ -1,10 +1,12 @@
 --scoring coroutine
 
 local oldplay = G.FUNCS.evaluate_play
+--- @class t.Coroutine
 local co = {
 	frametime = 0.03,
 	framecalc = 250,
 }
+--- @class t.Coroutine
 Talisman.coroutine = co
 
 function co.func()

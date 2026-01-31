@@ -1,4 +1,6 @@
+---@class t.Sanitizer
 Talisman.sanitizer = {}
+---@class t.Sanitizer
 local sanitizer = Talisman.sanitizer
 
 function sanitizer.sanitize(obj, tonum, done)
