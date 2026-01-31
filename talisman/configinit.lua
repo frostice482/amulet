@@ -1,9 +1,14 @@
 Talisman = {
     F_NO_COROUTINE = false,
     mod_path = _mod_dir_amulet,
+    ante_switch_point = 1000,
+
     cdataman = true,
-    Amulet = true,
-    ante_switch_point = 1000
+    Amulet = true
+}
+Talisman.api_version = {
+    major = 3,
+    minor = 3
 }
 Talisman.current_calc = {}
 
