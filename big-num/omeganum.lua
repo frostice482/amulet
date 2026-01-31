@@ -75,7 +75,7 @@ local function isfinite(n)
 end
 
 function Big.is(instance)
-    return instance and bigs[instance]
+    return bigs[instance]
 end
 
 -- #region constructor
@@ -88,6 +88,11 @@ local function arraySizeOf(arr)
         end
     end
     return total
+end
+
+local function fnum(other)
+    if bigs[other] then return other.number end
+    if type(other) == "number" then return other end
 end
 
 --- @return t.Omega
@@ -133,21 +138,33 @@ end
 
 --- @protected
 function Big:_normalize()
-    local b = nil
-    local arr = self:get_array()
-    if ((arr == nil) or (type(arr) ~= "table") or (arraySizeOf(arr) == 0)) then
-        arr = {}
+    local arr = bigs[self]
+    if type(arr) ~= "table" then
+        self.sign = 1
+        self.asize = 0
+        bigs[self] = {0}
+        return
     end
 
     local asize = arraySizeOf(arr)
-    if asize == 1 and arr[1] == 0 then
+    if asize == 0 then
         self.sign = 1
-        return self
+        self.asize = 0
+        bigs[self] = {0}
+        return
     end
-    if asize == 1 and arr[1] < 0 then
-        self.sign = -1
-        arr[1] = -arr[1]
+    if asize == 1 then
+        if arr[1] < 0 then
+            self.sign = -1
+            arr[1] = -arr[1]
+        else
+            self.sign = 1
+        end
+        if arr[1] < R.MAX_SAFE_INTEGER then
+            return
+        end
     end
+
     if self.sign ~= 1 and self.sign ~= -1 then
         if (self.sign < 0) then
             self.sign = -1;
@@ -176,9 +193,9 @@ function Big:_normalize()
     end
 
     local b = true
+    local u
     repeat
         b=false;
-        asize = arraySizeOf(arr)
 
         if arr[1] and arr[1] > R.MAX_SAFE_INTEGER then
             arr[2] = (arr[2] or 0) + 1;
@@ -200,20 +217,21 @@ function Big:_normalize()
                 b = true;
             end
         end
+
+        u = u or b
     until not b
 
-    if (arraySizeOf(arr) == 0) and #arr ~= 1 then
-        arr = {0}
-    end
+    if u then asize = arraySizeOf(arr) end
+    if asize == 0 then arr = {0} end
     bigs[self] = arr
-    self.asize = arraySizeOf(arr)
+    self.asize = asize
     return
 end
 
 function Big:normalize()
     self:_normalize()
     self.number = self:_to_number()
-    local v = self:get_array()[1]
+    local v = bigs[self][1]
     self._nan = v ~= v
     self._inf = v == math.huge or v == -math.huge
     return self
@@ -249,17 +267,28 @@ end
 
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
+    if rawequal(self, other) then return 0 end
     if not is_number(self) then self = Big:ensureBig(self) end
     if not is_number(other) then other = Big:ensureBig(other) end
 
-    if not Big.is(self) then
-        if not Big.is(other) then
+    if not bigs[self] then
+        if not bigs[other] then
             return signcomp(self, other)
         end
         return signcomp(self, other.number)
     end
-    if not Big.is(other) then
+    if not bigs[other] then
         return signcomp(self.number, other)
+    end
+
+    local sa = self.asize
+    local oa = other.asize
+    if sa == 1 and oa == 1 then
+        return signcomp(self.number, other.number)
+    end
+
+    if self._nan or other._nan then
+        return R.NaN
     end
 
     if self._inf then
@@ -272,23 +301,41 @@ function Big:compareTo(other)
         return -1 * other.sign
     end
 
-    if self.asize == 1 and other.asize == 1 then
-        return signcomp(self.number, other.number)
-    end
     if self.sign ~= other.sign then
         return self.sign
     end
-    if self.asize ~= other.asize then
-        return self.asize - other.asize
+    if sa ~= oa then
+        return sa - oa
     end
 
-    local arr = self:get_array()
-    local other_arr = other:get_array() --- @diagnostic disable-line
-    for i=self.asize, 1, -1 do
-        local d = (arr[i] or 0) - (other_arr[i] or 0)
-        if d ~= 0 then return d * self.sign end
+    local arr = bigs[self]
+    local other_arr = bigs[other]
+    if arr == other_arr then return 0 end
+
+    if sa < 8 then
+        for i=self.asize, 1, -1 do
+            local d = (arr[i] or 0) - (other_arr[i] or 0)
+            if d ~= 0 then return d * self.sign end
+        end
+        return 0;
     end
-    return 0;
+
+    local mx = 0
+    local mc = 0
+    for i, v in pairs(arr) do
+        if i > mx then
+            local d = v - (other_arr[i] or 0)
+            if d ~= 0 then mx, mc = i, d end
+        end
+    end
+    for i, v in pairs(other_arr) do
+        if i > mx then
+            local d = (arr[i] or 0) - v
+            if d ~= 0 then mx, mc = i, d end
+        end
+    end
+
+    return mc * self.sign
 end
 
 --- @param other t.Omega.Parsable
@@ -372,17 +419,17 @@ end
 --- @return number[]
 function Big:clone_array(target)
     if not target then target = {} end
-    for i, j in pairs(self:get_array()) do
+    for i, j in pairs(bigs[self]) do
         target[i] = j
     end
-    setmetatable(target, getmetatable(self:get_array()))
+    setmetatable(target, getmetatable(bigs[self]))
     return target
 end
 
 --- @return t.Omega
 --- @param sameArray? boolean
 function Big:clone(sameArray)
-    local n = Big:new(sameArray and self:get_array() or self:clone_array(), true)
+    local n = Big:new(sameArray and bigs[self] or self:clone_array(), true)
     ffi.copy(n, self, TalismanOmega_sizeof)
     return n
 end
@@ -393,8 +440,9 @@ local c2 = {}
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:add(other)
-    if is_number(other) then
-        local n = self.number + to_number(other)
+    local on = fnum(other)
+    if on then
+        local n = self.number + on
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other)
@@ -422,9 +470,9 @@ function Big:add(other)
     end
 
     local pw=self:min(other);
-    local p=pw:get_array();
+    local p=bigs[pw];
     local qw=self:max(other);
-    local q=qw:get_array();
+    local q=bigs[qw];
 
     if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
         p = pw:clone_array(c1)
@@ -455,8 +503,9 @@ end
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:sub(other)
-    if is_number(other) then
-        local n = self.number - to_number(other)
+    local on = fnum(other)
+    if on then
+        local n = self.number - on
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other)
@@ -484,9 +533,9 @@ function Big:sub(other)
     end
 
     local pw=self:min(other);
-    local p=pw:get_array();
+    local p=bigs[pw];
     local qw=self:max(other);
-    local q=qw:get_array();
+    local q=bigs[qw];
 
     local n = other:gt(self);
     if (p[2] == 2) and not pw:gt(B.E_MAX_SAFE_INTEGER) then
@@ -525,8 +574,9 @@ end
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:div(other)
-    if is_number(other) then
-        local n = self.number / to_number(other)
+    local on = fnum(other)
+    if on then
+        local n = self.number / on
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other);
@@ -569,8 +619,9 @@ end
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:mul(other)
-    if is_number(other) then
-        local n = self.number * to_number(other)
+    local on = fnum(other)
+    if on then
+        local n = self.number * on
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other);
@@ -613,8 +664,9 @@ end
 
 --- @return t.Omega
 function Big:logBase(other)
-    if is_number(other) then
-        local n = math.log10(self.number)/math.log10(other.number)
+    local on = fnum(other)
+    if on then
+        local n = math.log10(self.number)/on
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other);
@@ -638,7 +690,7 @@ function Big:log10()
     end
 
     local x = self:clone()
-    local w = x:get_array()
+    local w = bigs[x]
     w[2] = (w[2] or 0) - 1;
     return x:normalize()
 end
@@ -651,8 +703,9 @@ end
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:pow(other)
-    if is_number(other) then
-        local n = self.number ^ to_number(other)
+    local on = fnum(other)
+    if on then
+        local n = self.number ^ on
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other);
@@ -706,7 +759,7 @@ function Big:pow10()
     end
 
     self = self:clone();
-    local w = self:get_array()
+    local w = bigs[self]
     w[2] = (w[2] or 0) + 1;
     self:normalize();
     return self;
@@ -720,8 +773,9 @@ end
 --- @param other t.Omega.Parsable
 --- @return t.Omega
 function Big:root(other)
-    if is_number(other) then
-        local n = 10^(math.log10(self.number)/other)
+    local on = fnum(other)
+    if on then
+        local n = 10^(math.log10(self.number)/on)
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other)
@@ -803,7 +857,7 @@ function Big:slog(base)
     if (self:max(base):gt(B.TETRATED_MAX_SAFE_INTEGER)) then
         if self:gt(base) then
             local x = self:clone()
-            local w = x:get_array()
+            local w = bigs[x]
             w[3] = (w[3] or 0) - 1
             x:normalize()
             return x:sub(w[2])
@@ -812,9 +866,9 @@ function Big:slog(base)
     end
 
     local x = self:clone()
-    local w = x:get_array()
+    local w = bigs[x]
     local r = 0
-    local t = (w[2] or 0) - (base:get_array()[2] or 0)
+    local t = (w[2] or 0) - (bigs[base][2] or 0)
     if (t > 3) then
         local l = t - 3
         r = r + l
@@ -901,7 +955,7 @@ function Big:tetrate(other)
             return negln:lambertw():div(negln)
         end
         local j = self:slog(10):add(other):clone()
-        local w = j:get_array()
+        local w = bigs[j]
         w[3]=(w[3] or 0) + 1
         j:normalize()
         return j
@@ -937,7 +991,7 @@ function Big:tetrate(other)
         f = 0
     end
     r = r:clone()
-    local w = r:get_array()
+    local w = bigs[r]
     w[2] = (w[2] or 0) + f
     r:normalize()
     return r;
@@ -1016,18 +1070,18 @@ function Big:arrow(arrows, other)
     if (self:gt(limit) or other > B.MAX_SAFE_INTEGER) or arrows >= 350 then --just kinda chosen randomly
         if (self:gt(limit)) then
             r = self:clone()
-            local w = r:get_array()
+            local w = bigs[r]
             w[arrowint + 1] = w[arrowint + 1] - 1
             if arrowint < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
                 r:normalize()
             end
         elseif (self:gt(limit_minus)) then
-            r = Big:create(self:get_array()[arrowint])
+            r = Big:create(bigs[self][arrowint])
         else
             r = B.ZERO
         end
         local j = r:add(other):clone()
-        local w = j:get_array()
+        local w = bigs[j]
         w[arrowint+1] = (w[arrowint+1] or 0) + 1
         j:normalize()
         return j
@@ -1050,7 +1104,7 @@ function Big:arrow(arrows, other)
         f = 0
     end
     r = r:clone()
-    local w = r:get_array()
+    local w = bigs[r]
     w[arrowint] = (w[arrowint] or 0) + f
     r:normalize()
     return r
@@ -1073,7 +1127,7 @@ end
 
 --- @return t.Omega
 function Big:lambertw()
-    local arr = self:get_array()
+    local arr = bigs[self]
     if (self._nan) then
         return self
     end
@@ -1157,7 +1211,7 @@ end
 
 --- @return number
 function Big:_to_number()
-    local arr = self:get_array()
+    local arr = bigs[self]
     if self.sign == -1 then return -1 * self:neg():_to_number() end
 
     local a1 = arr[1] or 0
@@ -1236,7 +1290,7 @@ end
 
 --- @return string
 function Big:toString()
-    local arr = self:get_array()
+    local arr = bigs[self]
     if (self.sign==-1) then
         return "-" .. self:abs():toString()
     end
@@ -1287,7 +1341,7 @@ end
 --- @return t.Omega
 function Big:parse(input)
     local t = Big:new({0})
-    local arr = t:get_array()
+    local arr = bigs[t]
     local negateIt = false
     while ((string.sub(input, 1, 1)=="-") or (string.sub(input, 1, 1)=="+")) do
         if (string.sub(input, 1, 1)=="-") then
