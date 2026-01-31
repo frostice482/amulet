@@ -1,0 +1,1 @@
+return {["disable_anims"]=false,["break_infinity"]="omeganum",["notation"]="Balatro",["disable_omega"]=false,["enable_compat"]=false,}
