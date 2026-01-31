@@ -16,13 +16,15 @@ Talisman.current_calc = {}
 Talisman.config_file = {
     disable_anims = false,
     disable_omega = false,
-    enable_compat = false,
     debug_coroutine = false,
+    big_ante = false,
+    notation = "Balatro",
+
+    enable_compat = false,
     thread_sanitize = 'modify',
     thread_sanitize_num = true,
 
     break_infinity = "omeganum", -- unused
-    notation = "Balatro"
 }
 Talisman.notations = {
     loc_keys = {

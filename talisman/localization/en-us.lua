@@ -25,6 +25,14 @@ return {
         'easier when crashed'
     },
 
+    tal_big_ante = 'Enable Big Ante',
+    tal_big_ante_warning = {
+        'Allows ante over 1e308.',
+        'Note that not all mods supports this.',
+        '',
+        '"but why tho"'
+    },
+
     tal_enable_compat = 'Enable type compat',
     tal_enable_compat_warning = {
         'Warning: Type compat does not work with some mods,',

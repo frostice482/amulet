@@ -108,11 +108,19 @@ function conf.debug_coroutine()
     return conf.create_toggle("debug_coroutine", true, true)
 end
 
+function conf.big_ante()
+    return conf.create_toggle("big_ante", true, true, function (val)
+        if not G.GAME then return end
+        G.GAME.round_resets.ante = val and to_big(G.GAME.round_resets.ante) or to_number(G.GAME.round_resets.ante)
+    end)
+end
+
 conf.array = {
     conf.disable_anim,
     conf.disable_omega,
-    conf.notation,
     conf.debug_coroutine,
+    conf.big_ante,
+    conf.notation,
 }
 
 conf.compat_array = {
