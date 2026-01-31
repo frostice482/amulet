@@ -38,6 +38,7 @@ else
 	i = "["..i.."]"
 end
 '''
+position = "at"
 payload = '''
 local bigi = STR_BIG(i)
 if bigi then
