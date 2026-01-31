@@ -26,11 +26,12 @@ Talisman.igo = function(obj)
         v.level = to_big(v.level)
     end
     obj.starting_params.dollars = to_big(obj.starting_params.dollars)
-    if Talisman.config_file.big_ante then
+    if Talisman.has_big_ante() then
         obj.round_resets.ante = to_big(obj.round_resets.ante)
     end
     return obj
 end
+if G.GAME then Talisman.igo(G.GAME) end
 
 local nf = number_format
 function number_format(num, e_switch_point)

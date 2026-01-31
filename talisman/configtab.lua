@@ -1,4 +1,4 @@
-if not SMODS then
+if not SMODS then --- @diagnostic disable-line
     local createOptionsRef = create_UIBox_options
     function create_UIBox_options()
         local contents = createOptionsRef()
@@ -17,6 +17,23 @@ end
 
 Talisman.config_sections = {}
 local conf = Talisman.config_sections
+
+conf.notations = {
+    loc_keys = {
+        "talisman_notations_hypere",
+        --"talisman_notations_letter",
+        "talisman_notations_array",
+        --"k_ante"
+    },
+    filenames = {
+        "Balatro",
+        --"LetterNotation",
+        "ArrayNotation",
+        --"AnteNotation",
+    }
+}
+
+conf.thread_sanitations = { 'modify', 'copy', 'noop' }
 
 function conf.title()
     return {
@@ -37,16 +54,16 @@ function conf.create_toggle(refval, title, tooltip, cb)
     tooltip = tooltip == true and title..'_warning' or tooltip or nil
 
     local ui = create_toggle({
-        label = title and localize(title),
+        label = title and localize(title), --- @diagnostic disable-line
         ref_table = Talisman.config_file,
         ref_value = refval,
         callback = function(arg)
             if cb then cb(arg) end
-            Talisman.save_config()
+            Talisman.config.save()
         end,
     })
     if tooltip then
-        ui.config.on_demand_tooltip = { text = localize(tooltip) }
+        ui.config.on_demand_tooltip = { text = localize(tooltip) } --- @diagnostic disable-line
     end
     return ui
 end
@@ -56,6 +73,7 @@ function conf.disable_anim()
 end
 
 function conf.disable_omega()
+    if Talisman.forced_features.omeganum then return end
     return conf.create_toggle("disable_omega", true, nil, function (val)
         if val == false then
             require("talisman.break_inf")
@@ -67,16 +85,16 @@ function conf.notation()
     local b = to_big(1e20)
     if not (Big and Notations and is_big(b)) then return { n = G.UIT.R } end
 
-    local ex = b:tetrate(1e20)
+    local ex = b:tetrate(1e20) --- @diagnostic disable-line
     local opts = {}
-    for i,loc in ipairs(Talisman.notations.loc_keys) do
-        opts[i] = string.format('%s (%s)', localize(loc), Notations[Talisman.notations.filenames[i]]:format(ex, 3))
+    for i,loc in ipairs(conf.notations.loc_keys) do
+        opts[i] = string.format('%s (%s)', localize(loc), Notations[conf.notations.filenames[i]]:format(ex, 3))
     end
 
     return create_option_cycle({
         label = localize("talisman_notation"),
         options = opts,
-        current_option = get_index(Talisman.notations.filenames, Talisman.config_file.notation or 'Balatro') or 1,
+        current_option = get_index(conf.notations.filenames, Talisman.config_file.notation or 'Balatro') or 1,
         w = 6,
         scale = 0.8,
         text_scale = 0.5,
@@ -87,8 +105,8 @@ end
 function conf.thread_sanitize()
     return create_option_cycle({
         label = localize("tal_thread_sanitation"),
-        options = Talisman.thread_sanitations,
-        current_option = get_index(Talisman.thread_sanitations, Talisman.config_file.thread_sanitize or 'modify') or 1,
+        options = conf.thread_sanitations,
+        current_option = get_index(conf.thread_sanitations, Talisman.config_file.thread_sanitize or 'modify') or 1,
         scale = 0.8,
         text_scale = 0.5,
         opt_callback = 'tal_update_thread_sanitize',
@@ -109,6 +127,7 @@ function conf.debug_coroutine()
 end
 
 function conf.big_ante()
+    if Talisman.forced_features.bigante then return end
     return conf.create_toggle("big_ante", true, true, function (val)
         if not G.GAME then return end
         G.GAME.round_resets.ante = val and to_big(G.GAME.round_resets.ante) or to_number(G.GAME.round_resets.ante)
@@ -205,13 +224,13 @@ function G.FUNCS.talismanMenu(e)
 end
 
 function G.FUNCS.tal_update_notation(arg)
-    Talisman.config_file.notation = Talisman.notations.filenames[arg.to_key]
-    Talisman.save_config()
+    Talisman.config_file.notation = conf.notations.filenames[arg.to_key]
+    Talisman.config.save()
 end
 
 function G.FUNCS.tal_update_thread_sanitize(arg)
-    Talisman.config_file.thread_sanitize = Talisman.thread_sanitations[arg.to_key]
-    Talisman.save_config()
+    Talisman.config_file.thread_sanitize = conf.thread_sanitations[arg.to_key]
+    Talisman.config.save()
 end
 
 G.UIDEF.tal_credits = conf.credits_tab

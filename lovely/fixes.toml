@@ -126,5 +126,5 @@ match_indent = true
 target = "functions/UI_definitions.lua"
 pattern = '''if not G.GAME.orbital_choices[G.GAME.round_resets.ante][type] then '''
 position = "at"
-payload = '''if Talisman.config_file.big_ante or not G.GAME.orbital_choices[G.GAME.round_resets.ante][type] then '''
+payload = '''if Talisman.has_big_ante() or not G.GAME.orbital_choices[G.GAME.round_resets.ante][type] then '''
 match_indent = true
