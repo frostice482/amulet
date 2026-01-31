@@ -12,16 +12,22 @@ function sanitizer.sanitize(obj, tonum, done)
 	if done[obj] then return obj end
 	done[obj] = true
 
+	local keyswap = {}
+
 	for k,v in pairs(obj) do
 		if Big and Big.is(k) then
-			obj[k] = nil
-			k = tonum and k.number or k:as_table()
-			obj[k] = v
+			table.insert(keyswap, k)
 		else
 			sanitizer.sanitize(k, tonum, done)
 		end
-
 		obj[k] = sanitizer.sanitize(v, tonum, done)
+	end
+
+	for i,k in ipairs(keyswap) do
+		local nk = tonum and k.number or k:as_table()
+		local v = obj[k]
+		obj[k] = nil
+		obj[nk] = v
 	end
 
 	return obj
