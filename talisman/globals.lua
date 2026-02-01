@@ -15,15 +15,11 @@ end
 
 --- @return t.Omega | number
 function to_big(x, y)
-	if type(x) == 'string' and x == "0" then --hack for when 0 is asked to be a bignumber need to really figure out the fix
-		return 0
-	elseif Big then
-		local result = Big:create(x)
-		if y then result.sign = y end
-		return result
+	if Big then
+		return Big:create(x, y)
 	elseif is_number(x) then
 		return x * 10 ^ (y or 0)
-	elseif type(x) == "nil" then
+	elseif x == nil then
 		return 0
 	else
 		if ((#x >= 2) and ((x[2] >= 2) or (x[2] == 1) and (x[1] > 308))) then
