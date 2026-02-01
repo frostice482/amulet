@@ -1032,7 +1032,7 @@ function Big:arrow(arrows, other)
     arrows = Big.is(arrows) and arrows.number or arrows
     arrows = math.floor(arrows)
 
-    if arrows > R.MAX_VALUE then --if too big return infinity
+    if arrows == math.huge or other == math.huge then --if too big return infinity
         return B.POSITIVE_INFINITY
     end
 
@@ -1076,8 +1076,8 @@ function Big:arrow(arrows, other)
         return self:max(other)
     end
 
-    local r = nil
     if arrows >= 350 or othernum > R.MAX_SAFE_INTEGER or self:gt(limit) then --just kinda chosen randomly
+        local r
         if (self:gt(limit)) then
             r = self:clone()
             local w = bigs[r]
@@ -1099,9 +1099,18 @@ function Big:arrow(arrows, other)
         return j
     end
 
+    if self.number >= 4 and self:isint() and othernum >= 4 and othernum % 1 == 0 then
+        local r = self:tetrate(othernum):clone()
+        r.asize = arrows
+        local n = self.number - 2
+        bigs[r] = setmetatable({ [1] = bigs[r][1], [arrows] = other-2 }, { __index = function() return n end })
+
+        return r
+    end
+
     local f = math.floor(othernum)
     local i = 0
-    r = self:arrow(arrows - 1, othernum-f)
+    local r = self:arrow(arrows - 1, othernum-f)
 
     while f > 0 and r:lt(limit_minus) and i < 100 do
         r = self:arrow(arrows - 1, r)
