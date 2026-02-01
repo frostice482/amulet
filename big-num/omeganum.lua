@@ -209,7 +209,7 @@ function Big:_normalize()
         end
 
         while (arr[1] or 0) < R.LOG_MAX_SAFE_INTEGER and arr[2] ~= nil and arr[2] ~= 0 do
-            arr[1] = math.pow(10, arr[1]);
+            arr[1] = math.pow(10, arr[1] or 0);
             arr[2] = arr[2] - 1
             b = true;
         end
