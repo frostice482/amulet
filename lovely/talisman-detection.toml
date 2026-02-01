@@ -1,0 +1,16 @@
+[manifest]
+version = "1.0.0"
+priority = -1
+
+[[patches]]
+[patches.pattern]
+target = "engine/string_packer.lua"
+pattern = 'function STR_PACK(data, recursive)'
+position = "before"
+payload = '''
+--[[
+amulet: talisman detection
+if v.is and v:is(Object) then
+]]
+'''
+match_indent = true
