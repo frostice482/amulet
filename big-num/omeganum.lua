@@ -1003,10 +1003,12 @@ function Big:tetrate(other)
 end
 
 local maxoparray = { __index = setmetatable({ 10e9 }, { __index = function () return 8 end }) }
+local maxopcache = {}
 
 --- @return t.Omega
 function Big:max_for_op(arrows)
     arrows = to_number(arrows)
+    if maxopcache[arrows] then return maxopcache[arrows] end
 
     if arrows < 1 or arrows ~= arrows or arrows == R.POSITIVE_INFINITY then
         return B.NaN
@@ -1018,7 +1020,7 @@ function Big:max_for_op(arrows)
         return B.TETRATED_MAX_SAFE_INTEGER
     end
 
-    local res = Big:new({0})
+    local res = Big:new()
     res.asize = arrows
     bigs[res] = setmetatable({ [arrows] = R.MAX_SAFE_INTEGER - 2 }, maxoparray)
     return res
@@ -1026,7 +1028,10 @@ end
 
 --- @return t.Omega
 function Big:arrow(arrows, other)
-    arrows = to_number(arrows)
+    local othernum = Big.is(other) and other.number or other
+    arrows = Big.is(arrows) and arrows.number or arrows
+    arrows = math.floor(arrows)
+
     if arrows > R.MAX_VALUE then --if too big return infinity
         return B.POSITIVE_INFINITY
     end
@@ -1047,71 +1052,69 @@ function Big:arrow(arrows, other)
         return self:tetrate(other)
     end
 
-    if other < 0 then
+    if othernum < 0 then
         return B.NaN
     end
-    if other == 0 then
+    if othernum == 0 then
         return B.ONE
     end
-    if other == 1 then
+    if othernum == 1 then
         return self
     end
-    if other == 2 and self == 2 then
-        return Big:create(4)
+    if othernum == 2 then
+        if self.number == 2 then
+            return Big:create(4)
+        end
+        self:arrow(arrows - 1, self)
     end
 
-    --remove potential error from before
-    local arrowint = math.floor(arrows)
-    if (other == 2) then return self:arrow(arrowint - 1, self) end
+    local limit_plus = Big:max_for_op(arrows+1)
+    local limit = Big:max_for_op(arrows)
+    local limit_minus = Big:max_for_op(arrows-1)
 
-    local limit_plus = Big:max_for_op(arrowint+1)
-    local limit = Big:max_for_op(arrowint)
-    local limit_minus = Big:max_for_op(arrowint-1)
     if (self:max(other):gt(limit_plus)) then
         return self:max(other)
     end
 
     local r = nil
-    if (self:gt(limit) or other > B.MAX_SAFE_INTEGER) or arrows >= 350 then --just kinda chosen randomly
+    if arrows >= 350 or othernum > R.MAX_SAFE_INTEGER or self:gt(limit) then --just kinda chosen randomly
         if (self:gt(limit)) then
             r = self:clone()
             local w = bigs[r]
-            w[arrowint + 1] = w[arrowint + 1] - 1
-            if arrowint < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
+            w[arrows + 1] = w[arrows + 1] - 1
+            if arrows < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
                 r:normalize()
             end
-        elseif (self:gt(limit_minus)) then
-            r = Big:create(bigs[self][arrowint])
+        elseif self:gt(limit_minus) then
+            r = Big:create(bigs[self][arrows])
         else
             r = B.ZERO
         end
+
         local j = r:add(other):clone()
         local w = bigs[j]
-        w[arrowint+1] = (w[arrowint+1] or 0) + 1
+        w[arrows+1] = (w[arrows+1] or 0) + 1
         j:normalize()
+
         return j
     end
 
-    local y = Big.is(other) and other.number or other
-    local f = math.floor(y)
-    local arrows_m1 = arrows - 1
+    local f = math.floor(othernum)
     local i = 0
-    local m = limit_minus
-    r = self:arrow(arrows_m1, y-f)
-    while (f ~= 0) and r:lt(m) and (i<100) do
-        if (f > 0) then
-            r = self:arrow(arrows_m1, r)
-            f = f - 1
-        end
+    r = self:arrow(arrows - 1, othernum-f)
+
+    while f > 0 and r:lt(limit_minus) and i < 100 do
+        r = self:arrow(arrows - 1, r)
+        f = f - 1
         i = i + 1
     end
-    if (i == 100) then
-        f = 0
-    end
+    if (i == 100 or f < 0) then f = 0 end
+
     r = r:clone()
     local w = bigs[r]
-    w[arrowint] = (w[arrowint] or 0) + f
+    w[arrows] = (w[arrows] or 0) + f
     r:normalize()
+
     return r
 end
 
@@ -1589,6 +1592,10 @@ B.LOMEGA = Big:create(0.56714329040978387299997)
 B.E_LOG = B.E:log10()
 B.B2E323 = Big:create("2e323")
 B.SLOGLIM = Big:create("10^^^" .. R.MAX_SAFE_INTEGER)
+
+for i=1, 350, 1 do
+    maxopcache[i] = Big:max_for_op(i)
+end
 
 local update = love.update
 function love.update(...)
