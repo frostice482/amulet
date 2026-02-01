@@ -95,35 +95,40 @@ local function fnum(other)
     if type(other) == "number" then return other end
 end
 
+--- @param arr? number[]
+--- @param sign? number
+--- @param noNormalize? boolean
 --- @return t.Omega
-function Big:new(arr, noNormalize)
+function Big:new(arr, sign, noNormalize)
     --- @type t.Omega
-    local obj = TalismanOmega(1, 0) --- @diagnostic disable-line
+    local obj = TalismanOmega() --- @diagnostic disable-line
+    obj.asize = 1
+    obj.sign = sign or 0
     bigs[obj] = arr
     if not noNormalize then obj:normalize() end
     return obj
 end
 
 --- @return t.Omega
-function Big:create(input)
-    if ((type(input) == "number")) then
+function Big:create(input, sign)
+    if type(input) == "number" then
         local obj = caches.list[input]
         if obj then return obj end
         if input ~= input then return B.NaN end
 
-        local obj = Big:new({input})
+        local obj = Big:new({input}, input < 0 and -1 or 1)
         caches.frames[input] = (caches.frames[input] or 0) + 1
         if caches.frames[input] > 100 then
             caches.frames[input] = nil
             caches.list[input] = obj
         end
         return obj
-    elseif ((type(input) == "string")) then
+    elseif type(input) == "string" then
         return Big:parse(input)
     elseif Big.is(input) then
         return input
     else
-        return Big:new(input)
+        return Big:new(input, sign)
     end
 end
 
@@ -230,10 +235,10 @@ end
 
 function Big:normalize()
     self:_normalize()
-    self.number = self:_to_number()
     local v = bigs[self][1]
     self._nan = v ~= v
     self._inf = v == math.huge or v == -math.huge
+    self.number = self:_to_number()
     return self
 end
 
@@ -429,7 +434,7 @@ end
 --- @return t.Omega
 --- @param sameArray? boolean
 function Big:clone(sameArray)
-    local n = Big:new(sameArray and bigs[self] or self:clone_array(), true)
+    local n = Big:new(sameArray and bigs[self] or self:clone_array(), self.sign, true)
     ffi.copy(n, self, TalismanOmega_sizeof)
     return n
 end
