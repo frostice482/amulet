@@ -310,7 +310,7 @@ function Big:compareTo(other)
         return self.sign
     end
     if sa ~= oa then
-        return sa - oa
+        return self.sign * (sa - oa)
     end
 
     local arr = bigs[self]
