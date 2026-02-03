@@ -30,13 +30,14 @@ end
 --- @param l t.Omega
 function BalaNotation:format(l, places)
     local arr = l:get_array()
+    local abs = l:abs()
 
     --The notation here is Hyper-E notation, but with lowercase E.
     if l:isNaN() then
         return "nan"
     elseif l:isInfinite() then
         return l.number > 0 and "Infinity" or "-Infinity"
-    elseif l:log10() < 1000000 then
+    elseif abs:log10() < 1000000 then
         if arr[2] == 1 then --OmegaNum
             local mantissa = 10^(arr[1]-math.floor(arr[1]))
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
@@ -48,7 +49,7 @@ function BalaNotation:format(l, places)
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
             return (l.sign == -1 and "-" or "")..mantissa.."e"..e_ify(exponent)
         end
-    elseif l < 1000000 then
+    elseif abs < 1000000 then
         if arr[2] == 2 then --OmegaNum
             local mantissa = 10^(arr[1]-math.floor(arr[1]))
             mantissa = math.floor(mantissa*10^places+0.5)/10^places
