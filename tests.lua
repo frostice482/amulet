@@ -264,6 +264,7 @@ assert(B(10):tetrate(3) == B(10):pow(B(10^10)), "tetrate: 10 2 failed")
 assert(B(10):tetrate(4) == B(10):pow(B(10):pow(B(10^10))), "tetrate: 10 2 failed")
 assert_array(B(10):tetrate(1e10):get_array(), { 10^10, 10^10-2 })
 assert_array(B(10):tetrate(1e300):get_array(), { 300, 1, 1 })
+assert_array(B(30):tetrate(30):get_array(), { 44.4830537889628914172135409899055957794189453125, 29 })
 
 assert(B(3):root(nan):isNaN(), "tetrate: 3 nan failed")
 assert(B(nan):root(3):isNaN(), "tetrate: nan 3 failed")
