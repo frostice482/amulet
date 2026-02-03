@@ -80,7 +80,7 @@ end
 
 -- #region constructor
 
-local function arraySizeOf(arr)
+local arraySizeOf = table.maxn or function(arr)
     local total = 0
     for i, v in pairs(arr) do
         if type(i) == "number" and v ~= 0 and i > total then
