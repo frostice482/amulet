@@ -52,6 +52,8 @@ function lenient_bignum(x)
 	return x
 end
 
+if Talisman then
+
 function Talisman.juice(v)
 	v = to_number(v) or 1
 	return (G.TAROT_INTERRUPT_PULSE or type(v) ~= "number") and 0
@@ -66,9 +68,15 @@ end
 
 Talisman.to_big = to_big
 
+end
+
+if Game then
+
 local g_start_run = Game.start_run
 function Game:start_run(args)
     local ret = g_start_run(self, args)
     self.GAME.round_resets.ante_disp = self.GAME.round_resets.ante_disp or number_format(self.GAME.round_resets.ante, Talisman.ante_switch_point)
     return ret
+end
+
 end
