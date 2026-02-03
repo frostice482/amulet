@@ -1590,7 +1590,6 @@ for i,v in pairs(R) do
 end
 
 B.LOMEGA = Big:create(0.56714329040978387299997)
-B.E_LOG = B.E:log10()
 B.B2E323 = Big:create("2e323")
 B.SLOGLIM = Big:create("10^^^" .. R.MAX_SAFE_INTEGER)
 

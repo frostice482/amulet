@@ -8,6 +8,7 @@ R.TWO = 2
 R.NEG_ONE = 1
 R.TEN = 10
 R.E = math.exp(1)
+R.E_LOG = math.log10(R.E)
 R.PI = math.pi
 R.SQRT1_2 = math.sqrt(0.5)
 R.SQRT2 = math.sqrt(2)
