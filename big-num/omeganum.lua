@@ -272,7 +272,7 @@ end
 
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
-    if rawequal(self, other) then return 0 end
+    if rawequal(self, other) and not (bigs[self] and self._nan) then return 0 end
 
     if not bigs[self] then
         if type(self) ~= 'number' then return 0/0 end
@@ -522,14 +522,14 @@ function Big:sub(other)
     if (other.sign ==-1) then
         return self:add(other:neg())
     end
+    if (self._nan or other._nan or (self._inf and other._inf)) then
+        return B.NaN
+    end
     if (self:eq(other)) then
         return B.ZERO
     end
     if (other.number == 0) then
         return self
-    end
-    if (self._nan or other._nan or (self._inf and other._inf and self:eq(other:neg()))) then
-        return B.NaN
     end
     if (self._inf) then
         return self
@@ -587,14 +587,14 @@ function Big:div(other)
     end
     other = Big:ensureBig(other);
 
+    if (self._nan or other._nan or self._inf and other._inf or self.number == 0 and other.number == 0) then
+        return B.NaN
+    end
     if (self.sign*other.sign==-1) then
         return self:abs():div(other:abs()):neg()
     end
     if (self.sign==-1) then
         return self:abs():div(other:abs())
-    end
-    if (self._nan or other._nan or (self._inf and other._inf and self:eq(other:neg()))) then
-        return B.NaN
     end
     if (other.number == 0) then
         return B.POSITIVE_INFINITY
@@ -632,14 +632,14 @@ function Big:mul(other)
     end
     other = Big:ensureBig(other);
 
+    if (self._nan or other._nan or (self._inf and other._inf and self:eq(other:neg()))) then
+        return B.NaN
+    end
     if (self.sign*other.sign==-1) then
         return self:abs():mul(other:abs()):neg()
     end
     if (self.sign==-1) then
         return self:abs():mul(other:abs())
-    end
-    if (self._nan or other._nan or (self._inf and other._inf and self:eq(other:neg()))) then
-        return B.NaN
     end
     if (other.number == 0) or self.number == 0 then
         return B.ZERO
@@ -712,7 +712,7 @@ function Big:pow(other)
     local on = fnum(other)
     if on then
         local n = self.number ^ on
-        if isfinite(n) then return Big:create(n) end
+        if isfinite(n) and n ~= 0 then return Big:create(n) end
     end
     other = Big:ensureBig(other);
 
@@ -760,7 +760,7 @@ function Big:pow(other)
 end
 
 function Big:pow10()
-    if self.number < 300 then
+    if self.number < 308 then
         return Big:create(math.pow(10,self.number))
     end
 
@@ -773,6 +773,9 @@ end
 
 --- @return t.Omega
 function Big:exp()
+    if self.number < 709 then
+        return Big:create(math.exp(self.number))
+    end
     return B.E:pow(self)
 end
 
@@ -782,7 +785,7 @@ function Big:root(other)
     local on = fnum(other)
     if on then
         local n = 10^(math.log10(self.number)/on)
-        if isfinite(n) then return Big:create(n) end
+        if isfinite(n) and n ~= 0 then return Big:create(n) end
     end
     other = Big:ensureBig(other)
 
@@ -1590,17 +1593,22 @@ for i,v in pairs(R) do
 end
 
 B.LOMEGA = Big:create(0.56714329040978387299997)
-B.B2E323 = Big:create("2e323")
 B.SLOGLIM = Big:create("10^^^" .. R.MAX_SAFE_INTEGER)
 
 for i=1, 350, 1 do
     maxopcache[i] = Big:max_for_op(i)
 end
 
+if love then
+
 local update = love.update
 function love.update(...)
     caches.frames = {}
     return update(...)
 end
+
+end
+
+Big.constants = B
 
 return Big
