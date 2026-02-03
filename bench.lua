@@ -42,7 +42,8 @@ end
 local y = B(111)
 local n
 
-n = y
+bench("raw", 100000000, function() end)
+
 bench("add", 100000, function() n = n + y end)
 
 n = y
