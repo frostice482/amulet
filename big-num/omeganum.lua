@@ -273,16 +273,17 @@ end
 --- @param other t.Omega.Parsable
 function Big:compareTo(other)
     if rawequal(self, other) then return 0 end
-    if not is_number(self) then self = Big:ensureBig(self) end
-    if not is_number(other) then other = Big:ensureBig(other) end
 
     if not bigs[self] then
+        if type(self) ~= 'number' then return 0/0 end
         if not bigs[other] then
+            if type(other) ~= 'number' then return 0/0 end
             return signcomp(self, other)
         end
         return signcomp(self, other.number)
     end
     if not bigs[other] then
+        if type(other) ~= 'number' then return 0/0 end
         return signcomp(self.number, other)
     end
 
