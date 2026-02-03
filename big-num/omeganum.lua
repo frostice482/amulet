@@ -710,11 +710,22 @@ end
 --- @return t.Omega
 function Big:pow(other)
     local on = fnum(other)
-    if on then
+    if on and on ~= math.huge then
         local n = self.number ^ on
         if isfinite(n) and n ~= 0 then return Big:create(n) end
     end
     other = Big:ensureBig(other);
+
+    if (other._inf) then
+        if self.number < -1 then return B.POSITIVE_INFINITY end -- lua-specific behavior
+        if self.number == -1 then return B.ONE end -- lua-specific behavior
+        --if self.number <= -1 then return B.NaN end
+        if self.number < 1 then return B.ZERO end
+        --if self.number == 1 then return B.NaN end
+        if self.number == 1 then return B.ONE end -- lua-specific behavior
+        if self.number > 1 then return B.POSITIVE_INFINITY end
+        return B.NaN
+    end
 
     if (other.number < 0) then
         return self:pow(other:neg()):rec()
