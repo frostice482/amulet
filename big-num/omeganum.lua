@@ -1022,7 +1022,7 @@ local maxopcache = {}
 
 --- @return t.Omega
 function Big:max_for_op(arrows)
-    arrows = to_number(arrows)
+    arrows = bigs[arrows] and arrows.number or arrows
     if maxopcache[arrows] then return maxopcache[arrows] end
 
     if arrows < 1 or arrows ~= arrows or arrows == R.POSITIVE_INFINITY then
