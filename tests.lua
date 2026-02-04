@@ -25,10 +25,10 @@ local function assert_array(obj, arr)
 	end
 end
 
-require"talisman.globals"
+require"talisman.break_inf.globals"
 require"big-num.omeganum"
 
-local B = to_big
+function B(x) return Big:create(x) end
 local inf = math.huge
 local nan = 0/0
 local quitebig = B"1e600"
