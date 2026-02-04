@@ -46,6 +46,16 @@ function math.abs(x)
     return old_abs(x)
 end
 
+local sin = math.sin
+function math.sin(x)
+    return sin(to_number(x))
+end
+
+local cos = math.cos
+function math.cos(x)
+    return cos(to_number(x))
+end
+
 --don't return a Big unless we have to - it causes nativefs to break
 local max = math.max
 function math.max(...)
