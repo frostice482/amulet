@@ -1,17 +1,37 @@
 Big = require("big-num.omeganum")
+BigC = copy_table(require('big-num.constants'))
 Notations = require("big-num.notations")
+require("talisman.break_inf.sanitizer")
+require("talisman.break_inf.math")
+
+is_big = Big.is
+
+function is_number(x)
+	if type(x) == 'number' then return true end
+	if is_big(x) then return true end
+	return false
+end
+
+--- @return t.Omega | number
+function to_big(x, y)
+	return Big:create(x, y)
+end
+
+function to_number(x)
+	return Big.is(x) and x.number or x
+end
+
+function lenient_bignum(x)
+    if not x or type(x) == "number" then return x end
+    if x < BigC.BIG and x > BigC.NBIG then return x:to_number() end
+    return x
+end
 
 for k,v in pairs(BigC) do
     BigC[k] = Big:create(v)
 end
 local constants = require("big-num.constants")
 BigC.E_MAX_SAFE_INTEGER = Big:create(constants.E_MAX_SAFE_INTEGER)
-
--- wow...
-local _t = type
-function type(v)
-    return Talisman.config_file.enable_compat and Big and Big.is(v) and "table" or _t(v)
-end
 
 -- We call this after init_game_object to leave room for mods that add more poker hands
 --- @param obj balatro.Game.Current
@@ -46,13 +66,7 @@ function number_format(num, e_switch_point)
     return notation:format(num, 3)
 end
 
-require("talisman.break_math")
-
-function lenient_bignum(x)
-    if not x or type(x) == "number" then return x end
-    if x < BigC.BIG and x > BigC.NBIG then return x:to_number() end
-    return x
-end
+require("talisman.break_inf.math")
 
 --prevent some log-related crashes
 local sns = score_number_scale
@@ -200,3 +214,20 @@ if SMODS then
 end
 
 G.SAVED_GAME = nil
+
+if Talisman then
+
+Talisman.to_big = to_big
+
+end
+
+if Game then
+
+local g_start_run = Game.start_run
+function Game:start_run(args)
+    local ret = g_start_run(self, args)
+    self.GAME.round_resets.ante_disp = self.GAME.round_resets.ante_disp or number_format(self.GAME.round_resets.ante, Talisman.ante_switch_point)
+    return ret
+end
+
+end
