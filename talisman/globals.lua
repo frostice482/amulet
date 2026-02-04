@@ -1,23 +1,14 @@
---- @meta
-
-BigC = copy_table(require('big-num.constants'))
-local type = type
-
 function is_big(x)
-	return Big and Big.is(x)
+	return false
 end
 
 function is_number(x)
-	if type(x) == 'number' then return true end
-	if is_big(x) then return true end
-	return false
+	return type(x) == 'number'
 end
 
 --- @return t.Omega | number
 function to_big(x, y)
-	if Big then
-		return Big:create(x, y)
-	elseif is_number(x) then
+	if is_number(x) then
 		return x * 10 ^ (y or 0)
 	elseif x == nil then
 		return 0
@@ -33,7 +24,7 @@ function to_big(x, y)
 end
 
 function to_number(x)
-	return Big and Big.is(x) and x.number or x
+	return x
 end
 
 function uncompress_big(str, sign)
@@ -63,20 +54,7 @@ function Talisman.juice(v)
 end
 
 function Talisman.juice_elm(e, v)
-	return G.FUNCS.text_super_juice(e, Talisman.juice(v))
-end
-
-Talisman.to_big = to_big
-
-end
-
-if Game then
-
-local g_start_run = Game.start_run
-function Game:start_run(args)
-    local ret = g_start_run(self, args)
-    self.GAME.round_resets.ante_disp = self.GAME.round_resets.ante_disp or number_format(self.GAME.round_resets.ante, Talisman.ante_switch_point)
-    return ret
+	return G.FUNCS.text_super_juice(e, v)
 end
 
 end
