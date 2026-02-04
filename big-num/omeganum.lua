@@ -737,7 +737,7 @@ function Big:pow(other)
     if (other.number == 1) then
         return self
     end
-    if (other.number < 1) then
+    if (other.number < 1 and self.number >= 0) then
         return self:root(other:rec())
     end
 

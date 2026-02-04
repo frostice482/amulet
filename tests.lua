@@ -104,11 +104,14 @@ assert(B(inf) + B(1) == inf, "add: inf 1 failed")
 assert(B(-inf) + B(1) == -inf, "add: -inf 1 failed")
 assert(B(inf) + B(inf) == inf, "add: inf inf failed")
 assert(B(-inf) + B(-inf) == -inf, "add: -inf -inf failed")
+
 assert((B(inf) + B(-inf)):isNaN(), "add: +inf -inf failed, expected nan")
 assert((B(-inf) + B(inf)):isNaN(), "add:- inf +inf failed, expected nan")
 
 assert((B(0) + B(nan)):isNaN(), "add: 0 nan failed")
 assert((B(nan) + B(nan)):isNaN(), "add: nan nan failed")
+assert((B(inf) + B(nan)):isNaN(), "add: inf nan failed")
+assert((B(nan) + -B(inf)):isNaN(), "add: nan -inf failed")
 
 -- operation: sub
 assert(B(10) - B(7) == 3, "sub: + + failed")
@@ -141,6 +144,8 @@ assert((B(-inf) - B(-inf)):isNaN(), "sub: -inf -inf failed, expected nan")
 
 assert((B(0) - B(nan)):isNaN(), "sub: 0 nan failed")
 assert((B(nan) - B(nan)):isNaN(), "sub: nan nan failed")
+assert((B(inf) - B(nan)):isNaN(), "sub: inf nan failed")
+assert((B(nan) - -B(inf)):isNaN(), "sub: nan -inf failed")
 
 -- operation: mul
 assert(B(1e300) * B(1e300) == quitebig, "mul: + + failed")
@@ -161,6 +166,8 @@ assert((B(-inf) * B(inf)):isNaN(), "mul: inf +inf failed, expected nan")
 
 assert((B(0) * B(nan)):isNaN(), "mul: 0 nan failed")
 assert((B(nan) * B(nan)):isNaN(), "mul: nan nan failed")
+assert((B(inf) * B(nan)):isNaN(), "mul: inf nan failed")
+assert((B(nan) * -B(inf)):isNaN(), "mul: nan -inf failed")
 
 -- operation: div
 assert(quitebig / B(1e10) == B"1e590", "div: + + failed")
@@ -187,6 +194,8 @@ assert((B(0) / B(0)):isNaN(), "div: 0 0 failed, expected nan")
 
 assert((B(0) / B(nan)):isNaN(), "div: 0 nan failed")
 assert((B(nan) / B(nan)):isNaN(), "div: nan nan failed")
+assert((B(inf) / B(nan)):isNaN(), "div: inf nan failed")
+assert((B(nan) / -B(inf)):isNaN(), "div: nan -inf failed")
 
 -- operation: log10
 assert(B(1e300):log10() == 300, "log10: 1e300 failed")
@@ -229,23 +238,38 @@ assert(B"1e3000":pow(0.5) == B"1e1500", "pow: 1e3000 0.5 failed")
 assert(B"1e3000":pow(0) == 1, "pow: 1e3000 0 failed")
 assert(B"1e500":pow(-0.5) == 1e-250, "pow: 1e500 -0.5 failed")
 
-assert(B(2):pow(nan):isNaN(), "pow: 2 nan failed")
-assert(B(nan):pow(2):isNaN(), "pow: nan 2 failed")
+assert((B(2) ^ nan):isNaN(), "pow: 2 nan failed")
+assert((B(nan) ^ 2):isNaN(), "pow: nan 2 failed")
+assert((B(inf) ^ nan):isNaN(), "pow: inf nan failed")
+assert((B(nan) ^ -inf):isNaN(), "pow: nan -inf failed")
 
-assert(B(inf):pow(2) == inf, "pow: inf 2 failed")
-assert(B(inf):pow(0) == 1, "pow: inf 0 failed")
-assert(B(inf):pow(-1) == 0, "pow: inf -1 failed")
+assert(B(nan) ^ 0 == 1, "pow: nan 0 failed")
 
-assert(B(2):pow(inf) == inf, "pow: 2 inf failed")
---assert(B(1):pow(inf):isNaN(), "pow: 1 inf failed, expected nan")
-assert(B(1):pow(inf) == 1, "pow: 1 inf failed") -- should be nan mathematically
-assert(B(0.9):pow(inf) == 0, "pow: 0.9 inf failed")
-assert(B(0):pow(inf) == 0, "pow: 0 inf failed")
-assert(B(-0.9):pow(inf) == 0, "pow: 0 inf failed")
---assert(B(-1):pow(inf):isNaN(), "pow: -1 inf failed, expecting nan")
-assert(B(-1):pow(inf) == 1, "pow: -1 inf failed") -- should be nan mathematically
---assert(B(-2):pow(inf):isNaN(), "pow: -1 inf failed, expecting nan")
-assert(B(-2):pow(inf) == inf, "pow: -1 inf failed") -- should be nan mathematically
+assert(B(inf) ^ (2) == inf, "pow: inf 2 failed")
+assert(B(inf) ^ (0) == 1, "pow: inf 0 failed")
+assert(B(inf) ^ (-1) == 0, "pow: inf -1 failed")
+
+assert(B(-1) ^ 2 == 1, "pow: -1 2 failed")
+assert(B(-1) ^ 1 == -1, "pow: -1 1 failed")
+assert(B(-1) ^ 0 == 1, "pow: -1 0 failed")
+assert(B(0) ^ 0 == 1, "pow: 0 0 failed")
+
+--assert((B(-1) ^ 2.5):isNaN(), "pow: -1 2.5 failed, expected nan")
+assert(B(-1) ^ 2.5 == -1, "pow: -1 2.5 failed") -- talisman
+--assert((B(-1) ^ 1.5):isNaN(), "pow: -1 1.5 failed, expected nan")
+assert(B(-1) ^ 1.5 == 1, "pow: -1 1.5 failed") -- talisman
+--assert((B(-1) ^ 0.5):isNaN(), "pow: -1 0.5 failed, expected nan")
+assert(B(-1) ^ 0.5 == -1, "pow: -1 0.5 failed") -- talisman
+
+assert((B(2) ^ inf) == inf, "pow: 2 inf failed")
+--assert((B(1) ^ inf):isNaN(), "pow: 1 inf failed, expected nan")
+assert((B(1) ^ inf) == 1, "pow: 1 inf failed") -- should be nan mathematically
+assert((B(0.9) ^ inf) == 0, "pow: 0.9 inf failed")
+assert((B(0) ^ inf) == 0, "pow: 0 inf failed")
+assert((B(-0.9) ^ inf) == 0, "pow: 0 inf failed")
+--assert((B(-1) ^ inf):isNaN(), "pow: -1 inf failed, expecting nan")
+assert((B(-1) ^ inf) == 1, "pow: -1 inf failed") -- should be nan mathematically
+--assert((B(-2) ^ inf):isNaN(), "pow: -1 inf failed, expecting nan")
 
 -- operation: root
 assert(B"1e900":root(2) == B"1e450", "root: 1e900 200 failed")
@@ -266,5 +290,7 @@ assert_array(B(10):tetrate(1e10):get_array(), { 10^10, 10^10-2 })
 assert_array(B(10):tetrate(1e300):get_array(), { 300, 1, 1 })
 assert_array(B(30):tetrate(30):get_array(), { 44.4830537889628914172135409899055957794189453125, 29 })
 
-assert(B(3):root(nan):isNaN(), "tetrate: 3 nan failed")
-assert(B(nan):root(3):isNaN(), "tetrate: nan 3 failed")
+assert(B(3):tetrate(nan):isNaN(), "tetrate: 3 nan failed")
+assert(B(nan):tetrate(3):isNaN(), "tetrate: nan 3 failed")
+assert((B(inf):tetrate(nan)):isNaN(), "tetrate: inf nan failed")
+assert((B(nan):tetrate(-inf)):isNaN(), "tetrate: nan -inf failed")
