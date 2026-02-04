@@ -41,15 +41,15 @@ function ease_dollars(mod, instant)
 end
 
 local sm = Card.start_materialize
-function Card:start_materialize(a, b, c)
+function Card:start_materialize(...)
 	if Talisman.no_anims_calculating_misc() then return end
-	return sm(self, a, b, c)
+	return sm(self, ...)
 end
 
 local sd = Card.start_dissolve
-function Card:start_dissolve(a, b, c, d)
+function Card:start_dissolve(...)
 	if Talisman.no_anims_calculating_misc() then return self:remove() end
-	return sd(self, a, b, c, d)
+	return sd(self, ...)
 end
 
 local ss = Card.set_seal
@@ -58,8 +58,13 @@ function Card:set_seal(a, b, immediate)
 end
 
 local cest = card_eval_status_text
-function card_eval_status_text(a, b, c, d, e, f)
-	if not Talisman.config_file.disable_anims then return cest(a, b, c, d, e, f) end
+function card_eval_status_text(...)
+	if not Talisman.config_file.disable_anims then return cest(...) end
+
+	local extra = select(6, ...)
+    if extra and extra.playing_cards_created then
+        playing_card_joker_effects(extra.playing_cards_created)
+    end
 end
 
 local jc = juice_card
