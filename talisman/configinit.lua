@@ -22,6 +22,7 @@ Talisman.config_file = {
     enable_compat = false,
     thread_sanitize = 'modify',
     thread_sanitize_num = true,
+    sanitize_graphics = false,
 
     break_infinity = "omeganum", -- unused
 }

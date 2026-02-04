@@ -124,6 +124,10 @@ function conf.enable_type_compat()
     return conf.create_toggle("enable_compat", true, true)
 end
 
+function conf.enable_sanitize_graphics()
+    return conf.create_toggle("sanitize_graphics", true)
+end
+
 function conf.debug_coroutine()
     return conf.create_toggle("debug_coroutine", true, true)
 end
@@ -147,6 +151,7 @@ conf.array = {
 conf.compat_array = {
     conf.thread_sanitize,
     conf.thread_sanitize_num,
+    conf.enable_sanitize_graphics,
     conf.enable_type_compat,
 }
 

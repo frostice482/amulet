@@ -49,6 +49,8 @@ return {
 
     tal_thread_sanitize_num = 'Thread Fix: Convert to numbers',
 
+    tal_sanitize_graphics = 'Graphics Fix',
+
     tal_calculating = 'Calculating...',
     tal_abort = 'Abort',
     tal_elapsed = 'Elapsed calculations',
