@@ -66,7 +66,7 @@ if curmod then
 		}}
 	end
 
-	curmod.debug_info = {}
+	curmod.debug_info = Talisman.debug
 end
 
 if SMODS.calculate_individual_effect then
@@ -75,14 +75,6 @@ end
 
 if SMODS.Scoring_Calculation then
 	require("talisman.smods.scoring_calc")
-end
-
--- check to_big overrides
-local splash_screen = Game.splash_screen
-function Game:splash_screen()
-	if Talisman.to_big then to_big = Talisman.to_big end
-	if Talisman.to_number then to_number = Talisman.to_number end
-    return splash_screen(self)
 end
 
 --[[SMODS.Joker{

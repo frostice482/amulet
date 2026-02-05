@@ -16,9 +16,7 @@ Talisman.igo = function(obj)
         v.level = to_big(v.level)
     end
     obj.starting_params.dollars = to_big(obj.starting_params.dollars)
-    if Talisman.has_big_ante() then
-        obj.round_resets.ante = to_big(obj.round_resets.ante)
-    end
+    if Talisman.big_ante.has() then Talisman.big_ante.enable() end
     return obj
 end
 if G.GAME then Talisman.igo(G.GAME) end
@@ -189,6 +187,7 @@ if Talisman then
 
 Talisman.to_big = to_big
 Talisman.to_number = to_number
+Talisman.debug.omeganum = nil
 
 end
 
@@ -199,6 +198,22 @@ function Game:start_run(args)
     local ret = g_start_run(self, args)
     self.GAME.round_resets.ante_disp = self.GAME.round_resets.ante_disp or number_format(self.GAME.round_resets.ante, Talisman.ante_switch_point)
     return ret
+end
+
+-- check to_big overrides
+local splash_screen = Game.splash_screen
+function Game:splash_screen()
+	if Talisman.to_big and to_big ~= Talisman.to_big then
+        local x = debug.getinfo(to_big)
+        Talisman.debug.to_big_override = string.format('%s:%s-%s', x.source, x.linedefined, x.lastlinedefined)
+        to_big = Talisman.to_big
+    end
+	if Talisman.to_number and to_number ~= Talisman.to_number then
+        local x = debug.getinfo(to_number)
+        Talisman.debug.to_number_override = string.format('%s:%s-%s', x.source, x.linedefined, x.lastlinedefined)
+        to_number = Talisman.to_number
+    end
+    return splash_screen(self)
 end
 
 end
