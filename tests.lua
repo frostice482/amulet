@@ -43,6 +43,10 @@ assert(B(-1) < B(1e300), "1 < -1e300")
 assert(B(1) > B(-1e300), "1 > -1e300")
 assert(B(-1) > B(-1e300), "-1 > -1e300")
 
+assert(B(inf) > B"ee10e5", "inf > ee10e5")
+assert(B(-inf) < B"ee10e5", "-inf < ee10e5")
+assert(B(inf) ~= B"ee10e5", "-inf ~= ee10e5")
+
 assert(B(inf) == B(inf), "inf == inf")
 assert(B(inf) > B(-inf), "inf > -inf")
 assert(B(-inf) < B(inf), "-inf < inf")
@@ -53,10 +57,29 @@ assert(B(nan) ~= B(nan), "nan != nan")
 assert(B(inf):max(-inf) == inf, "max(inf, -inf)")
 assert(B(inf):min(-inf) == -inf, "min(inf, -inf)")
 
+assert(B"1e1000":max(inf) == inf, "max(1e1000, inf)")
+assert(B"1e1000":min(-inf) == -inf, "min(1e1000, -inf)")
+
 -- number comparison
 
+assert(1 > B(-1), "1 > -1")
+assert(-1 == B(-1), "-1 == -1")
+
 assert(1 < B(1e300), "1 < 1e300")
-assert(B(1e300) > 1, "1e300 > 1")
+assert(-1 < B(1e300), "1 < -1e300")
+assert(1 > B(-1e300), "1 > -1e300")
+assert(-1 > B(-1e300), "-1 > -1e300")
+
+assert(inf > B"ee10e5", "inf > ee10e5")
+assert(-inf < B"ee10e5", "-inf < ee10e5")
+assert(inf ~= B"ee10e5", "-inf ~= ee10e5")
+
+assert(inf == B(inf), "inf == inf")
+assert(inf > B(-inf), "inf > -inf")
+assert(-inf < B(inf), "-inf < inf")
+assert(-inf == B(-inf), "-inf == -inf")
+
+assert(nan ~= B(nan), "nan != nan")
 
 -- arbitrary comparison
 
