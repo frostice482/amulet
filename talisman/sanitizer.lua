@@ -41,7 +41,8 @@ function sanitizer.create_unpack_env()
 		OmegaMeta = OmegaMeta,
 		to_big = to_big,
 		uncompress_big = uncompress_big,
-		inf = 1.79769e308,
+		inf = math.huge,
+		nan = 0/0
 	}
 end
 
