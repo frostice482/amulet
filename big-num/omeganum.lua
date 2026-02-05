@@ -1102,7 +1102,7 @@ function Big:arrow(arrows, other)
         if (self:gt(limit)) then
             r = self:clone()
             local w = bigs[r]
-            w[arrows + 1] = w[arrows + 1] - 1
+            w[arrows + 1] = (w[arrows + 1] or 0) - 1
             if arrows < 25000 then --arbitrary, normalisation is just extra steps when you get high enough
                 r:normalize()
             end
