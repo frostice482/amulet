@@ -280,10 +280,16 @@ function Big:compareTo(other)
             if type(other) ~= 'number' then return 0/0 end
             return signcomp(self, other)
         end
+        if self == math.huge or self == -math.huge then
+            return signcomp(self, other._inf and math.huge * other.sign or 0)
+        end
         return signcomp(self, other.number)
     end
     if not bigs[other] then
         if type(other) ~= 'number' then return 0/0 end
+        if other == math.huge or other == -math.huge then
+            return signcomp(self._inf and math.huge * self.sign or 0, other)
+        end
         return signcomp(self.number, other)
     end
 
