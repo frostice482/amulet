@@ -1,5 +1,5 @@
 local curmod = SMODS.current_mod
-assert(_mod_dir_amulet, string.format("Amulet is nested.\nPath: %s\nMods directory: %s", curmod and curmod.path, require "lovely".mod_dir))
+assert(_mod_dir_amulet, string.format("Amulet is nested / zipped.\nPath: %s\nMods directory: %s", curmod and curmod.path, require "lovely".mod_dir))
 Talisman.smods = SMODS.current_mod
 
 if SMODS.Atlas then
