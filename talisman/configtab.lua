@@ -62,6 +62,7 @@ function conf.create_toggle(refval, title, tooltip, cb)
         callback = function(arg)
             if cb then cb(arg) end
             Talisman.config.save()
+            Talisman.update_debug()
         end,
     })
     if tooltip then
@@ -135,8 +136,11 @@ end
 function conf.big_ante()
     if Talisman.forced_features.bigante then return end
     return conf.create_toggle("big_ante", true, true, function (val)
-        if not G.GAME then return end
-        G.GAME.round_resets.ante = val and to_big(G.GAME.round_resets.ante) or to_number(G.GAME.round_resets.ante)
+        if val then
+            Talisman.big_ante.enable()
+        else
+            Talisman.big_ante.disable()
+        end
     end)
 end
 
@@ -233,11 +237,13 @@ end
 function G.FUNCS.tal_update_notation(arg)
     Talisman.config_file.notation = conf.notations.filenames[arg.to_key]
     Talisman.config.save()
+    Talisman.update_debug()
 end
 
 function G.FUNCS.tal_update_thread_sanitize(arg)
     Talisman.config_file.thread_sanitize = conf.thread_sanitations[arg.to_key]
     Talisman.config.save()
+    Talisman.update_debug()
 end
 
 G.UIDEF.tal_credits = conf.credits_tab
