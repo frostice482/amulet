@@ -77,53 +77,12 @@ if SMODS.Scoring_Calculation then
 	require("talisman.smods.scoring_calc")
 end
 
-local crashmsgs = {}
-crashmsgs.title = [[
-
-[ :( ]
-
-]]
-crashmsgs.oldOverflow = [[
-Amulet's OmegaNum is not working.
-This is because Amulet is incompatible with old Overflow (<1.1.4).
-Update Overflow from here: https://github.com/lord-ruby/Overflow/releases
-]]
-crashmsgs.signatureFail = [[
-Amulet's OmegaNum is not working.
-This is because to_big is overriden by %s and does not return OmegaNum.
-Try updating the mod. If the mod is in its latest version, contact the developer to fix it.
-
-(override source: %s)
-]]
-
-local function checkbig()
-	if to_big == Talisman.to_big then return end
-
-	local f = debug.getinfo(to_big, "S")
-	local overrideInfo = string.format("%s:%s-%s", f.source, f.linedefined, f.lastlinedefined)
-	curmod.debug_info["To big override"] = overrideInfo
-
-	local modid = f.source:match('=%[SMODS ([%w_]+)')
-	local mod = modid and SMODS.Mods[modid]
-
-	if f.source == '=[SMODS Overflow "main.lua"]' then
-		return error(crashmsgs.title..crashmsgs.oldOverflow, 0)
-	end
-
-	if Big and not is_big(to_big(12315345)) then
-		local fmt = crashmsgs.signatureFail:format(
-			mod and mod.name..' '..mod.version or overrideInfo,
-			overrideInfo
-		)
-		return error(crashmsgs.title..fmt, 0)
-	end
-end
-
 -- check to_big overrides
-local mainmenu = Game.main_menu
-function Game:main_menu()
-	checkbig()
-    return mainmenu(self)
+local splash_screen = Game.splash_screen
+function Game:splash_screen()
+	if Talisman.to_big then to_big = Talisman.to_big end
+	if Talisman.to_number then to_number = Talisman.to_number end
+    return splash_screen(self)
 end
 
 --[[SMODS.Joker{

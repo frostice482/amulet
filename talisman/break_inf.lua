@@ -188,6 +188,7 @@ G.SAVED_GAME = nil
 if Talisman then
 
 Talisman.to_big = to_big
+Talisman.to_number = to_number
 
 end
 
