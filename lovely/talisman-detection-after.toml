@@ -20,5 +20,15 @@ match_indent = true
 target = "engine/string_packer.lua"
 pattern = '''\-\-\[\[amulet: talisman detected\]\][\s\S]*'''
 position = "at"
-payload = '''error("You have both Amulet and Talisman installed. Remove one of them.", 0)'''
+payload = '''error([[
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+  You have both Amulet and Talisman installed. Remove one of them.
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    (you will be send to mars if you report this crash message)
+
+]], 0)'''
 match_indent = true
