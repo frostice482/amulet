@@ -16,6 +16,25 @@ target = "main.lua"
 position = "before"
 pattern = "function love.run()"
 payload = '''
+if _mod_dir_amulet then
+error(string.format([==[
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    Duplicate Amulet installation detected. Remove one of them.
+    Other: %s
+    Current: %s
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    (you will be send to pluto if you report this crash message)
+
+]==],
+_mod_dir_amulet,
+"{{lovely_hack:patch_dir}}"
+), 0)
+end
+
 _mod_dir_amulet = "{{lovely_hack:patch_dir}}"
 '''
 match_indent = true
