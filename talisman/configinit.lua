@@ -72,7 +72,7 @@ function Talisman.big_ante.enable()
 end
 
 function Talisman.big_ante.disable()
-    if G.GAME then G.GAME.round_resets.ante = to_number(G.GAME.round_resets.ante) end
+    if G.GAME then G.GAME.round_resets.ante = math.min(math.max(to_number(G.GAME.round_resets.ante), -1e308), 1e308) end
     Talisman.debug.bigante = nil
 end
 
