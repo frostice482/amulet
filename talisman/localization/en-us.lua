@@ -42,7 +42,7 @@ return {
     tal_thread_sanitation = 'Thread Fix',
     tal_thread_sanitation_warning = {
         'Amulet\'s fix for OmegaNum getting into threads.',
-        'copy: fast, guarantees compability, but can use more memory',
+        'copy: fast, guarantees compatibility, but can use more memory',
         'modify: faster, but can cause crash/corruption',
         'noop: fastest, does nothing, but can cause crash',
     },
