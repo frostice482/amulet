@@ -48,7 +48,19 @@ function love.graphics.rotate(a)
 end
 
 local lg_draw = love.graphics.draw
-function love.graphics.draw(drawable, x, y, r, ...)
-	if config.sanitize_graphics then x, y, r = to_number(x), to_number(y), to_number(r) end
-	return lg_draw(drawable, x, y, r, ...)
+
+local function drawfix(drawable, a, b, c, d, e, f, g)
+	a = to_number(a)
+	b = to_number(b)
+	c = to_number(c)
+	d = to_number(d)
+	e = to_number(e)
+	f = to_number(f)
+	g = to_number(g)
+	return lg_draw(drawable, a, b, c, d, e, f, g)
+end
+
+function love.graphics.draw(...)
+	if config.sanitize_graphics then return drawfix(...) end
+	return lg_draw(...)
 end
