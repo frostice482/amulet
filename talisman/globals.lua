@@ -54,7 +54,7 @@ function Talisman.juice(v)
 end
 
 function Talisman.juice_elm(e, v)
-	return G.FUNCS.text_super_juice(e, v)
+	return G.FUNCS.text_super_juice(e, Talisman.juice(v))
 end
 
 end
