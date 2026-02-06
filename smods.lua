@@ -1,5 +1,40 @@
 local curmod = SMODS.current_mod
-assert(_mod_dir_amulet, string.format("Amulet is nested / zipped.\nPath: %s\nMods directory: %s", curmod and curmod.path, require "lovely".mod_dir))
+
+if not _mod_dir_amulet then
+return error(string.format([[
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    Amulet is nested / zipped. Make sure Amulet is not installed
+    one folder too deep, or if it is zipped, unzip it.
+
+    Path: %s
+    Mods folder: %s
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    (you will be send to the sun if you report this crash message)
+
+]], curmod and curmod.path, require "lovely".mod_dir), 0)
+end
+
+if Talisman.smods then
+return error(string.format([[
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    Dupllicate Amulet installation detected (SMODS). Remove one of them.
+
+    Other: %s
+    Current: %s
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    (you will be send to the black hole if you report this crash message)
+
+]], Talisman.smods.path, curmod and curmod.path), 0)
+end
+
 Talisman.smods = SMODS.current_mod
 
 if SMODS.Atlas then
