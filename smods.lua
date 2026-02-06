@@ -93,7 +93,7 @@ if curmod then
 
 	curmod.extra_tabs = function()
 		return {{
-			label = 'Compability',
+			label = 'Compatibility',
 			tab_definition_function = G.UIDEF.tal_compat_config
 		}, {
 			label = 'Credits',
