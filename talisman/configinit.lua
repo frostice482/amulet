@@ -1,7 +1,7 @@
 Talisman = {
     F_NO_COROUTINE = false,
     mod_path = _mod_dir_amulet,
-    ante_switch_point = 1000,
+    ante_switch_point = 1000000,
 
     cdataman = true,
     Amulet = true
