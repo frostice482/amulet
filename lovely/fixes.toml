@@ -66,7 +66,7 @@ target = "engine/ui.lua"
 pattern = 'if not self.config.no_recalc and self.config.prev_value and string.len(self.config.prev_value) ~= string.len(self.config.text) then self.UIBox:recalculate() end'
 position = "at"
 payload = '''
-if not self.config.no_recalc and self.config.prev_text and string.len(self.config.prev_text) ~= string.len(self.config.text) then self.UIBox:recalculate() end
+if not self.config.no_recalc and (not self.config.prev_text or string.len(self.config.prev_text) ~= string.len(self.config.text)) then self.UIBox:recalculate() end
 self.config.prev_text = self.config.text
 '''
 match_indent = true
