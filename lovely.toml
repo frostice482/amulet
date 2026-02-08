@@ -27,7 +27,7 @@ error(string.format([==[
 
 [!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
 
-    (you will be send to pluto if you report this crash message)
+    (you will be sent to pluto if you report this crash message)
 
 ]==],
 _mod_dir_amulet,

@@ -13,7 +13,7 @@ return error(string.format([[
 
 [!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
 
-    (you will be send to the sun if you report this crash message)
+    (you will be sent to the sun if you report this crash message)
 
 ]], curmod and curmod.path, require "lovely".mod_dir), 0)
 end
@@ -30,7 +30,7 @@ return error(string.format([[
 
 [!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
 
-    (you will be send to the black hole if you report this crash message)
+    (you will be sent to the black hole if you report this crash message)
 
 ]], Talisman.smods.path, curmod and curmod.path), 0)
 end
