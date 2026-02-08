@@ -678,7 +678,7 @@ end
 function Big:logBase(other)
     local on = fnum(other)
     if on then
-        local n = math.log10(self.number)/on
+        local n = math.log(self.number, on)
         if isfinite(n) then return Big:create(n) end
     end
     other = Big:ensureBig(other);
