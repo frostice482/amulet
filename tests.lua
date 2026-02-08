@@ -317,3 +317,6 @@ assert(B(3):tetrate(nan):isNaN(), "tetrate: 3 nan failed")
 assert(B(nan):tetrate(3):isNaN(), "tetrate: nan 3 failed")
 assert((B(inf):tetrate(nan)):isNaN(), "tetrate: inf nan failed")
 assert((B(nan):tetrate(-inf)):isNaN(), "tetrate: nan -inf failed")
+
+-- operation: log base
+assert(B(65536):log(2) == 16, "log: 65536 2")
