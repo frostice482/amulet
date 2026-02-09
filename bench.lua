@@ -19,8 +19,6 @@ end
 require"talisman.globals"
 require"big-num.omeganum"
 
-local B = to_big
-
 --- @param desc string
 --- @param n number
 --- @param fn fun()
@@ -29,21 +27,29 @@ local function bench(desc, n, fn)
 
 	local t = os.clock()
 	local m = collectgarbage("count")
+	local c = Big.created_instances
+
 	for i=1, n do fn() end
+
 	local td = os.clock() - t
 	local md = collectgarbage("count") - m
+	local cd = Big.created_instances - c
 
-	print(string.format('%10s - %6.2f ms; %6.2fMB; %.1f ops', desc, td * 1000, md / 1024, n/td))
+	print(string.format(
+		'%10s - %7.2f ms; %6.2fMB; %6.0f inst/n; %11.2f bytes/n; %.1f ops',
+		desc, td * 1000, md / 1024, cd / n, md / n * 1024, n/td
+	))
 
 	collectgarbage("collect")
 	collectgarbage("restart")
 end
 
-local y = B(111)
+local y = Big:create(111)
 local n
 
 bench("raw", 100000000, function() end)
 
+n = y
 bench("add", 100000, function() n = n + y end)
 
 n = y
@@ -59,4 +65,7 @@ n = y
 bench("tetrate", 100000, function() n = n:tetrate(4) end)
 
 n = y
-bench("arrow", 100000, function() n = n:tetrate(4, 4) end)
+bench("arrow", 100000, function() n = n:arrow(3, 3) end)
+
+n = Big:create(2.001)
+bench("arrow2", 10, function() n = n:arrow(200, 2.001) end)

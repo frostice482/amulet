@@ -31,7 +31,9 @@ local TalismanOmega_sizeof = assert(ffi.sizeof("struct TalismanOmega"))
 --- @operator mod(t.Omega|number): t.Omega
 --- @operator pow(t.Omega|number): t.Omega
 --- @operator unm(): t.Omega
-local Big = {}
+local Big = {
+    created_instances = 0
+}
 ;(Big).array = {} -- lsp hack, assign without recognized by lsp
 
 OmegaMeta = {
@@ -50,12 +52,17 @@ _G.Big = Big
 local B = {}
 
 -- prevent multiple allocation of same number at a frame
+--- @class _t.OmegaCache
+--- @field list table<number, t.Omega> persisting list
+--- @field current table<number, t.Omega> created omegas in this frame, move to old on next frame
+--- @field old table<number, t.Omega> created omegas in previous frame, cleared on next frame
 local caches = {
-    --- @type table<number, t.Omega>
     list = {},
-    --- @type table<number, number>
-    frames = {}
+    current = {},
+    currentcount = {},
 }
+
+Big.caches = caches
 
 -- prevent overrides
 local type = type
@@ -100,6 +107,8 @@ end
 --- @param noNormalize? boolean
 --- @return t.Omega
 function Big:new(arr, sign, noNormalize)
+    Big.created_instances = Big.created_instances + 1
+
     --- @type t.Omega
     local obj = TalismanOmega() --- @diagnostic disable-line
     obj.asize = 1
@@ -116,12 +125,12 @@ function Big:create(input, sign)
         if obj then return obj end
         if input ~= input then return B.NaN end
 
-        local obj = Big:new({input}, input < 0 and -1 or 1)
-        caches.frames[input] = (caches.frames[input] or 0) + 1
-        if caches.frames[input] > 100 then
-            caches.frames[input] = nil
+        obj = caches.current[input] or Big:new({input}, input < 0 and -1 or 1)
+        caches.currentcount[input] = (caches.currentcount[input] or 0) + 1
+        if caches.currentcount[input] > 50 then
             caches.list[input] = obj
         end
+
         return obj
     elseif type(input) == "string" then
         return Big:parse(input)
@@ -1618,9 +1627,15 @@ end
 
 if love then
 
+local nextclear = 0
 local update = love.update
 function love.update(...)
-    caches.frames = {}
+    if G.TIMERS.REAL > nextclear or G.TIMERS.REAL < nextclear - 2 then
+        caches.current = {}
+        caches.currentcount = {}
+        nextclear = G.TIMERS.REAL + 1
+    end
+
     return update(...)
 end
 
