@@ -53,7 +53,7 @@ sources = [
 target = "game.lua"
 pattern = "replace_card.states.visible = false"
 position = "before"
-payload = "replace_card:set_seal('Gold', true, true)"
+payload = "replace_card:set_seal('Blue', true, true)"
 match_indent = true
 
 # call init game object appendum after init game object
