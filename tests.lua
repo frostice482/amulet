@@ -28,7 +28,7 @@ end
 require"talisman.break_inf.globals"
 require"big-num.omeganum"
 
-function B(x) return Big:create(x) end
+function B(x, y) return Big:create(x, y) end
 local inf = math.huge
 local nan = 0/0
 local quitebig = B"1e600"
@@ -320,3 +320,5 @@ assert((B(nan):tetrate(-inf)):isNaN(), "tetrate: nan -inf failed")
 
 -- operation: log base
 assert(B(65536):log(2) == 16, "log: 65536 2")
+
+assert(B({10}, -1).number == -10, "create with negative sign")
