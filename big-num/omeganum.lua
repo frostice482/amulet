@@ -167,23 +167,16 @@ function Big:_normalize()
         bigs[self] = {0}
         return
     end
+
+    self.sign = self.sign < 0 and -1 or 1
+
     if asize == 1 then
         if arr[1] < 0 then
             self.sign = -1
             arr[1] = -arr[1]
-        else
-            self.sign = 1
         end
         if arr[1] < R.MAX_SAFE_INTEGER then
             return
-        end
-    end
-
-    if self.sign ~= 1 and self.sign ~= -1 then
-        if (self.sign < 0) then
-            self.sign = -1;
-        else
-            self.sign = 1;
         end
     end
 
