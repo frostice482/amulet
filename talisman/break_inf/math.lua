@@ -16,8 +16,6 @@ function math.log10(x)
     return l10(x)
 end
 
-local E = math.exp(1)
-
 local log = math.log
 function math.log(x, y)
 	if is_big(x) then
@@ -29,9 +27,10 @@ function math.log(x, y)
     return log(x)
 end
 
+local e = math.exp
 function math.exp(x)
 	if is_big(x) then return BigC.E:pow(x) end
-    return E ^ x
+    return e(x)
 end
 
 local sqrt = math.sqrt
@@ -62,7 +61,10 @@ function math.max(...)
     local list = {...}
     local max = -math.huge
     for i=1, select('#', ...) do
-        if max < list[i] then max = list[i] end
+        local val = list[i]
+        if is_big(val) and val._nan then return val end
+        if not rawequal(val, val) then return val end
+        if max < val then max = val end
     end
     return max
 end
@@ -72,7 +74,10 @@ function math.min(...)
     local list = {...}
     local max = math.huge
     for i=1, select('#', ...) do
-        if max > list[i] then max = list[i] end
+        local val = list[i]
+        if is_big(val) and val._nan then return val end
+        if not rawequal(val, val) then return val end
+        if max > val then max = val end
     end
     return max
 end

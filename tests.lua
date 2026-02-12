@@ -25,8 +25,9 @@ local function assert_array(obj, arr)
 	end
 end
 
-require"talisman.break_inf.globals"
 require"big-num.omeganum"
+require"talisman.break_inf.globals"
+require"talisman.break_inf.math"
 
 function B(x, y) return Big:create(x, y) end
 local inf = math.huge
@@ -322,3 +323,5 @@ assert((B(nan):tetrate(-inf)):isNaN(), "tetrate: nan -inf failed")
 assert(B(65536):log(2) == 16, "log: 65536 2")
 
 assert(B({10}, -1).number == -10, "create with negative sign")
+assert(math.max(0/0, 1) ~= 1, "max nan 1")
+assert(math.max(to_big(0/0), 1) ~= 1, "max big(nan) 1")
