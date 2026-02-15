@@ -64,3 +64,18 @@ function love.graphics.draw(...)
 	if config.sanitize_graphics then return drawfix(...) end
 	return lg_draw(...)
 end
+
+local update = Game.update
+function Game:update(dt)
+	local chips = self.GAME and self.GAME.chips
+	if is_big(chips) then
+		if chips._nan then
+			self.GAME.chips = self.ARGS.prev_chips or to_big(0)
+			print('Amulet: chips is nan, rolling back to ' .. tostring(self.GAME.chips))
+		else
+			self.ARGS.prev_chips = chips
+		end
+	end
+
+	return update(self, dt)
+end
