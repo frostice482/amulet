@@ -1050,16 +1050,8 @@ end
 
 --- @return t.Omega
 function Big:arrow(arrows, other)
-    local othernum = Big.is(other) and other.number or other
     arrows = Big.is(arrows) and arrows.number or arrows
     arrows = math.floor(arrows)
-
-    if arrows > R.MAX_VALUE then --if too big return infinity
-        return B.POSITIVE_INFINITY
-    end
-
-    if self.number == 1 then return B.ONE end
-    if self.number == 0 then return B.ZERO end
 
     if arrows < -1 then
         return B.NaN
@@ -1076,6 +1068,14 @@ function Big:arrow(arrows, other)
     if arrows == 2 then
         return self:tetrate(other)
     end
+    if arrows > R.MAX_VALUE then --if too big return infinity
+        return B.POSITIVE_INFINITY
+    end
+
+    if self.number == 1 then return B.ONE end
+    if self.number == 0 then return B.ZERO end
+
+    local othernum = Big.is(other) and other.number or other
 
     if othernum < 0 then
         return B.NaN
