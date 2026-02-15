@@ -7,6 +7,7 @@ assert(tinymount(talisman_path .. '/talisman', 'talisman', 0) ~= 0, 'Amulet: Fai
 assert(tinymount(talisman_path .. '/big-num', 'big-num', 0) ~= 0, 'Amulet: Failed to mount big-num from ' .. talisman_path)
 
 require("talisman.configinit")
+require("talisman.effects")
 require("talisman.globals")
 require("talisman.localization")
 require("talisman.card")
