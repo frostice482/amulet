@@ -1,5 +1,5 @@
 --Adding things OmegaNum has that this doesn't...
-local R = {}
+R = {}
 
 R.ZERO = 0
 R.ONE = 1
@@ -21,8 +21,10 @@ R.LOG_MAX_VALUE = math.log(R.MAX_VALUE, 10)
 R.BIG = R.MAX_VALUE
 R.NBIG = -R.MAX_VALUE
 R.NaN = 0/0
-R.NEGATIVE_INFINITY = -1/0
-R.POSITIVE_INFINITY = 1/0
+R.NEGATIVE_INFINITY = -math.huge
+R.NEGATIVEINFINITY = -math.huge
+R.POSITIVE_INFINITY = math.huge
+R.POSITIVEINFINITY = math.huge
 R.E_MAX_SAFE_INTEGER = "e"..tostring(R.MAX_SAFE_INTEGER)
 R.EE_MAX_SAFE_INTEGER = "ee"..tostring(R.MAX_SAFE_INTEGER)
 R.TETRATED_MAX_SAFE_INTEGER = "10^^"..tostring(R.MAX_SAFE_INTEGER)
