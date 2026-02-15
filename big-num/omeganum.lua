@@ -1062,8 +1062,11 @@ function Big:arrow(arrows, other)
     if self.number == 1 then return B.ONE end
     if self.number == 0 then return B.ZERO end
 
-    if arrows < 0 then
+    if arrows < -1 then
         return B.NaN
+    end
+    if arrows == -1 then
+        return self:add(other)
     end
     if arrows == 0 then
         return self:mul(other)
