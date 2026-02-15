@@ -47,9 +47,8 @@ OmegaMeta = {
 
 _G.Big = Big
 
--- this will be populated with bignum equivalents of R's values at the end of the file
 --- @type table<string, t.Omega>
-local B = {}
+B = {}
 
 -- prevent multiple allocation of same number at a frame
 --- @class _t.OmegaCache
