@@ -15,7 +15,7 @@ return error(string.format([[
 
     (you will be sent to the sun if you report this crash message)
 
-]], curmod and curmod.path, require "lovely".mod_dir), 0)
+]], curmod.path, require "lovely".mod_dir), 0)
 end
 
 if Talisman.smods then
@@ -32,85 +32,75 @@ return error(string.format([[
 
     (you will be sent to the black hole if you report this crash message)
 
-]], Talisman.smods.path, curmod and curmod.path), 0)
+]], Talisman.smods.path, curmod.path), 0)
 end
 
 Talisman.smods = SMODS.current_mod
 
-if SMODS.Atlas then
-	SMODS.Atlas({
-		key = "modicon",
-		path = "icon.png",
-		px = 27,
-		py = 27
-	})
-end
+SMODS.Atlas({
+	key = "modicon",
+	path = "icon.png",
+	px = 27,
+	py = 27
+})
 
-if SMODS.Sound then
-	SMODS.Sound({
-		key = "xchip",
-		path = "MultiplicativeChips.ogg"
-	})
-	SMODS.Sound({
-		key = "echip",
-		path = "ExponentialChips.ogg"
-	})
-	SMODS.Sound({
-		key = "eechip",
-		path = "TetrationalChips.ogg"
-	})
-	SMODS.Sound({
-		key = "eeechip",
-		path = "PentationalChips.ogg"
-	})
-	SMODS.Sound({
-		key = "emult",
-		path = "ExponentialMult.ogg"
-	})
-	SMODS.Sound({
-		key = "eemult",
-		path = "TetrationalMult.ogg"
-	})
-	SMODS.Sound({
-		key = "eeemult",
-		path = "PentationalMult.ogg"
-	})
-end
 
-if curmod then
-	function curmod.load_mod_config() end
-	function curmod.save_mod_config() end
+SMODS.Sound({
+	key = "xchip",
+	path = "MultiplicativeChips.ogg"
+})
+SMODS.Sound({
+	key = "echip",
+	path = "ExponentialChips.ogg"
+})
+SMODS.Sound({
+	key = "eechip",
+	path = "TetrationalChips.ogg"
+})
+SMODS.Sound({
+	key = "eeechip",
+	path = "PentationalChips.ogg"
+})
+SMODS.Sound({
+	key = "emult",
+	path = "ExponentialMult.ogg"
+})
+SMODS.Sound({
+	key = "eemult",
+	path = "TetrationalMult.ogg"
+})
+SMODS.Sound({
+	key = "eeemult",
+	path = "PentationalMult.ogg"
+})
 
-	curmod.config_tab = function()
-		if Talisman and Talisman.config_sections then
-			return Talisman.config_sections.config_tab()
-		end
-		return nil
+function curmod.load_mod_config() end
+function curmod.save_mod_config() end
+
+curmod.config_tab = function()
+	if Talisman and Talisman.config_sections then
+		return Talisman.config_sections.config_tab()
 	end
-	curmod.description_loc_vars = function()
-		return { background_colour = G.C.CLEAR, text_colour = G.C.WHITE, scale = 1.2 }
-	end
-
-	curmod.extra_tabs = function()
-		return {{
-			label = 'Compatibility',
-			tab_definition_function = G.UIDEF.tal_compat_config
-		}, {
-			label = 'Credits',
-			tab_definition_function = G.UIDEF.tal_credits
-		}}
-	end
-
-	curmod.debug_info = Talisman.debug
+	return nil
+end
+curmod.description_loc_vars = function()
+	return { background_colour = G.C.CLEAR, text_colour = G.C.WHITE, scale = 1.2 }
 end
 
-if SMODS.calculate_individual_effect then
-	require("talisman.smods.ind_effect")
+curmod.extra_tabs = function()
+	return {{
+		label = 'Compatibility',
+		tab_definition_function = G.UIDEF.tal_compat_config
+	}, {
+		label = 'Credits',
+		tab_definition_function = G.UIDEF.tal_credits
+	}}
 end
 
-if SMODS.Scoring_Calculation then
-	require("talisman.smods.scoring_calc")
-end
+curmod.debug_info = Talisman.debug
+
+require("talisman.smods.ind_effect")
+require("talisman.smods.scoring_calc")
 
 --[[SMODS.Joker{
   key = "test",
