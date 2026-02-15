@@ -29,7 +29,7 @@ require"big-num.omeganum"
 require"talisman.break_inf.globals"
 require"talisman.break_inf.math"
 
-function B(x, y) return Big:create(x, y) end
+local function B(x, y) return Big:create(x, y) end
 local inf = math.huge
 local nan = 0/0
 local quitebig = B"1e600"
