@@ -3,9 +3,6 @@ Talisman = {
     mod_path = _mod_dir_amulet,
 
     ante_switch_point = 1000000,
-    flame_max = 1e100, -- Maximum flame intensity
-    flame_decay = 25000, -- Maximum flame real intensity when intensity is switched to 0
-    flame_dt_max = 131, -- Maximum flame deltatime (seconds)
 
     cdataman = true,
     Amulet = true
@@ -14,8 +11,6 @@ Talisman.api_version = {
     major = 3,
     minor = 4
 }
-Talisman.current_calc = {}
-Talisman.debug = {}
 
 Talisman.config_file = {
     disable_anims = false,
@@ -87,6 +82,15 @@ function Talisman.update_debug()
     Talisman.debug.thread_fix_num = Talisman.config_file.thread_sanitize_num and 'yes' or 'no'
     Talisman.debug.gfx_fix = Talisman.config_file.sanitize_graphics and 'yes' or nin
 end
+
+Talisman.flame_effect = {
+    max = 1e100, -- Maximum flame intensity
+    decay = 25000, -- Maximum flame real intensity when intensity is switched to 0
+    dt_max = 131, -- Maximum flame deltatime (seconds)
+}
+
+Talisman.current_calc = {}
+Talisman.debug = {}
 
 Talisman.config.load()
 Talisman.update_debug()

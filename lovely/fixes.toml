@@ -116,14 +116,14 @@ target = "functions/button_callbacks.lua"
 pattern = '''_F.timer = _F.timer + G.real_dt*(1 + _F.intensity*0.2)'''
 position = "at"
 payload = '''
-_F.intensity = clamp_bignum(_F.intensity, Talisman.flame_max)
-_F.timer = _F.timer + G.real_dt * math.min(1 + _F.intensity*0.2, Talisman.flame_dt_max)
+_F.intensity = clamp_bignum(_F.intensity, Talisman.flame_effect.max)
+_F.timer = _F.timer + G.real_dt * math.min(1 + _F.intensity*0.2, Talisman.flame_effect.dt_max)
 
 if _F.intensity == 0 and not _F.less then
 	_F.less = true
-	if _F.timer > 60 * Talisman.flame_dt_max then _F.timer = 1 end
-	if _F.real_intensity > Talisman.flame_decay then
-		_F.real_intensity = Talisman.flame_decay
+	if _F.timer > 60 * Talisman.flame_effect.dt_max then _F.timer = 1 end
+	if _F.real_intensity > Talisman.flame_effect.decay then
+		_F.real_intensity = Talisman.flame_effect.decay
 		_F.intensity_vel = 0
 		_F.change = 0
 	end
