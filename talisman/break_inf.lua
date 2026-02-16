@@ -39,12 +39,7 @@ require("talisman.break_inf.math")
 --prevent some log-related crashes
 local sns = score_number_scale
 function score_number_scale(scale, amt)
-    local ret = sns(scale, amt)
-    if is_big(ret) then
-        if ret > BigC.BIG then return constants.BIG end
-        return ret:to_number()
-    end
-    return ret
+    return clamp_bignum(sns(scale, amt))
 end
 
 local B100 = to_big(100)
@@ -110,15 +105,7 @@ function inc_career_stat(stat, mod)
 
     if not stats[stat] then stats[stat] = 0 end
     stats[stat] = stats[stat] + (mod or 0)
-    -- Make sure this isn't ever a talisman number
-    if is_big(stats[stat]) then
-        if stats[stat] > BigC.BIG then
-            stats[stat] = BigC.BIG
-        elseif stats[stat] < BigC.NBIG then
-            stats[stat] = BigC.NBIG
-        end
-        stats[stat] = stats[stat]:to_number()
-    end
+    stats[stat] = clamp_bignum(stats[stat])
 
     G:save_settings()
 end

@@ -22,7 +22,7 @@ end
 
 function lenient_bignum(x)
     if not x or type(x) == "number" then return x end
-    if x < BigC.BIG and x > BigC.NBIG then return x:to_number() end
+    if x < constants.BIG and x > constants.NBIG then return x:to_number() end
     return x
 end
 
