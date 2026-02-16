@@ -41,3 +41,15 @@ pattern = "local delta = (type(vals.mult) == 'number' and type(G.GAME.current_ro
 position = "at"
 payload = "local delta = (is_number(vals.mult) and is_number(G.GAME.current_round.current_hand.mult))and (vals.mult - G.GAME.current_round.current_hand.mult) or 0"
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+position = 'at'
+match_indent = true
+pattern = '''
+if type(G.GAME.current_round.current_hand[name]) ~= 'number' then all_numbers = false end
+'''
+payload = '''
+all_numbers = all_numbers and is_number(G.GAME.current_round.current_hand[name])
+'''
