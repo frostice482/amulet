@@ -105,7 +105,7 @@ target = "functions/misc_functions.lua"
 pattern = '''local AC = G.SETTINGS.ambient_control'''
 position = "before"
 payload = '''
-G.ARGS.score_intensity.organ = to_number(G.ARGS.score_intensity.organ)
+G.ARGS.score_intensity.organ = clamp_bignum(G.ARGS.score_intensity.organ)
 if G.ARGS.score_intensity.organ ~= G.ARGS.score_intensity.organ then G.ARGS.score_intensity.organ = 0 end
 '''
 match_indent = true
@@ -116,7 +116,7 @@ target = "functions/button_callbacks.lua"
 pattern = '''_F.timer = _F.timer + G.real_dt*(1 + _F.intensity*0.2)'''
 position = "before"
 payload = '''
-_F.intensity = to_number(_F.intensity)
+_F.intensity = clamp_bignum(_F.intensity)
 '''
 match_indent = true
 
