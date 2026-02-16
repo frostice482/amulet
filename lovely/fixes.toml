@@ -2,38 +2,7 @@
 version = "1.0.0"
 priority = 0
 
-# naneinf crash fixes
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-pattern = "if G.GAME.round_scores[score] and math.floor(amt) > G.GAME.round_scores[score].amt then"
-position = "at"
-payload = '''
-if G.GAME.round_scores[score] and math.floor(amt) > (G.GAME.round_scores[score].amt or 0) then'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'game.lua'
-pattern = "function Game:update_hand_played(dt)"
-position = "after"
-payload = '''
-G.GAME.chips = (G.GAME.chips or 0)
-G.GAME.blind.chips = (G.GAME.blind.chips or math.huge)'''
-match_indent = true
-# Naneinf crash fixes end
-
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = 'if v.is and v:is(Object) then ret_t[k] = [["]].."MANUAL_REPLACE"..[["]]'
-position = 'at'
-payload = '''
-if Big and Big.is(v) then ret_t[k] = v:as_table()
-elseif v.is and v:is(Object) then ret_t[k] = [["]].."MANUAL_REPLACE"..[["]]
-'''
-match_indent = true
-
+# Hand levels
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -127,4 +96,26 @@ target = "functions/UI_definitions.lua"
 pattern = '''if not G.GAME.orbital_choices[G.GAME.round_resets.ante][type] then '''
 position = "at"
 payload = '''if Talisman.big_ante.has() or not G.GAME.orbital_choices[G.GAME.round_resets.ante][type] then '''
+match_indent = true
+
+# Flame animation
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = '''local AC = G.SETTINGS.ambient_control'''
+position = "before"
+payload = '''
+G.ARGS.score_intensity.organ = to_number(G.ARGS.score_intensity.organ)
+if G.ARGS.score_intensity.organ ~= G.ARGS.score_intensity.organ then G.ARGS.score_intensity.organ = 0 end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''_F.timer = _F.timer + G.real_dt*(1 + _F.intensity*0.2)'''
+position = "before"
+payload = '''
+_F.intensity = to_number(_F.intensity)
+'''
 match_indent = true
