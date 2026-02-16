@@ -2,6 +2,8 @@
 version = "1.0.0"
 priority = 0
 
+# elm juices
+
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -44,61 +46,12 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'functions/misc_functions.lua'
-position = 'at'
-match_indent = true
-pattern = '''
-G.ARGS.score_intensity.earned_score = G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult
-'''
-payload = '''
-G.ARGS.score_intensity.earned_score = math.min(to_number(G.GAME.current_round.current_hand.chips*G.GAME.current_round.current_hand.mult), 1e300)
-'''
-
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-position = 'at'
-match_indent = true
-pattern = '''
-G.ARGS.score_intensity.earned_score = SMODS.calculate_round_score(true)
-'''
-payload = '''
-G.ARGS.score_intensity.earned_score = math.min(to_number(SMODS.calculate_round_score(true)), 1e300)
-'''
-
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-position = 'at'
-match_indent = true
-pattern = '''
-G.ARGS.score_intensity.earned_score = all_numbers and SMODS.calculate_round_score(true) or 0
-'''
-payload = '''
-G.ARGS.score_intensity.earned_score = all_numbers and math.min(to_number(SMODS.calculate_round_score(true)), 1e300) or 0
-'''
-
-[[patches]]
-[patches.pattern]
-target = 'functions/misc_functions.lua'
-position = 'at'
-match_indent = true
-pattern = '''
-if type(G.GAME.current_round.current_hand[name]) ~= 'number' then all_numbers = false end
-'''
-payload = '''
-all_numbers = all_numbers and is_number(G.GAME.current_round.current_hand[name])
-'''
-
-[[patches]]
-[patches.pattern]
 target = "functions/misc_functions.lua"
 pattern = '''local AC = G.SETTINGS.ambient_control'''
 position = "before"
 payload = '''
 G.ARGS.score_intensity.organ = to_number(G.ARGS.score_intensity.organ)
 if G.ARGS.score_intensity.organ ~= G.ARGS.score_intensity.organ then G.ARGS.score_intensity.organ = 0 end
-G.ARGS.score_intensity.earned_score = math.min(to_number(G.ARGS.score_intensity.earned_score), 1e300)
 '''
 match_indent = true
 
