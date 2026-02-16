@@ -4,6 +4,17 @@ priority = 0
 
 [[patches]]
 [patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = 'if v.is and v:is(Object) then ret_t[k] = [["]].."MANUAL_REPLACE"..[["]]'
+position = 'at'
+payload = '''
+if Big and Big.is(v) then ret_t[k] = v:as_table()
+elseif v.is and v:is(Object) then ret_t[k] = [["]].."MANUAL_REPLACE"..[["]]
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
 target = "engine/string_packer.lua"
 pattern = 'function STR_PACK(data, recursive)'
 position = "before"
