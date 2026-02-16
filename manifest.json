@@ -1,7 +1,7 @@
 {
     "name": "Amulet",
     "description": "A mod to enhance high scoring runs - Fork of Talisman",
-    "version_number": "3.3.4",
+    "version_number": "3.4.0",
     "dependencies": [
         "Thunderstore-lovely-0.8.0"
     ],
