@@ -43,6 +43,11 @@ function lenient_bignum(x)
 	return x
 end
 
+function clamp_bignum(x)
+	x = to_number(x)
+	return x > 1e308 and 1e308 or x < -1e308 and -1e308 or x
+end
+
 if Talisman then
 
 function Talisman.juice(v)
