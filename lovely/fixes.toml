@@ -119,3 +119,24 @@ payload = '''
 _F.intensity = to_number(_F.intensity)
 '''
 match_indent = true
+
+# DynaText with bignum
+[[patches]]
+[patches.pattern]
+target = "engine/text.lua"
+pattern = '''self.config.quiver = {'''
+position = "before"
+payload = '''
+amt = clamp_bignum(amt)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "engine/text.lua"
+pattern = '''self.config.pulse = {'''
+position = "before"
+payload = '''
+amt = clamp_bignum(amt)
+'''
+match_indent = true
