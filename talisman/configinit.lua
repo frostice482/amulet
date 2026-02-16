@@ -1,7 +1,11 @@
 Talisman = {
     F_NO_COROUTINE = false,
     mod_path = _mod_dir_amulet,
+
     ante_switch_point = 1000000,
+    flame_max = 1e100, -- Maximum flame intensity
+    flame_decay = 25000, -- Maximum flame real intensity when intensity is switched to 0
+    flame_dt_max = 131, -- Maximum flame deltatime (seconds)
 
     cdataman = true,
     Amulet = true

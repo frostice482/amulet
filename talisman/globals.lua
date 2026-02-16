@@ -43,9 +43,10 @@ function lenient_bignum(x)
 	return x
 end
 
-function clamp_bignum(x)
+function clamp_bignum(x, max)
+	max = max or 1e308
 	x = to_number(x)
-	return x > 1e308 and 1e308 or x < -1e308 and -1e308 or x
+	return x > max and max or x < -max and -max or x
 end
 
 if Talisman then
