@@ -12,7 +12,7 @@ Talisman = {
 }
 Talisman.api_version = {
     major = 3,
-    minor = 3
+    minor = 4
 }
 Talisman.current_calc = {}
 Talisman.debug = {}
