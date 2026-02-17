@@ -125,11 +125,11 @@ payload = '''
 elseif Talisman.effects.list[eval_type] then
 	local h = Talisman.effects.list[eval_type]
 	sound = h.sound
-	amt = amt
 	text = h.stringify(amt)
 	colour = G.C[h.colorKey or 'WHITE']
 	config.type = 'fade'
 	config.scale = 0.7
+	amt = h.hyper and amt[2] or amt
 '''
 match_indent = true
 
