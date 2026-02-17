@@ -5,6 +5,7 @@
 --- @field modKey string
 --- @field set fun(current: t.Omega.Parsable, amount: any): t.Omega.Parsable
 --- @field stringify fun(amount: any): string
+--- @field hyper? boolean
 --- @field sound? string
 --- @field colorKey? string
 
@@ -83,7 +84,8 @@ function Talisman.effects.registerHyper(init)
 			return str
 		end,
 		sound = init.soundFormat and init.soundFormat:format('eee'),
-		colorKey = init.colorKey
+		colorKey = init.colorKey,
+		hyper = true
 	}
 	fxlist['hyper' .. init.keyPlural] = fxlist[key]
 	fxlist[modkey] = fxlist[key]
