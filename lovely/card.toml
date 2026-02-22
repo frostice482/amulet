@@ -15,7 +15,7 @@ for k,v in pairs(effects.jokers) do
 		if fx.parameterKey == 'mult' then
 			mult = mod_mult(fx.set(mult, v))
 			extras.mult = true
-		else fx.parameterKey == 'chips' then
+		elseif fx.parameterKey == 'chips' then
 			hand_chips = mod_chips(fx.set(hand_chips, v))
 			extras.hand_chips = true
 		end
@@ -36,7 +36,7 @@ for k,v in pairs(effect) do
 		if fx.parameterKey == 'mult' then
 			mult = mod_mult(fx.set(mult, v))
 			extras.mult = true
-		else fx.parameterKey == 'chips' then
+		elseif fx.parameterKey == 'chips' then
 			hand_chips = mod_chips(fx.set(hand_chips, v))
 			extras.hand_chips = true
 		end
@@ -146,7 +146,7 @@ for k,v in pairs(effects[ii]) do
 		if fx.parameterKey == 'mult' then
 			mult = mod_mult(fx.set(mult, v))
 			update_hand_text({delay = 0}, {mult = mult})
-		else fx.parameterKey == 'chips' then
+		elseif fx.parameterKey == 'chips' then
 			hand_chips = mod_chips(fx.set(hand_chips, v))
 			update_hand_text({delay = 0}, {chips = hand_chips})
 		end
@@ -170,7 +170,7 @@ for k,v in pairs(effects[ii]) do
 		if fx.parameterKey == 'mult' then
 			mult = mod_mult(fx.set(mult, v))
 			update_hand_text({delay = 0}, {mult = mult})
-		else fx.parameterKey == 'chips' then
+		elseif fx.parameterKey == 'chips' then
 			hand_chips = mod_chips(fx.set(hand_chips, v))
 			update_hand_text({delay = 0}, {chips = hand_chips})
 		end
@@ -199,7 +199,7 @@ if scoring_hand and scoring_hand[i] and scoring_hand[i].edition then
 			if fx.parameterKey == 'mult' then
 				mult = mod_mult(fx.set(mult, v))
 				update_hand_text({delay = 0}, {mult = mult})
-			else fx.parameterKey == 'chips' then
+			elseif fx.parameterKey == 'chips' then
 				hand_chips = mod_chips(fx.set(hand_chips, v))
 				update_hand_text({delay = 0}, {chips = hand_chips})
 			end
@@ -247,7 +247,7 @@ if G.jokers.cards and G.jokers.cards[i] and G.jokers.cards[i].edition then
 			if fx.parameterKey == 'mult' then
 				mult = mod_mult(fx.set(mult, v))
 				update_hand_text({delay = 0}, {mult = mult})
-			else fx.parameterKey == 'chips' then
+			elseif fx.parameterKey == 'chips' then
 				hand_chips = mod_chips(fx.set(hand_chips, v))
 				update_hand_text({delay = 0}, {chips = hand_chips})
 			end
