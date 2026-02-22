@@ -84,7 +84,7 @@ function Talisman.update_debug()
 end
 
 Talisman.flame_effect = {
-    max = 1e100, -- Maximum flame intensity
+    max = 7e5, -- Maximum flame intensity
     decay = 25000, -- Maximum flame real intensity when intensity is switched to 0
     dt_max = 131, -- Maximum flame deltatime (seconds)
 }
