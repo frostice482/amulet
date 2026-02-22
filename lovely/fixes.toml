@@ -1,6 +1,6 @@
 [manifest]
 version = "1.0.0"
-priority = 0
+priority = 2
 
 # Hand levels
 [[patches]]
@@ -152,4 +152,59 @@ position = "before"
 payload = '''
 amt = clamp_bignum(amt)
 '''
+match_indent = true
+
+# Blind select score requirement
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''
+{n=G.UIT.R, config={align = "cm", minh = 0.6}, nodes={
+	{n=G.UIT.O, config={w=0.5,h=0.5, colour = G.C.BLUE, object = stake_sprite, hover = true, can_collide = false}},
+	{n=G.UIT.B, config={h=0.1,w=0.1}},
+	{n=G.UIT.T, config={text = number_format(blind_amt), scale = score_number_scale(0.9, blind_amt), colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.RED, shadow =  not disabled}}
+}},
+'''
+position = "at"
+payload = '''
+{n=G.UIT.R, config={align = "cm", minh = 0.6, maxw = 2.75}, nodes={
+	{n=G.UIT.O, config={w=0.5,h=0.5, colour = G.C.BLUE, object = stake_sprite, hover = true, can_collide = false}},
+	{n=G.UIT.B, config={h=0.1,w=0.1}},
+	{n=G.UIT.T, config={text = number_format(blind_amt), scale = score_number_scale(0.9, blind_amt), colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.RED, shadow =  not disabled}}
+}},
+'''
+match_indent = true
+
+# fix ante ui getting smaller on large ante
+[[patches]]
+[patches.regex]
+target = "functions/UI_definitions.lua"
+pattern = '''\{\{ref_table = G.GAME.round_resets, ref_value = '(ante_disp)'\}\}'''
+position = "after"
+payload = ', maxw = 1.2'
+
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''
+{n=G.UIT.R, config={align = "cm", r = 0.1, minw = 1.2, colour = temp_col2}, nodes={
+	{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},
+'''
+position = "at"
+payload = '''
+{n=G.UIT.R, config={align = "cm", r = 0.1, minw = 1.2, minh = 0.666, colour = temp_col2}, nodes={
+	{n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},
+'''
+match_indent = true
+
+# cryptid: fix unsupported bigante
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = '''
+G.GAME.round_resets.ante = Big and (to_number(math.floor(to_big(G.GAME.round_resets.ante)))) or math.floor(G.GAME.round_resets.ante)
+'''
+position = "at"
+payload = ''
 match_indent = true

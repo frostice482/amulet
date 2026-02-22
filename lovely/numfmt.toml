@@ -1,13 +1,13 @@
 [manifest]
 version = "1.0.0"
-priority = 0
+priority = 1
 
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
 pattern = "if delta < 0 then delta = ''..delta; col = G.C.RED"
 position = "at"
-payload = "if to_big(delta) < BigC.ZERO then delta = number_format(delta); col = G.C.RED"
+payload = "if delta < 0 then delta = number_format(delta); col = G.C.RED"
 match_indent = true
 
 [[patches]]
@@ -15,7 +15,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "elseif delta > 0 then delta = '+'..delta"
 position = "at"
-payload = "elseif to_big(delta) > BigC.ZERO then delta = '+'..number_format(delta)"
+payload = "elseif delta > 0 then delta = '+'..number_format(delta)"
 match_indent = true
 
 [[patches]]
@@ -43,21 +43,23 @@ position = "at"
 payload = "{n=G.UIT.T, config={text = number_format(G.GAME.hands[handname].mult, 1000000), scale = 0.45, colour = G.C.UI.TEXT_LIGHT}}"
 match_indent = true
 
-# ante display
-
+# poker hand level fixes
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
-pattern = '''
-{n=G.UIT.R, config={align = "cm", r = 0.1, minw = 1.2, colour = temp_col2}, nodes={
-    {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante'}}, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},
-'''
+pattern = "{n=G.UIT.T, config={text = localize('k_level_prefix')..G.GAME.hands[handname].level, scale = 0.5, colour = G.C.UI.TEXT_DARK}}"
 position = "at"
-payload = '''
-{n=G.UIT.R, config={align = "cm", r = 0.1, minw = 1.2, minh = 0.668, colour = temp_col2}, nodes={
-    {n=G.UIT.O, config={object = DynaText({string = {{ref_table = G.GAME.round_resets, ref_value = 'ante_disp'}}, maxw = 1.2, colours = {G.C.IMPORTANT},shadow = true, font = G.LANGUAGES['en-us'].font, scale = 2*scale}),id = 'ante_UI_count'}},
-'''
+payload = "{n=G.UIT.T, config={text = localize('k_level_prefix')..number_format(G.GAME.hands[handname].level), scale = 0.5, colour = G.C.UI.TEXT_DARK}}"
 match_indent = true
+
+# ante display
+[[patches]]
+[patches.regex]
+target = "functions/UI_definitions.lua"
+pattern = '''\{\{ref_table = G.GAME.round_resets, ref_value = '(ante)'\}\}'''
+position = "at"
+payload = 'ante_disp'
+root_capture = '$1'
 
 [[patches]]
 [patches.pattern]
@@ -86,13 +88,4 @@ if ao.config.maxw and ao.config.W > ao.config.maxw then
 	ao:update_text(true)
 end
 '''
-match_indent = true
-
-# poker hand level fixes
-[[patches]]
-[patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "{n=G.UIT.T, config={text = localize('k_level_prefix')..G.GAME.hands[handname].level, scale = 0.5, colour = G.C.UI.TEXT_DARK}}"
-position = "at"
-payload = "{n=G.UIT.T, config={text = localize('k_level_prefix')..number_format(G.GAME.hands[handname].level), scale = 0.5, colour = G.C.UI.TEXT_DARK}}"
 match_indent = true
