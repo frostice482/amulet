@@ -80,7 +80,6 @@ target = "tag.lua"
 pattern = '''G\.GAME\.orbital_choices\[G\.GAME\.round_resets\.ante\]'''
 position = "at"
 payload = '''G.GAME.orbital_choices[to_number(G.GAME.round_resets.ante)]'''
-match_indent = true
 
 [[patches]]
 [patches.regex]
@@ -88,7 +87,6 @@ target = "functions/UI_definitions.lua"
 pattern = '''G\.GAME\.orbital_choices\[G\.GAME\.round_resets\.ante\]'''
 position = "at"
 payload = '''G.GAME.orbital_choices[to_number(G.GAME.round_resets.ante)]'''
-match_indent = true
 
 [[patches]]
 [patches.pattern]
