@@ -138,7 +138,7 @@ target = "engine/text.lua"
 pattern = '''self.config.quiver = {'''
 position = "before"
 payload = '''
-amt = clamp_bignum(amt)
+amt = amt and clamp_bignum(amt)
 '''
 match_indent = true
 
@@ -148,7 +148,7 @@ target = "engine/text.lua"
 pattern = '''self.config.pulse = {'''
 position = "before"
 payload = '''
-amt = clamp_bignum(amt)
+amt = amt and clamp_bignum(amt)
 '''
 match_indent = true
 
