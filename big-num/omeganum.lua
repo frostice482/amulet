@@ -32,18 +32,17 @@ local TalismanOmega_sizeof = assert(ffi.sizeof("struct TalismanOmega"))
 --- @operator pow(t.Omega|number): t.Omega
 --- @operator unm(): t.Omega
 local Big = {
-    created_instances = 0
+    created_instances = 0,
 }
-;(Big).array = {} -- lsp hack, assign without recognized by lsp
 
-OmegaMeta = {
-    __index = {
-        m = false,
-        e = false,
-        array = {},
-        sign = 1
-    }
-}
+-- lsp hack, assign without recognized by lsp
+;(Big).m = false
+;(Big).e = false
+;(Big).array = {}
+;(Big).sign = 0
+
+OmegaMeta = {}
+OmegaMeta.__index = Big
 
 _G.Big = Big
 
@@ -1595,12 +1594,6 @@ function OmegaMeta.__concat(a, b)
 end
 
 ffi.metatype(TalismanOmega, OmegaMeta)
-
-for k,v in pairs(Big) do
-    if type(v) == "function" then
-        OmegaMeta.__index[k] = v --- @diagnostic disable-line
-    end
-end
 
 -- #endregion
 
