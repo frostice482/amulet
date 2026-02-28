@@ -18,6 +18,7 @@ Talisman.config_file = {
     debug_coroutine = false,
     big_ante = false,
     notation = "Balatro",
+    exponential_colours = 1,
 
     enable_compat = false,
     thread_sanitize = 'modify',

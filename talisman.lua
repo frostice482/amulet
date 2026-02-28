@@ -13,6 +13,7 @@ require("talisman.localization")
 require("talisman.card")
 require("talisman.configtab")
 require("talisman.noanims")
+require("talisman.gradients")
 require("talisman.sanitizer")
 require("talisman.debug")
 if not Talisman.config_file.disable_omega then
