@@ -106,7 +106,7 @@ Talisman.effects.chips = {
 	keyPlural = 'chips',
 	effectTableKey = 'hand_chips',
 	soundFormat = 'talisman_%schip',
-	colorKey = 'talisman_echips',
+	colorKey = 'echips',
 }
 
 --- @class t.EffectInit
@@ -115,7 +115,7 @@ Talisman.effects.mult = {
 	keyPlural = 'mult',
 	effectTableKey = 'mult',
 	soundFormat = 'talisman_%smult',
-	colorKey = 'talisman_emult',
+	colorKey = 'emult',
 }
 
 -- xchips
