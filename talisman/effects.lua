@@ -105,7 +105,8 @@ Talisman.effects.chips = {
 	key = 'chip',
 	keyPlural = 'chips',
 	effectTableKey = 'hand_chips',
-	soundFormat = 'talisman_%schip'
+	soundFormat = 'talisman_%schip',
+	colorKey = 'talisman_echips',
 }
 
 --- @class t.EffectInit
@@ -113,9 +114,18 @@ Talisman.effects.mult = {
 	key = 'mult',
 	keyPlural = 'mult',
 	effectTableKey = 'mult',
-	soundFormat = 'talisman_%smult'
+	soundFormat = 'talisman_%smult',
+	colorKey = 'talisman_emult',
 }
 
-Talisman.effects.registerIndex(Talisman.effects.chips, 0) -- xchips
+-- xchips
+-- this can just be removed now honestly
+Talisman.effects.registerIndex({
+	key = 'chip',
+	keyPlural = 'chips',
+	effectTableKey = 'hand_chips',
+	soundFormat = 'talisman_%schip',
+	colorKey = 'CHIPS'
+}, 0)
 Talisman.effects.register(Talisman.effects.chips)
 Talisman.effects.register(Talisman.effects.mult)
