@@ -35,8 +35,6 @@ conf.notations = {
     }
 }
 
-conf.thread_sanitations = { 'modify', 'copy', 'noop' }
-
 function conf.title()
     return {
         n = G.UIT.R,
@@ -130,34 +128,6 @@ function conf.exponential_colours()
     end
 end
 
-function conf.thread_sanitize()
-    return create_option_cycle({
-        label = localize("tal_thread_sanitation"),
-        options = conf.thread_sanitations,
-        current_option = get_index(conf.thread_sanitations, Talisman.config_file.thread_sanitize or 'modify') or 1,
-        scale = 0.8,
-        text_scale = 0.5,
-        opt_callback = 'tal_update_thread_sanitize',
-        on_demand_tooltip = { text = localize("tal_thread_sanitation_warning") }
-    })
-end
-
-function conf.thread_sanitize_num()
-    return conf.create_toggle("thread_sanitize_num", true)
-end
-
-function conf.enable_type_compat()
-    return conf.create_toggle("enable_compat", true, true)
-end
-
-function conf.enable_sanitize_graphics()
-    return conf.create_toggle("sanitize_graphics", true)
-end
-
-function conf.debug_coroutine()
-    return conf.create_toggle("debug_coroutine", true, true)
-end
-
 function conf.big_ante()
     if Talisman.forced_features.bigante then return end
     return conf.create_toggle("big_ante", true, true, function (val)
@@ -169,6 +139,10 @@ function conf.big_ante()
     end)
 end
 
+function conf.debug_coroutine()
+    return conf.create_toggle("debug_coroutine", true, true)
+end
+
 conf.array = {
     conf.disable_anim,
     conf.disable_omega,
@@ -178,11 +152,40 @@ conf.array = {
     conf.exponential_colours,
 }
 
-conf.compat_array = {
-    conf.thread_sanitize,
-    conf.thread_sanitize_num,
-    conf.enable_sanitize_graphics,
-    conf.enable_type_compat,
+---@class t.ConfigSection.Compat
+conf.compat = {}
+
+conf.compat.thread_sanitations = { 'modify', 'copy', 'noop' }
+
+function conf.compat.thread_sanitize()
+    return create_option_cycle({
+        label = localize("tal_thread_sanitation"),
+        options = conf.compat.thread_sanitations,
+        current_option = get_index(conf.compat.thread_sanitations, Talisman.config_file.thread_sanitize or 'modify') or 1,
+        scale = 0.8,
+        text_scale = 0.5,
+        opt_callback = 'tal_update_thread_sanitize',
+        on_demand_tooltip = { text = localize("tal_thread_sanitation_warning") }
+    })
+end
+
+function conf.compat.thread_sanitize_num()
+    return conf.create_toggle("thread_sanitize_num", true)
+end
+
+function conf.compat.type_compat()
+    return conf.create_toggle("enable_compat", true, true)
+end
+
+function conf.compat.sanitize_graphics()
+    return conf.create_toggle("sanitize_graphics", true)
+end
+
+conf.compat.array = {
+    conf.compat.thread_sanitize,
+    conf.compat.thread_sanitize_num,
+    conf.compat.sanitize_graphics,
+    conf.compat.type_compat,
 }
 
 conf.ui_base = {
@@ -214,8 +217,8 @@ function conf.config_tab()
     return conf.generate_tab(conf.array)
 end
 
-function conf.compat_config_tab()
-    return conf.generate_tab(conf.compat_array)
+function conf.compat.config_tab()
+    return conf.generate_tab(conf.compat.array)
 end
 
 function conf.credits_tab()
@@ -245,7 +248,7 @@ function G.FUNCS.talismanMenu(e)
             tab_definition_function = conf.config_tab
         },{
             label = "Compat",
-            tab_definition_function = conf.compat_config_tab
+            tab_definition_function = conf.compat.config_tab
         },{
             label = "Credits",
             tab_definition_function = conf.credits_tab
@@ -274,10 +277,10 @@ function G.FUNCS.tal_update_exponential_colours(arg)
 end
 
 function G.FUNCS.tal_update_thread_sanitize(arg)
-    Talisman.config_file.thread_sanitize = conf.thread_sanitations[arg.to_key]
+    Talisman.config_file.thread_sanitize = conf.compat.thread_sanitations[arg.to_key]
     Talisman.config.save()
     Talisman.update_debug()
 end
 
 G.UIDEF.tal_credits = conf.credits_tab
-G.UIDEF.tal_compat_config = conf.compat_config_tab
+G.UIDEF.tal_compat_config = conf.compat.config_tab
