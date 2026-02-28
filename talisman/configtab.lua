@@ -105,15 +105,13 @@ function conf.notation()
     })
 end
 
-local slib = SMODS and SMODS.Mods and (SMODS.Mods.Spectrallib or {}).can_load
-
 conf.exponential_colour_options = {
     "tal_exp_colour_default",
     "tal_exp_colour_classic"
 }
 function conf.exponential_colours()
     -- defer to spectrallib's option
-    if slib then
+    if Spectrallib then
         return Spectrallib.config_opts.exponential_colours()
     else
         local opts = {}
@@ -273,15 +271,6 @@ function G.FUNCS.tal_update_exponential_colours(arg)
     Talisman.config_file.exponential_colours = math.min(arg.to_key, #conf.exponential_colour_options)
     Talisman.config.save()
     Talisman.update_debug()
-end
-
--- sync selected option with spectrallib
-if slib then
-    local update_exp_colours_ref = G.FUNCS.slib_update_exp_colours
-    function G.FUNCS.slib_update_exp_colours(arg, ...)
-        G.FUNCS.tal_update_exponential_colours(arg)
-        return update_exp_colours_ref(arg, ...)
-    end
 end
 
 function G.FUNCS.tal_update_thread_sanitize(arg)

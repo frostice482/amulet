@@ -8,8 +8,8 @@
 --- @class t.GradientInit
 --- @field key string
 --- @field colours [number, number, number, number][]
---- @field cycle number
---- @field update fun(self: t.Gradient, dt: number)
+--- @field cycle? number
+--- @field update? fun(self: t.Gradient, dt: number)
 
 Talisman.gradients = {}
 --- @type table<string, t.Gradient>
@@ -22,18 +22,18 @@ function Talisman.gradients.register(init)
         key = init.key,
         colours = init.colours,
         current_colour = HEX("000000"), -- placeholder value
-        cycle = init.cycle,
-        update = init.update,
+        cycle = init.cycle or 4,
+        update = init.update or Talisman.gradients.default_update,
     }
     G.C[init.key] = gradlist[init.key].current_colour
     return gradlist[init.key]
 end
 
-local slib = SMODS and SMODS.Mods and (SMODS.Mods.Spectrallib or {}).can_load
-local function update_exp_colour(self, _)
-    if slib then
+--- @param self t.Gradient
+function Talisman.gradients.default_update(self, _)
+    if Spectrallib and SMODS then
         for i = 1, 4 do
-            self.current_colour[i] = SMODS.Gradients["slib_" .. self.key]
+            self.current_colour[i] = SMODS.Gradients["slib_" .. self.key][i]
         end
         return
     end
@@ -56,9 +56,7 @@ Talisman.gradients.register {
     colours = {
         HEX("41bed9"),
         HEX("5674e9"),
-    },
-    cycle = 4,
-    update = update_exp_colour,
+    }
 }
 
 Talisman.gradients.register {
@@ -66,9 +64,7 @@ Talisman.gradients.register {
     colours = {
         HEX("ff73ad"),
         HEX("db005f")
-    },
-    cycle = 4,
-    update = update_exp_colour,
+    }
 }
 
 local lc = loc_colour
