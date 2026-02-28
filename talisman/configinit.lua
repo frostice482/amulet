@@ -77,11 +77,14 @@ function Talisman.big_ante.disable()
 end
 
 function Talisman.update_debug()
-    Talisman.debug.omeganum = not Big and 'no' or nil
-    Talisman.debug.type_compat = Talisman.config_file.enable_compat and 'yes' or nil
-    Talisman.debug.thread_fix = Talisman.config_file.thread_sanitize
-    Talisman.debug.thread_fix_num = Talisman.config_file.thread_sanitize_num and 'yes' or 'no'
-    Talisman.debug.gfx_fix = Talisman.config_file.sanitize_graphics and 'yes' or nin
+    local d = Talisman.debug
+    local c = Talisman.config_file
+    d.omeganum       = not Big and 'no' or nil
+    d.type_compat    = c.enable_compat and 'yes' or nil
+    d.thread_fix     = c.thread_sanitize
+    d.thread_fix_num = c.thread_sanitize_num and 'yes' or 'no'
+    d.gfx_fix        = c.sanitize_graphics and 'yes' or nil
+    d.exp_color      = c.exponential_colours == 1 and 'default' or 'classic'
 end
 
 Talisman.flame_effect = {
