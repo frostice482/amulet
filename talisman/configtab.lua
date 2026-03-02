@@ -105,15 +105,13 @@ function conf.notation()
     })
 end
 
-local slib = SMODS and SMODS.Mods and (SMODS.Mods.Spectrallib or {}).can_load
-
 conf.exponential_colour_options = {
     "tal_exp_colour_default",
     "tal_exp_colour_classic"
 }
 function conf.exponential_colours()
     -- defer to spectrallib's option
-    if slib then
+    if Spectrallib then
         return Spectrallib.config_opts.exponential_colours()
     else
         local opts = {}
@@ -276,7 +274,7 @@ function G.FUNCS.tal_update_exponential_colours(arg)
 end
 
 -- sync selected option with spectrallib
-if slib then
+if Spectrallib then
     local update_exp_colours_ref = G.FUNCS.slib_update_exp_colours
     function G.FUNCS.slib_update_exp_colours(arg, ...)
         G.FUNCS.tal_update_exponential_colours(arg)
