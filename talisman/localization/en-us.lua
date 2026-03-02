@@ -18,6 +18,10 @@ return {
     talisman_notations_letter = 'Letter',
     talisman_notations_array = 'Array',
 
+    tal_exp_colours = 'Exponential Chips and Mult colours',
+    tal_exp_colour_default = 'Default',
+    tal_exp_colour_classic = 'Classic (G.C.DARK_EDITION)',
+
     tal_debug_coroutine = 'Debug Coroutine',
     tal_debug_coroutine_warning = {
         'Captures stack trace of the scoring coroutine when',

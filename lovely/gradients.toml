@@ -1,0 +1,17 @@
+[manifest]
+version = "1.0.0"
+priority = 0
+
+# update gradients
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.C.DARK_EDITION[2] = math.min(self.C.DARK_EDITION[3], self.C.DARK_EDITION[1])"
+position = "after"
+payload = '''
+for k, grad in pairs(Talisman.gradients.list) do
+    grad:update(dt)
+    G.C[k] = grad.current_colour
+end
+'''
+match_indent = true
