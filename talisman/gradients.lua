@@ -28,7 +28,7 @@ function Talisman.gradients.register(init)
     G.C[init.key] = gradlist[init.key].current_colour
     return gradlist[init.key]
 end
-
+--test
 local slib = SMODS and SMODS.Mods and (SMODS.Mods.Spectrallib or {}).can_load
 local function update_exp_colour(self, _)
     if slib then
