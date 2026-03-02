@@ -101,6 +101,7 @@ curmod.debug_info = Talisman.debug
 
 require("talisman.smods.ind_effect")
 require("talisman.smods.scoring_calc")
+require("talisman.smods.gradients")
 
 --[[SMODS.Joker{
   key = "test",
