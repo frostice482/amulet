@@ -3,6 +3,7 @@ Talisman = {
     mod_path = _mod_dir_amulet,
 
     ante_switch_point = 1000000,
+    level_color_highest = 7,
 
     cdataman = true,
     Amulet = true
