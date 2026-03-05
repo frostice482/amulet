@@ -13,6 +13,13 @@ function copy_table(v)
 	return sanitizer.copy_table(v)
 end
 
+setmetatable(G.C.HAND_LEVELS, {
+	__index = function (t, k)
+		if is_big(k) then k = to_number(k) end
+		return rawget(t, k) or rawget(t, Talisman.level_color_highest)
+	end
+})
+
 local reg = debug.getregistry()
 
 local Channel = reg.Channel
