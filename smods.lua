@@ -37,6 +37,24 @@ end
 
 Talisman.smods = SMODS.current_mod
 
+--[[
+For mod developers: PLEASE if you're checking for Talisman, DON'T do
+```
+if SMODS.Mods["Talisman"] and SMODS.Mods["Talisman"].can_load then
+```
+This breaks compat with a mod that provides Talisman (e.g. Amulet of course)
+but PLEASE do
+```
+if Talisman then
+```
+]]
+if not SMODS.Mods.Talisman then
+	SMODS.Mods.Talisman = {
+		can_load = true,
+		meta_mod = true
+	}
+end
+
 SMODS.Atlas({
 	key = "modicon",
 	path = "icon.png",

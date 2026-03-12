@@ -36,6 +36,13 @@ _mod_dir_amulet,
 end
 
 _mod_dir_amulet = "{{lovely_hack:patch_dir}}"
+
+if SMODS and SMODS.Mods and not SMODS.Mods.Talisman then
+	SMODS.Mods.Talisman = {
+		can_load = true,
+		meta_mod = true
+	}
+end
 '''
 match_indent = true
 
