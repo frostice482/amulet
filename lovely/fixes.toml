@@ -189,3 +189,12 @@ G.GAME.round_resets.ante = Big and (to_number(math.floor(to_big(G.GAME.round_res
 position = "at"
 payload = ''
 match_indent = true
+
+# json
+[[patches]]
+[patches.pattern]
+target = '=[lovely json "libs/json/json.lua"]'
+pattern = "encode = function(val, stack)"
+position = "after"
+payload =  "if is_big(val) then val = val:as_table() end"
+match_indent = true
