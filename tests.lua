@@ -53,6 +53,14 @@ assert(B(inf) > B(-inf), "inf > -inf")
 assert(B(-inf) < B(inf), "-inf < inf")
 assert(B(-inf) == B(-inf), "-inf == -inf")
 
+assert(B(inf) > B(0), "inf > 0")
+assert(B(-inf) < B(0), "-inf < 0")
+
+assert(B(inf) > B(1), "inf > 1")
+assert(B(-inf) < B(1), "-inf < 1")
+assert(B(inf) > B(-1), "inf > -1")
+assert(B(-inf) < B(-1), "-inf < -1")
+
 assert(B(nan) ~= B(nan), "nan != nan")
 
 assert(B(inf):max(-inf) == inf, "max(inf, -inf)")
