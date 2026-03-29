@@ -270,6 +270,13 @@ assert(B"1e3000":pow(0.5) == B"1e1500", "pow: 1e3000 0.5 failed")
 assert(B"1e3000":pow(0) == 1, "pow: 1e3000 0 failed")
 assert(B"1e500":pow(-0.5) == 1e-250, "pow: 1e500 -0.5 failed")
 
+assert(B"-1e3000":pow(1) == B"-1e3000", "pow: -1e3000 1 failed")
+assert(B"-1e3000":pow(2) == B"1e6000", "pow: -1e3000 2 failed")
+assert(B"-1e3000":pow(3) == B"-1e9000", "pow: -1e3000 3 failed")
+assert(B"-1e3000":pow(4) == B"1e12000", "pow: -1e3000 4 failed")
+
+assert(B(-10):pow(B"1e500") == B"-e1e500", "pow: -10 1e500 failed")
+
 assert((B(2) ^ nan):isNaN(), "pow: 2 nan failed")
 assert((B(nan) ^ 2):isNaN(), "pow: nan 2 failed")
 assert((B(inf) ^ nan):isNaN(), "pow: inf nan failed")
@@ -287,11 +294,11 @@ assert(B(-1) ^ 0 == 1, "pow: -1 0 failed")
 assert(B(0) ^ 0 == 1, "pow: 0 0 failed")
 
 --assert((B(-1) ^ 2.5):isNaN(), "pow: -1 2.5 failed, expected nan")
-assert(B(-1) ^ 2.5 == -1, "pow: -1 2.5 failed") -- talisman
+assert(B(-1) ^ 2.5 == 1, "pow: -1 2.5 failed") -- talisman
 --assert((B(-1) ^ 1.5):isNaN(), "pow: -1 1.5 failed, expected nan")
-assert(B(-1) ^ 1.5 == 1, "pow: -1 1.5 failed") -- talisman
+assert(B(-1) ^ 1.5 == -1, "pow: -1 1.5 failed") -- talisman
 --assert((B(-1) ^ 0.5):isNaN(), "pow: -1 0.5 failed, expected nan")
-assert(B(-1) ^ 0.5 == -1, "pow: -1 0.5 failed") -- talisman
+assert(B(-1) ^ 0.5 == 1, "pow: -1 0.5 failed") -- talisman
 
 assert((B(2) ^ inf) == inf, "pow: 2 inf failed")
 --assert((B(1) ^ inf):isNaN(), "pow: 1 inf failed, expected nan")

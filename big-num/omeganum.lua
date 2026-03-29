@@ -750,7 +750,7 @@ function Big:pow(other)
     if (self.number < 0) then
         -- talisman-specific behavior
         local p = self:abs():pow(other)
-        return other.number % 2 < 1 and p:neg() or p
+        return other.number % 2 < 1 and p or p:neg()
 
         --[[
         local mod = other.number % 2
