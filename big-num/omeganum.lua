@@ -748,16 +748,11 @@ function Big:pow(other)
     end
 
     if (self.number < 0) then
-        -- talisman-specific behavior
+        local n = math.abs(other.number)
+        if n ~= math.huge and n % 1 ~= 0 then return B.NaN end
         local p = self:abs():pow(other)
-        return other.number % 2 < 1 and p or p:neg()
-
-        --[[
-        local mod = other.number % 2
-        if mod ~= 0 and mod ~= 1 then return B.NaN end
-        local p = self:abs():pow(other)
-        return mod == 1 and p:neg() or p
-        ]]
+        local is_even = n == math.huge or n % 2 == 0
+        return is_even and p or p:neg()
     end
     if (self.number == 0) then
         return B.ZERO
