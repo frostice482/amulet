@@ -28,16 +28,23 @@ G.FUNCS.evaluate_play = function(e)
 	return ret
 end
 
---Easing fixes
---Changed this to always work; it's less pretty but fine for held in hand things
 local edo = ease_dollars
 function ease_dollars(mod, instant)
-	if not Talisman.config_file.disable_anims then return edo(mod, instant) end --and (Talisman.current_calc.joker or Talisman.current_calc.score or Talisman.current_calc.card) then
+	if not Talisman.config_file.disable_anims then return edo(mod, instant) end
 
 	mod = mod or 0
 	if to_big(mod) > BigC.ZERO then inc_career_stat('c_dollars_earned', mod) end
 	G.GAME.dollars = G.GAME.dollars + mod
 	Talisman.temp_dollar_update = true
+
+	if not SMODS or SMODS.ease_dollars_calc then return end
+    SMODS.calculate_context({
+        money_altered = true,
+        amount = mod,
+        from_shop = (G.STATE == G.STATES.SHOP or G.STATE == G.STATES.SMODS_BOOSTER_OPENED or G.STATE == G.STATES.SMODS_REDEEM_VOUCHER) or nil,
+        from_consumeable = (G.STATE == G.STATES.PLAY_TAROT) or nil,
+        from_scoring = (G.STATE == G.STATES.HAND_PLAYED) or nil,
+    })
 end
 
 local sm = Card.start_materialize
