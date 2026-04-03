@@ -16,7 +16,7 @@ return {
     talisman_notation = 'Number Notation',
     talisman_notations_hypere = 'Hyper-E',
     talisman_notations_letter = 'Letter',
-    talisman_notations_array = 'Array',
+    talisman_notations_array = 'Internal-Array',
 
     tal_exp_colours = 'Exponential Chips and Mult colours',
     tal_exp_colour_default = 'Default',
