@@ -638,7 +638,7 @@ function Big:mul(other)
     end
     other = Big:ensureBig(other);
 
-    if (self._nan or other._nan or (self._inf and other._inf and self:eq(other:neg()))) then
+    if (self._nan or other._nan) then
         return B.NaN
     end
     if (self.sign*other.sign==-1) then

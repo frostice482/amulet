@@ -193,8 +193,10 @@ assert(B(-inf) * 0 == 0, "mul: -inf 0 failed")
 assert(B(-1e300) * 1 == -1e300, "mul: - 1 failed")
 assert(B(1e300) * 1 == 1e300, "mul: + 1 failed")
 
-assert((B(inf) * B(-inf)):isNaN(), "mul: +inf -inf failed, expected nan")
-assert((B(-inf) * B(inf)):isNaN(), "mul: inf +inf failed, expected nan")
+assert(B(-inf) * B(-inf) == inf, "mul: -inf -inf failed")
+assert(B(inf) * B(inf) == inf, "mul: +inf +inf failed")
+assert(B(inf) * B(-inf) == -inf, "mul: +inf -inf failed")
+assert(B(-inf) * B(inf) == -inf, "mul: inf +inf failed")
 
 assert((B(0) * B(nan)):isNaN(), "mul: 0 nan failed")
 assert((B(nan) * B(nan)):isNaN(), "mul: nan nan failed")
