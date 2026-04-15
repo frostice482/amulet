@@ -295,6 +295,12 @@ assert(B(-1) ^ 1 == -1, "pow: -1 1 failed")
 assert(B(-1) ^ 0 == 1, "pow: -1 0 failed")
 assert(B(0) ^ 0 == 1, "pow: 0 0 failed")
 
+assert(B(-2) ^ -1 == -1/2, "pow: -10 -1 failed")
+assert(B(-2) ^ -2 == 1/4, "pow: -10 -2 failed")
+assert(B(-2) ^ -3 == -1/8, "pow: -10 -3 failed")
+assert(B(-2) ^ -4 == 1/16, "pow: -10 -4 failed")
+assert(B(-2) ^ -5 == -1/32, "pow: -10 -4 failed")
+
 assert((B(-1) ^ 2.5):isNaN(), "pow: -1 2.5 failed, expected nan")
 --assert(B(-1) ^ 2.5 == 1, "pow: -1 2.5 failed") -- talisman
 assert((B(-1) ^ 1.5):isNaN(), "pow: -1 1.5 failed, expected nan")
