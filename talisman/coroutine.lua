@@ -141,7 +141,7 @@ function co.overlay()
 		"", -- lua mem
 	}
 	if G.GAME.LAST_CALCS then
-		local text = string.format("%s: %d (%.2fs)", localize("tal_last_elapsed"), G.GAME.LAST_CALCS, G.GAME.LAST_CALC_TIME)
+		local text = string.format("%s: %d (%.2fs)", localize("tal_last_elapsed"), G.GAME.LAST_CALCS, G.GAME.LAST_CALC_TIME or 0)
 		table.insert(co.scoring_text, text)
 	end
 
