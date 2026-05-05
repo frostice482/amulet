@@ -1,6 +1,11 @@
 # Amulet
 A [Talisman](https://github.com/SpectralPack/Talisman) continuation that adds support for scoring above vanilla's limit (e308) while providing compatibility by default to most mods.
 
+Additions from Talisman:
+- Backward-compatible high scores
+- BigAnte
+- OmegaNum optimizations
+
 The OmegaNum used is a port of [OmegaNum.js](https://github.com/Naruyoko/OmegaNum.js/blob/master/OmegaNum.js) by [Mathguy23](https://github.com/Mathguy23).
 
 ## Installation
