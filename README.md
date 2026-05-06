@@ -17,6 +17,10 @@ Most Amulet APIs are backward-compatible with talisman, except mostly OmegaNum c
 
 ### Making incompatible with Talisman
 
+> [!WARNING]
+> Amulet >= 3.5.1 includes `SMODS.Mods.Talisman` to add compat for mods that checks Talisman that way.
+> Do not use this method to make a conflict with Talisman, as it will also includes Amulet.
+
 For Amulet >= 3.5.1, simply add conflicts to your JSON file
 
 ```json
