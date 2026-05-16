@@ -1,7 +1,5 @@
 local constants = require("big-num.constants")
 Big = require("big-num.omeganum")
-Notations = require("big-num.notations")
-BigC = copy_table(constants)
 
 is_big = Big.is
 

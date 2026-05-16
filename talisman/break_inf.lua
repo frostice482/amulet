@@ -1,4 +1,3 @@
-local constants = require("big-num.constants")
 require("talisman.break_inf.globals")
 require("talisman.break_inf.sanitizer")
 require("talisman.break_inf.math")

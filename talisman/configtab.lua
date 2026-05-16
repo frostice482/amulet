@@ -84,12 +84,15 @@ end
 
 function conf.notation()
     local b = to_big(1e20)
-    if not (Big and Notations and is_big(b)) then return { n = G.UIT.R } end
+    local ex = is_big(b) and b:tetrate(1e20) or nil --- @diagnostic disable-line
 
-    local ex = b:tetrate(1e20) --- @diagnostic disable-line
     local opts = {}
     for i,loc in ipairs(conf.notations.loc_keys) do
-        opts[i] = string.format('%s (%s)', localize(loc), Notations[conf.notations.filenames[i]]:format(ex, 3))
+        if ex then
+            opts[i] = string.format('%s (%s)', localize(loc), Notations[conf.notations.filenames[i]]:format(ex, 3))
+        else
+            opts[i] = localize(loc)
+        end
     end
 
     return create_option_cycle({

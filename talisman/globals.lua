@@ -1,3 +1,7 @@
+local constants = require("big-num.constants")
+Notations = require("big-num.notations")
+BigC = copy_table(constants)
+
 function is_big(x)
 	return false
 end
