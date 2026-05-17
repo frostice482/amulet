@@ -26,6 +26,7 @@ local function assert_array(obj, arr)
 end
 
 require"big-num.omeganum"
+require"talisman.globals"
 require"talisman.break_inf.globals"
 require"talisman.break_inf.math"
 
