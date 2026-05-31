@@ -169,6 +169,7 @@ function Big:_normalize()
     self.sign = self.sign < 0 and -1 or 1
 
     if asize == 1 then
+        self.asize = 1
         if arr[1] < 0 then
             self.sign = -1
             arr[1] = -arr[1]
@@ -177,6 +178,8 @@ function Big:_normalize()
             return
         end
     end
+
+    local u = false
 
     for i, v in pairs(arr) do
         if v ~= v then
@@ -194,11 +197,11 @@ function Big:_normalize()
         end
         if v == 0 then
             arr[i] = nil
+            u = true
         end
     end
 
     local b = true
-    local u
     repeat
         b=false;
 
