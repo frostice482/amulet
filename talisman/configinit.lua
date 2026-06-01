@@ -1,6 +1,7 @@
 Talisman = {
     F_NO_COROUTINE = false,
     mod_path = _mod_dir_amulet,
+    patch_ok = false,
 
     ante_switch_point = 1000000,
     level_color_highest = 7,

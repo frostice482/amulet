@@ -189,6 +189,9 @@ end
 -- check to_big overrides
 local splash_screen = Game.splash_screen
 function Game:splash_screen()
+    if not Talisman.patch_ok then
+        error('Amulet is loaded but patches failed to load. Make sure Amulet is installed properly. \n(did you take out the "lovely" folder from Amulet installation ?)', 0)
+    end
 	if Talisman.to_big and to_big ~= Talisman.to_big then
         local x = debug.getinfo(to_big)
         Talisman.debug.to_big_override = string.format('%s:%s-%s', x.source, x.linedefined, x.lastlinedefined)

@@ -1,0 +1,10 @@
+[manifest]
+version = "1.0.0"
+priority = 1
+
+# this patch to check if lovely folder is not removed
+[[patches]]
+[patches.copy]
+target = "main.lua"
+position = "append"
+sources = ["lovely/valid.txt"]

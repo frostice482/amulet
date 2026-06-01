@@ -1,0 +1,2 @@
+
+Talisman.patch_ok = true
