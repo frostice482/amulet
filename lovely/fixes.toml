@@ -198,3 +198,20 @@ pattern = "encode = function(val, stack)"
 position = "after"
 payload =  "if is_big(val) then val = val:as_table() end"
 match_indent = true
+
+# https://github.com/Steamodded/smods/commit/a700dac
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+match_indent = true
+position = 'at'
+pattern = '''if _mult ~= mult then SMODS.Scoring_Parameters.mult:modify(nil, _mult - (mult or 0)) end'''
+payload = '''SMODS.Scoring_Parameters.mult:modify(nil, _mult - (mult or 0))'''
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+match_indent = true
+position = 'at'
+pattern = '''if _chips ~= hand_chips then SMODS.Scoring_Parameters.mult:modify(nil, _mult - (mult or 0)) end'''
+payload = '''SMODS.Scoring_Parameters.chips:modify(nil, _chips - (hand_chips or 0))'''
