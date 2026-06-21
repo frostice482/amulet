@@ -46,7 +46,12 @@ function co.resume(...)
 	if not Talisman.scoring_coroutine then return end
 	Talisman.scoring_coroutine.yield = love.timer.getTime()
 	Talisman.scoring_coroutine.frames = Talisman.scoring_coroutine.frames + 1
-	return assert(coroutine.resume(Talisman.scoring_coroutine.coroutine, ...))
+	local ok, err = coroutine.resume(Talisman.scoring_coroutine.coroutine, ...)
+	if not ok then
+		err = type(err) == "string" and err or tostring(err)
+		if not Talisman.config_file.debug_coroutine then err = err..'\n(Enable "Debug Coroutine" in Amulet mod config for the traceback)' end
+		return error(err, 0)
+	end
 end
 
 function co.shouldyield()
