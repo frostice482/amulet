@@ -1,23 +1,50 @@
 local curmod = SMODS.current_mod
 
+-- patch check
 if not _mod_dir_amulet then
+
+-- loaded on disabled
+if curmod.disabled then
+local cause, step
+if curmod.lovelyIgnored then
+	cause = 'lovelyignored'
+	step = string.format('Go to Mods/%s and delete .lovelyignore', curmod.blacklist_name)
+end
+if curmod.blacklisted then
+	cause = 'blacklisted'
+	step = string.format('Go to Mods/lovely/blacklist.txt and remove "%s" line', curmod.blacklist_name)
+end
+
+return error(string.format([[
+
+Amulet is loaded by SMODS in a disabled state (%s). This is likely related to SMODS bug #1434.
+You have a few options to fix this issue:
+- Remove Amulet from the mods folder
+- Disable / remove mods that requires Amulet
+- Enable Amulet again: %s
+
+]], cause, step), 0)
+
+end
+
 return error(string.format([[
 
 [!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
 
-    Amulet is nested / zipped. Make sure Amulet is not installed
-    one folder too deep, or if it is zipped, unzip it.
+	Amulet is nested / zipped. Make sure Amulet is not installed
+	one folder too deep, or if it is zipped, unzip it.
 
-    Path: %s
-    Mods folder: %s
+	Path: %s
+	Mods folder: %s
 
 [!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
 
-    (you will be sent to the sun if you report this crash message)
+	(you will be sent to the sun if you report this crash message)
 
 ]], curmod.path, require "lovely".mod_dir), 0)
 end
 
+-- duplicate check
 if Talisman.smods then
 return error(string.format([[
 
