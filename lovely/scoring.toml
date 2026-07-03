@@ -12,6 +12,13 @@ position = 'at'
 payload = '''
 local lim = 7
 G.FUNCS.evaluate_play = function(e)
+	mult = 0
+	chips = 0
+	if SMODS and SMODS.Scoring_Parameters then
+		SMODS.Scoring_Parameters.mult.current = 0
+		SMODS.Scoring_Parameters.chips.current = 0
+	end
+
 	local state
 	local co = Talisman.scoring_coroutine
 
