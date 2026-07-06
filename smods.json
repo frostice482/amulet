@@ -18,5 +18,6 @@
 	],
 	"dependencies": [
 		"Steamodded (>=1.0.0~BETA-0827c)"
-	]
+	],
+	"icon_path": "assets/1x/icon.png"
 }
