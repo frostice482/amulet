@@ -38,10 +38,14 @@ end
 _mod_dir_amulet = "{{lovely_hack:patch_dir}}"
 
 if SMODS and SMODS.Mods and not SMODS.Mods.Talisman then
-	SMODS.Mods.Talisman = {
+	SMODS.Mods.Talisman =  setmetatable({
 		can_load = true,
-		meta_mod = true
-	}
+		meta_mod = true,
+		id = "Talisman",
+		name = "Talisman"
+	}, {
+		__index = SMODS.Mods.Amulet
+	})
 end
 '''
 match_indent = true
