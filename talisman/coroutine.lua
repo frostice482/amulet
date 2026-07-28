@@ -39,7 +39,7 @@ end
 
 function co.initialize_state()
 	Talisman.scoring_coroutine = co.create_state()
-	G.SCORING_COROUTINE = Talisman.scoring_coroutine
+	G.SCORING_COROUTINE = Talisman.scoring_coroutine.coroutine
 end
 
 function co.resume(...)
