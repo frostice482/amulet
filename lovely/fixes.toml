@@ -215,3 +215,17 @@ match_indent = true
 position = 'at'
 pattern = '''if _chips ~= hand_chips then SMODS.Scoring_Parameters.mult:modify(nil, _mult - (mult or 0)) end'''
 payload = '''SMODS.Scoring_Parameters.chips:modify(nil, _chips - (hand_chips or 0))'''
+
+# smods: fix bigante crash when viewing blinds with ante>9
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/overrides.lua"]'
+match_indent = true
+position = 'at'
+pattern = '''for i = min_ante, max_ante do'''
+payload = '''
+for _i = 0, 15 do
+	local i = min_ante + _i
+	--if _i > 0 and min_ante + 1 == min_ante + 2 then break end
+'''
