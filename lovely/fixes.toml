@@ -217,7 +217,6 @@ pattern = '''if _chips ~= hand_chips then SMODS.Scoring_Parameters.mult:modify(n
 payload = '''SMODS.Scoring_Parameters.chips:modify(nil, _chips - (hand_chips or 0))'''
 
 # smods: fix bigante crash when viewing blinds with ante>9
-
 [[patches]]
 [patches.pattern]
 target = '=[SMODS _ "src/overrides.lua"]'
@@ -229,3 +228,32 @@ for _i = 0, 15 do
 	local i = min_ante + _i
 	--if _i > 0 and min_ante + 1 == min_ante + 2 then break end
 '''
+
+# smods: fix smart_level_up_hand amount not working
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+match_indent = true
+position = 'at'
+pattern = '''
+level_up_hand(card, hand, instant, (type(amount) == 'number' or type(amount) == 'table') and amount or 1, statustext)
+'''
+payload = '''
+print(is_number(amount) or type(amount) == 'table', amount)
+level_up_hand(card, hand, instant, (is_number(amount) or type(amount) == 'table') and amount or 1, statustext)
+'''
+
+# smods: fix level_up_hand and upgrade_poker_hands amount not working
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+match_indent = true
+position = 'at'
+pattern = '''
+G.GAME.hands[hand].level = G.GAME.hands[hand].level + (type(args.level_up) == 'number' and args.level_up or 1)
+'''
+payload = '''
+G.GAME.hands[hand].level = G.GAME.hands[hand].level + (is_number(args.level_up) and args.level_up or 1)
+'''
+
+#lua 'SMODS.smart_level_up_hand(nil, "High Card", nil, to_big(10))'
