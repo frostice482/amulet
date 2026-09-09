@@ -11,10 +11,11 @@ function Talisman.effects.handleIndividual(effect, scored_card, key, amount, fro
 		if from_edition then
 			card_eval_status_text(scored_card, 'jokers', nil, percent, nil, { message = handler.stringify(amount), colour = G.C.EDITION, edition = true })
 		elseif key ~= handler.modKey then
-			if effect[handler.messageKey] then
-				card_eval_status_text(effect.message_card or effect.juice_card or scored_card or effect.card or effect.focus, 'extra', nil, percent, nil, effect[handler.messageKey])
+			local obj = effect.message_card or effect.juice_card or scored_card or effect.card or effect.focus
+			if handler.messageKey and effect[handler.messageKey] then
+				card_eval_status_text(obj, 'extra', nil, percent, nil, effect[handler.messageKey])
 			else
-				card_eval_status_text(effect.message_card or effect.juice_card or scored_card or effect.card or effect.focus, handler.messageType, amount, percent)
+				card_eval_status_text(obj, handler.key, amount, percent)
 			end
 		end
 	end
