@@ -28,6 +28,7 @@ Talisman.config_file = {
     sanitize_graphics = false,
 
     break_infinity = "omeganum", -- unused
+    dev = false
 }
 
 Talisman.config = { file_name = 'config/amulet.lua' }

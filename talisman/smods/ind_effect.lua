@@ -42,6 +42,9 @@ end
 for k, v in pairs(Talisman.effects.list) do
 	table.insert(SMODS.scoring_parameter_keys or SMODS.calculation_keys, k)
 end
+if Talisman.config_file.dev then
+	print(SMODS.scoring_parameter_keys or SMODS.calculation_keys)
+end
 
 -- prvent juice animations
 local smce = SMODS.calculate_effect
