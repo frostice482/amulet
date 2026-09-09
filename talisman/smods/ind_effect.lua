@@ -1,6 +1,6 @@
 function Talisman.effects.handleIndividual(effect, scored_card, key, amount, from_edition)
 	local handler = Talisman.effects.list[key]
-	if not handler or (handler and not handler:can(effect, scored_card, key, amount, from_edition)) then return end
+	if not handler or (handler.can and not handler:can(effect, scored_card, key, amount, from_edition)) then return end
 
 	if effect.card then juice_card(effect.card) end
 

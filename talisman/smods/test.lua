@@ -25,7 +25,7 @@ for i,e in ipairs(Talisman.effects.listEffect) do
 			return {
 				vars = {
 					card.ability.extra.retriggers,
-					e.stringify(card.ability[e.key]),
+					e.stringify(card.ability[e.key], true),
 					colours = {
 						Talisman.gradients.list[e.colorKey] and Talisman.gradients.list[e.colorKey].current_colour or G.C.RED
 					}

@@ -25,6 +25,12 @@ local function formatsound(init, i, e)
 	if type(init) == "function" then return init(i) end
 end
 
+local tmploc = {
+	type = 'variable',
+	key = '',
+	vars = {}
+}
+
 --- @nodiscard
 --- @param init t.Effects.EffectInit
 --- @param i number
@@ -45,9 +51,13 @@ function effects.createIndex(init, i)
 		getValue = setfn[i] or function (current, amount)
 			return to_big(current):arrow(i, amount) --- @diagnostic disable-line
 		end,
-		stringify = function (amount)
+		stringify = function (amount, noLoc)
 			local str = up .. amount
-			if init.loc then str = str .. " " .. localize(init.loc) end
+			if init.loc and not noLoc then
+				tmploc.key = init.loc
+				tmploc.vars[1] = str
+				str = localize(tmploc)
+			end
 			return str
 		end,
 
@@ -78,7 +88,7 @@ function effects.createHyper(init)
 		getValue = function (current, amount)
 			return to_big(current):arrow(amount[1], amount[2]) --- @diagnostic disable-line
 		end,
-		stringify = function (amount)
+		stringify = function (amount, noLoc)
 			local str
 			if amount[1] > 5 then
 				str = string.format('{%s}', amount[1])
@@ -86,7 +96,11 @@ function effects.createHyper(init)
 				str = string.rep('^', amount[1])
 			end
 			str = str .. amount[2]
-			if init.loc then str = str .. " " .. localize(init.loc) end
+			if init.loc and not noLoc then
+				tmploc.key = init.loc
+				tmploc.vars[1] = str
+				str = localize(tmploc)
+			end
 			return str
 		end,
 
@@ -126,21 +140,27 @@ effects.common.chips = {
 effects.common.mult = {
 	key = 'mult',
 	sound = 'talisman_%smult',
-	colorKey = 'emult'
+	colorKey = 'emult',
+	loc = 'a_mult'
 }
 effects.common.score = {
 	key = 'score',
 	noParam = true,
 	sound = 'xscore', -- missing e, ee, eee variant
 	colorKey = 'escore',
+	loc = 'a_score',
+
 	can = function (self, effect, object, key, amount, from_edition) return amount ~= 1 end,
 	set = function (self, effect, object, key, amount, from_edition)
-		return SMODS.mod_score({
+		local s
+		effect.remove_default_message = true
+		SMODS.mod_score({
 			add = self.getValue(G.GAME.chips, amount) - G.GAME.chips,
 			card = effect.message_card or effect.juice_card or object or effect.card or effect.focus,
 			effect = effect,
 			from_edition = from_edition
 		})
+		effect.remove_default_message = s
 	end
 }
 effects.common.blindsize = {
@@ -154,14 +174,19 @@ effects.common.blindsize = {
 		hyper = 'talisman_eeblindsize', -- missing eee variant
 	},
 	colorKey = 'eblindsize',
+	loc = 'a_blind_size',
+
 	can = function (self, effect, object, key, amount, from_edition) return amount ~= 1 end,
 	set = function (self, effect, object, key, amount, from_edition)
-		return SMODS.mod_blind_size({
+		local s
+		effect.remove_default_message = true
+		SMODS.mod_blind_size({
 			add = self.getValue(G.GAME.blind.chips, amount) - G.GAME.blind.chips,
 			card = effect.message_card or effect.juice_card or object or effect.card or effect.focus,
 			effect = effect,
 			from_edition = from_edition
 		})
+		effect.remove_default_message = s
 	end
 }
 
@@ -202,7 +227,7 @@ end
 --- @field hyper? boolean
 ---
 --- @field getValue fun(current: t.Omega.Parsable, amount: any): any Get amount to set
---- @field stringify fun(amount: any): string Stringify amount for message, e.g. `^2 Mult`
+--- @field stringify fun(amount: any, noLoc?: boolean): string Stringify amount for message, e.g. `^2 Mult`
 ---
 --- @field attrKey? string e.g. `Echips`, `Hchips`; used in setting card's attribute
 --- @field parameterKey? string e.g. `mult`, `chips`; used in effect handlers modifying `SMODS.Scoring_Parameters` current value
@@ -216,7 +241,7 @@ end
 --- @field key string
 --- @field keyPlural? string Defaults to key
 --- @field sound? t.Effects.EffectInit.Sound
---- @field loc? string
+--- @field loc? string Localization key in v_dictionary
 --- @field noParam? boolean Should be set to true if the key is not for `SMODS.Scoring_Parameters`
 
 --- @alias t.Effects.EffectInit.Sound string | table<any, string> | fun(i: t.Effects.EffectInit.SoundIndex): string
