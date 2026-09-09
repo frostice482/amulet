@@ -128,9 +128,51 @@ effects.common.mult = {
 	sound = 'talisman_%smult',
 	colorKey = 'emult'
 }
+effects.common.score = {
+	key = 'score',
+	noParam = true,
+	sound = 'xscore', -- missing e, ee, eee variant
+	colorKey = 'escore',
+	can = function (self, effect, object, key, amount, from_edition) return amount ~= 1 end,
+	set = function (self, effect, object, key, amount, from_edition)
+		return SMODS.mod_score({
+			add = self.getValue(G.GAME.chips, amount) - G.GAME.chips,
+			card = effect.message_card or effect.juice_card or object or effect.card or effect.focus,
+			effect = effect,
+			from_edition = from_edition
+		})
+	end
+}
+effects.common.blindsize = {
+	key = 'blindsize',
+	noParam = true,
+	sound = {
+		[0] = 'xblindsize',
+		'talisman_eblindsize',
+		'talisman_eeblindsize',
+		'talisman_eeblindsize', -- missing eee variant
+		hyper = 'talisman_eeblindsize', -- missing eee variant
+	},
+	colorKey = 'eblindsize',
+	can = function (self, effect, object, key, amount, from_edition) return amount ~= 1 end,
+	set = function (self, effect, object, key, amount, from_edition)
+		return SMODS.mod_blind_size({
+			add = self.getValue(G.GAME.blind.chips, amount) - G.GAME.blind.chips,
+			card = effect.message_card or effect.juice_card or object or effect.card or effect.focus,
+			effect = effect,
+			from_edition = from_edition
+		})
+	end
+}
 
 effects.createAndRegister(effects.common.chips)
 effects.createAndRegister(effects.common.mult)
+effects.createAndRegister(effects.common.score)
+effects.createAndRegister(effects.common.blindsize)
+
+if Talisman.config_file.dev then
+effects.register(effects.createIndex(effects.common.blindsize, 0))
+end
 
 effects.mod_sounds = {
 	hyperchip_mod = 'talisman_eeechip',
@@ -186,4 +228,4 @@ end
 --- @field set? t.Effects.HandleFunc<nil> Specify custom effect handler
 --- @field after? t.Effects.HandleFunc<nil> Specify custom effect handler after message
 
---- @alias t.Effects.HandleFunc<R> fun(self: t.Effects.Effect, effects: table, object: table, key: string, amount: any, from_edition: boolean): R
+--- @alias t.Effects.HandleFunc<R> fun(self: t.Effects.Effect, effect: table, object: table, key: string, amount: any, from_edition: boolean): R

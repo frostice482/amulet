@@ -58,6 +58,23 @@ grad.register {
     }
 }
 
+grad.register {
+    key = "escore",
+    colours = {
+        HEX("c96bff"),
+        HEX("a10de0")
+    }
+}
+
+grad.register {
+    key = "eblindsize",
+    colours = {
+        HEX("4f6569"),
+        G.C.DYN_UI.MAIN,
+        HEX("4d5354")
+    }
+}
+
 local lc = loc_colour
 function loc_colour(_c, _default, ...)
 	if not G.ARGS.LOC_COLOURS then
