@@ -25,6 +25,10 @@ function Talisman.effects.handleIndividual(effect, scored_card, key, amount, fro
 		end
 	end
 
+	if handler.after then
+		handler:after(effect, scored_card, key, amount, from_edition)
+	end
+
 	return true
 end
 

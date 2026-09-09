@@ -52,7 +52,10 @@ function effects.createIndex(init, i)
 		end,
 
 		sound = formatsound(init.sound, i, e),
-		colorKey = init.colorKey
+		colorKey = init.colorKey,
+		can = init.can,
+		after = init.after,
+		set = init.set
 	}
 	return fx, e
 end
@@ -88,16 +91,19 @@ function effects.createHyper(init)
 		end,
 
 		sound = formatsound(init.sound, 'hyper', 'eee'),
-		colorKey = init.colorKey
+		colorKey = init.colorKey,
+		can = init.can,
+		after = init.after,
+		set = init.set
 	}
 	return fx
 end
 
 --- @param fx t.Effects.Effect
 function effects.register(fx)
-	effects[fx.key] = fx
-	if fx.modKey then effects[fx.modKey] = fx end
-	if fx.key2 then effects[fx.key2] = fx end
+	effects.list[fx.key] = fx
+	if fx.modKey then effects.list[fx.modKey] = fx end
+	if fx.key2 then effects.list[fx.key2] = fx end
 	table.insert(effects.listEffect, fx)
 end
 
@@ -178,5 +184,6 @@ end
 --- @field colorKey? string
 --- @field can? t.Effects.HandleFunc<boolean> Check if effect should be handled
 --- @field set? t.Effects.HandleFunc<nil> Specify custom effect handler
+--- @field after? t.Effects.HandleFunc<nil> Specify custom effect handler after message
 
 --- @alias t.Effects.HandleFunc<R> fun(self: t.Effects.Effect, effects: table, object: table, key: string, amount: any, from_edition: boolean): R
