@@ -15,23 +15,34 @@ local setfn = {
 	function(c, a) return to_big(c):arrow(3, a) end --- @diagnostic disable-line
 }
 
+--- @param init? t.Effects.EffectInit.Sound
+--- @param i t.Effects.EffectInit.SoundIndex
+--- @param e string
+local function formatsound(init, i, e)
+	if not init then return end
+	if type(init) == "string" then return init:format(e) end
+	if type(init) == "table" then return init[i] end
+	if type(init) == "function" then return init(i) end
+end
+
 --- @nodiscard
 --- @param init t.Effects.EffectInit
 --- @param i number
 function effects.createIndex(init, i)
 	local e = i == 0 and 'x' or string.rep('e', i)
 	local up = i == 0 and 'X' or string.rep('^', i)
+	local kp = init.keyPlural or init.key
 
 	--- @type t.Effects.Effect
 	local fx = {
-		parameterKey = init.keyPlural,
+		parameterKey = not init.noParam and kp or nil,
 		messageKey = e .. init.key .. '_message',
-		key = e .. '_' .. init.keyPlural,
-		key2 = e .. init.keyPlural,
+		key = e .. '_' .. kp,
+		key2 = e .. kp,
 		modKey = e:upper() .. init.key .. '_mod',
-		attrKey = e:upper() .. init.keyPlural,
+		attrKey = e:upper() .. kp,
 
-		set = setfn[i] or function (current, amount)
+		getValue = setfn[i] or function (current, amount)
 			return to_big(current):arrow(i, amount) --- @diagnostic disable-line
 		end,
 		stringify = function (amount)
@@ -40,7 +51,7 @@ function effects.createIndex(init, i)
 			return str
 		end,
 
-		sound = init.soundFormat and init.soundFormat:format(e),
+		sound = formatsound(init.sound, i, e),
 		colorKey = init.colorKey
 	}
 	return fx, e
@@ -49,17 +60,19 @@ end
 --- @nodiscard
 --- @param init t.Effects.EffectInit
 function effects.createHyper(init)
+	local kp = init.keyPlural or init.key
+
 	--- @type t.Effects.Effect
 	local fx = {
 		hyper = true,
-		parameterKey = init.keyPlural,
+		parameterKey = not init.noParam and kp or nil,
 		messageKey = 'hyper' .. init.key .. '_message',
-		key = 'hyper_' .. init.keyPlural,
-		key2 = 'hyper' .. init.keyPlural,
+		key = 'hyper_' .. kp,
+		key2 = 'hyper' .. kp,
 		modKey = 'hyper' .. init.key .. '_mod',
-		attrKey = 'H' .. init.keyPlural,
+		attrKey = 'H' .. kp,
 
-		set = function (current, amount)
+		getValue = function (current, amount)
 			return to_big(current):arrow(amount[1], amount[2]) --- @diagnostic disable-line
 		end,
 		stringify = function (amount)
@@ -74,7 +87,7 @@ function effects.createHyper(init)
 			return str
 		end,
 
-		sound = init.soundFormat and init.soundFormat:format('eee'),
+		sound = formatsound(init.sound, 'hyper', 'eee'),
 		colorKey = init.colorKey
 	}
 	return fx
@@ -101,16 +114,12 @@ effects.common = {}
 effects.common.chips = {
 	key = 'chip',
 	keyPlural = 'chips',
-	effectTableKey = 'hand_chips',
-	soundFormat = 'talisman_%schip',
+	sound = 'talisman_%schip',
 	colorKey = 'echips'
 }
---- @type t.Effects.EffectInit
 effects.common.mult = {
 	key = 'mult',
-	keyPlural = 'mult',
-	effectTableKey = 'mult',
-	soundFormat = 'talisman_%smult',
+	sound = 'talisman_%smult',
 	colorKey = 'emult'
 }
 
@@ -141,26 +150,33 @@ function effects.init_ability(ability_table, config_table)
 end
 
 --- @class t.Effects.Effect: t.Effects.Common
+--- @field key string e.g. `e_chips`, `hyper_chips`
 --- @field hyper? boolean
 ---
---- @field parameterKey string e.g. `mult`, `chips`
---- @field key string e.g. `e_chips`, `hyper_chips`
---- @field attrKey? string e.g. `Echips`, `Hchips`; used in card's attribute setting
---- @field key2? string e.g. `echips`, `hyperchips`; used in effect handlers
---- @field modKey? string e.g. `Echip_mod`, `hyperchip_mod`; used in effect handlers without status text
---- @field messageKey? string e.g. `echip_message`; used in specifying effect message
----
---- @field set fun(current: t.Omega.Parsable, amount: any): any Get amount to set
+--- @field getValue fun(current: t.Omega.Parsable, amount: any): any Get amount to set
 --- @field stringify fun(amount: any): string Stringify amount for message, e.g. `^2 Mult`
+---
+--- @field attrKey? string e.g. `Echips`, `Hchips`; used in setting card's attribute
+--- @field parameterKey? string e.g. `mult`, `chips`; used in effect handlers modifying `SMODS.Scoring_Parameters` current value
+--- @field key2? string e.g. `echips`, `hyperchips`; used in effect handlers for key aliasing
+--- @field modKey? string e.g. `Echip_mod`, `hyperchip_mod`; used in effect handlers without status text
+--- @field messageKey? string e.g. `echip_message`; used in effect handlers specifying effect message
 ---
 --- @field sound? string
 
 --- @class t.Effects.EffectInit: t.Effects.Common
 --- @field key string
---- @field keyPlural string
---- @field soundFormat? string
---- @field effectTableKey? string
+--- @field keyPlural? string Defaults to key
+--- @field sound? t.Effects.EffectInit.Sound
 --- @field loc? string
+--- @field noParam? boolean Should be set to true if the key is not for `SMODS.Scoring_Parameters`
+
+--- @alias t.Effects.EffectInit.Sound string | table<any, string> | fun(i: t.Effects.EffectInit.SoundIndex): string
+--- @alias t.Effects.EffectInit.SoundIndex number | 'hyper'
 
 --- @class t.Effects.Common
 --- @field colorKey? string
+--- @field can? t.Effects.HandleFunc<boolean> Check if effect should be handled
+--- @field set? t.Effects.HandleFunc<nil> Specify custom effect handler
+
+--- @alias t.Effects.HandleFunc<R> fun(self: t.Effects.Effect, effects: table, object: table, key: string, amount: any, from_edition: boolean): R

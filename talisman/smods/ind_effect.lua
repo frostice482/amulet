@@ -1,11 +1,16 @@
 function Talisman.effects.handleIndividual(effect, scored_card, key, amount, from_edition)
 	local handler = Talisman.effects.list[key]
-	if not handler then return end
+	if not handler or (handler and not handler:can(effect, scored_card, key, amount, from_edition)) then return end
 
 	if effect.card then juice_card(effect.card) end
 
-	local parameter = SMODS.Scoring_Parameters[handler.parameterKey]
-	parameter:modify(handler.set(parameter.current, amount) - parameter.current)
+	if handler.parameterKey then
+		local parameter = SMODS.Scoring_Parameters[handler.parameterKey]
+		parameter:modify(handler.getValue(parameter.current, amount) - parameter.current)
+	end
+	if handler.set then
+		handler:set(effect, scored_card, key, amount, from_edition)
+	end
 
 	if not effect.remove_default_message then
 		if from_edition then
@@ -19,8 +24,6 @@ function Talisman.effects.handleIndividual(effect, scored_card, key, amount, fro
 			end
 		end
 	end
-
-
 
 	return true
 end
