@@ -90,34 +90,14 @@ SMODS.Atlas({
 })
 
 
-SMODS.Sound({
-	key = "xchip",
-	path = "MultiplicativeChips.ogg"
-})
-SMODS.Sound({
-	key = "echip",
-	path = "ExponentialChips.ogg"
-})
-SMODS.Sound({
-	key = "eechip",
-	path = "TetrationalChips.ogg"
-})
-SMODS.Sound({
-	key = "eeechip",
-	path = "PentationalChips.ogg"
-})
-SMODS.Sound({
-	key = "emult",
-	path = "ExponentialMult.ogg"
-})
-SMODS.Sound({
-	key = "eemult",
-	path = "TetrationalMult.ogg"
-})
-SMODS.Sound({
-	key = "eeemult",
-	path = "PentationalMult.ogg"
-})
+SMODS.Sound({ key = "echip", path = "chips/e.ogg" })
+SMODS.Sound({ key = "eechip", path = "chips/ee.ogg" })
+SMODS.Sound({ key = "eeechip", path = "chips/eee.ogg" })
+SMODS.Sound({ key = "emult", path = "mult/e.ogg" })
+SMODS.Sound({ key = "eemult", path = "mult/ee.ogg" })
+SMODS.Sound({ key = "eeemult", path = "mult/eee.ogg" })
+SMODS.Sound({ key = "eblindsize", path = "blindsize/e.ogg" })
+SMODS.Sound({ key = "eeblindsize", path = "blindsize/ee.ogg" })
 
 function curmod.load_mod_config() end
 function curmod.save_mod_config() end

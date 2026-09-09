@@ -68,3 +68,8 @@ Using this feature will force-enable BigAnte and hide the option from the settin
 ```lua
 Talisman.forced_features.force_bigante()
 ```
+
+## Credits
+
+- Talisman devs
+- VMan-2002 for ^blindsize, ^^blindsize sound
