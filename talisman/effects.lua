@@ -41,11 +41,7 @@ function effects.createIndex(init, i)
 		end,
 
 		sound = init.soundFormat and init.soundFormat:format(e),
-		colorKey = init.colorKey,
-
-		setScore = init.setScore,
-		effectExtra = init.effectExtra,
-		effectScore = init.effectScore,
+		colorKey = init.colorKey
 	}
 	return fx, e
 end
@@ -79,11 +75,7 @@ function effects.createHyper(init)
 		end,
 
 		sound = init.soundFormat and init.soundFormat:format('eee'),
-		colorKey = init.colorKey,
-
-		setScore = init.setScore,
-		effectExtra = init.effectExtra,
-		effectScore = init.effectScore,
+		colorKey = init.colorKey
 	}
 	return fx
 end
@@ -111,11 +103,7 @@ effects.common.chips = {
 	keyPlural = 'chips',
 	effectTableKey = 'hand_chips',
 	soundFormat = 'talisman_%schip',
-	colorKey = 'echips',
-
-	setScore = function (self, amt) hand_chips = mod_chips(self.set(hand_chips, amt)) end,
-	effectExtra = function (self, amt, extra) extra.hand_chips = true end,
-	effectScore = function (self, amt) update_hand_text({delay = 0}, {chips = hand_chips}) end
+	colorKey = 'echips'
 }
 --- @type t.Effects.EffectInit
 effects.common.mult = {
@@ -123,17 +111,8 @@ effects.common.mult = {
 	keyPlural = 'mult',
 	effectTableKey = 'mult',
 	soundFormat = 'talisman_%smult',
-	colorKey = 'emult',
-
-	setScore = function (self, amt) mult = mod_mult(self.set(mult, amt)) end,
-	effectExtra = function (self, amt, extra) extra.mult = true end,
-	effectScore = function (self, amt) update_hand_text({delay = 0}, {mult = mult}) end
+	colorKey = 'emult'
 }
-
---- @type t.Effects.EffectInit
-effects.common.xchips = setmetatable({ colorKey = 'CHIPS' }, { __index = effects.common.chips })
-
-if not SMODS then effects.register(effects.createIndex(effects.common.xchips, 0)) end
 
 effects.createAndRegister(effects.common.chips)
 effects.createAndRegister(effects.common.mult)
@@ -175,7 +154,6 @@ end
 --- @field stringify fun(amount: any): string Stringify amount for message, e.g. `^2 Mult`
 ---
 --- @field sound? string
---- @field colorKey? string
 
 --- @class t.Effects.EffectInit: t.Effects.Common
 --- @field key string
@@ -183,9 +161,6 @@ end
 --- @field soundFormat? string
 --- @field effectTableKey? string
 --- @field loc? string
---- @field colorKey? string
 
 --- @class t.Effects.Common
---- @field setScore fun(self: t.Effects.Effect, amt: number, effect: table)
---- @field effectExtra fun(self: t.Effects.Effect, amt: number, extras: table)
---- @field effectScore fun(self: t.Effects.Effect, amt: number)
+--- @field colorKey? string

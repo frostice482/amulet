@@ -19,6 +19,9 @@ function Talisman.effects.handleIndividual(effect, scored_card, key, amount, fro
 			end
 		end
 	end
+
+
+
 	return true
 end
 
