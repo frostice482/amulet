@@ -29,6 +29,7 @@ function effects.createIndex(init, i)
 		key = e .. '_' .. init.keyPlural,
 		key2 = e .. init.keyPlural,
 		modKey = e:upper() .. init.key .. '_mod',
+		attrKey = e:upper() .. init.keyPlural,
 
 		set = setfn[i] or function (current, amount)
 			return to_big(current):arrow(i, amount) --- @diagnostic disable-line
@@ -60,6 +61,7 @@ function effects.createHyper(init)
 		key = 'hyper_' .. init.keyPlural,
 		key2 = 'hyper' .. init.keyPlural,
 		modKey = 'hyper' .. init.key .. '_mod',
+		attrKey = 'H' .. init.keyPlural,
 
 		set = function (current, amount)
 			return to_big(current):arrow(amount[1], amount[2]) --- @diagnostic disable-line
@@ -163,11 +165,11 @@ end
 --- @field hyper? boolean
 ---
 --- @field parameterKey string e.g. `mult`, `chips`
---- @field key string e.g. `e_mult`, `hyper_mult`
---- @field attrKey? string e.g. `Emult`, `Hmult`; used in card's attribute setting
---- @field key2? string e.g. `emult`, `hypermult`; used in effect handlers
---- @field modKey? string e.g. `Emult_mod`, `hypermult_mod`; used in effect handlers without status text
---- @field messageKey? string e.g. `emult_message`; used in specifying effect message
+--- @field key string e.g. `e_chips`, `hyper_chips`
+--- @field attrKey? string e.g. `Echips`, `Hchips`; used in card's attribute setting
+--- @field key2? string e.g. `echips`, `hyperchips`; used in effect handlers
+--- @field modKey? string e.g. `Echip_mod`, `hyperchip_mod`; used in effect handlers without status text
+--- @field messageKey? string e.g. `echip_message`; used in specifying effect message
 ---
 --- @field set fun(current: t.Omega.Parsable, amount: any): any Get amount to set
 --- @field stringify fun(amount: any): string Stringify amount for message, e.g. `^2 Mult`
