@@ -112,3 +112,11 @@ function G.FUNCS.evaluate_round()
 	add_round_eval_row = arer
 	add_round_eval_row({ name = 'bottom', dollars = Talisman.dollars })
 end
+
+local cuc = Card.use_consumable
+function Card:use_consumable(x,y)
+	Talisman.current_calc.score = true
+	local ret = cuc(self, x,y)
+	Talisman.current_calc.score = false
+	return ret
+end
