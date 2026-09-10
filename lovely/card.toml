@@ -15,52 +15,7 @@ match_indent = true
 target = "functions/common_events.lua"
 pattern = "local p_dollars = card:get_p_dollars()"
 position = "before"
-payload = '''
-local x_chips = card:get_chip_x_bonus()
-if x_chips > 0 then
-	ret.x_chips = x_chips
-end
-
-local e_chips = card:get_chip_e_bonus()
-if e_chips > 0 then
-	ret.e_chips = e_chips
-end
-
-local ee_chips = card:get_chip_ee_bonus()
-if ee_chips > 0 then
-	ret.ee_chips = ee_chips
-end
-
-local eee_chips = card:get_chip_eee_bonus()
-if eee_chips > 0 then
-	ret.eee_chips = eee_chips
-end
-
-local hyper_chips = card:get_chip_hyper_bonus()
-if type(hyper_chips) == 'table' and hyper_chips[1] > 0 and hyper_chips[2] > 0 then
-	ret.hyper_chips = hyper_chips
-end
-
-local e_mult = card:get_chip_e_mult()
-if e_mult > 0 then
-	ret.e_mult = e_mult
-end
-
-local ee_mult = card:get_chip_ee_mult()
-if ee_mult > 0 then
-	ret.ee_mult = ee_mult
-end
-
-local eee_mult = card:get_chip_eee_mult()
-if eee_mult > 0 then
-	ret.eee_mult = eee_mult
-end
-
-local hyper_mult = card:get_chip_hyper_mult()
-if type(hyper_mult) == 'table' and hyper_mult[1] > 0 and hyper_mult[2] > 0 then
-	ret.hyper_mult = hyper_mult
-end
-'''
+payload = "Talisman.effects.evaluate_scoring_card(card, ret)"
 match_indent = true
 
 [[patches]]
