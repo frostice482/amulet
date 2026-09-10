@@ -221,11 +221,6 @@ effects.common.blindsize = {
 	end
 }
 
-effects.createAndRegister(effects.common.chips)
-effects.createAndRegister(effects.common.mult)
-effects.createAndRegister(effects.common.score)
-effects.createAndRegister(effects.common.blindsize)
-
 if Talisman.config_file.dev then
 effects.register(effects.createIndex(effects.common.blindsize, 0))
 end

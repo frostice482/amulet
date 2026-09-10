@@ -1,3 +1,9 @@
+local effects = Talisman.effects
+effects.createAndRegister(effects.common.chips)
+effects.createAndRegister(effects.common.mult)
+effects.createAndRegister(effects.common.score)
+effects.createAndRegister(effects.common.blindsize)
+
 function Talisman.effects.handleIndividual(effect, scored_card, key, amount, from_edition)
 	local handler = Talisman.effects.list[key]
 	if not handler or (handler.can and not handler:can(effect, scored_card, key, amount, from_edition)) then return end
@@ -36,10 +42,10 @@ local scie = SMODS.calculate_individual_effect
 function SMODS.calculate_individual_effect(...)
 	local ret = scie(...)
 	if ret then return ret end
-	return Talisman.effects.handleIndividual(...)
+	return effects.handleIndividual(...)
 end
 
-for k, v in pairs(Talisman.effects.list) do
+for k, v in pairs(effects.list) do
 	table.insert(SMODS.scoring_parameter_keys or SMODS.calculation_keys, k)
 end
 if Talisman.config_file.dev then
