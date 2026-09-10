@@ -11,7 +11,7 @@ Talisman = {
 }
 Talisman.api_version = {
     major = 3,
-    minor = 5
+    minor = 6
 }
 
 Talisman.config_file = {
