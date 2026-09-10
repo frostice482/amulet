@@ -21,25 +21,25 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
-pattern = "elseif eval_type == 'dollars' then"
+pattern = "local text = ''"
 position = "before"
 payload = '''
-elseif Talisman.effects.list[eval_type] then
-	local h = Talisman.effects.list[eval_type]
-	sound = h.sound
-	text = h.stringify(amt)
-	colour = G.C[h.colorKey or 'WHITE']
-	config.type = 'fade'
-	config.scale = 0.7
-	amt = h.hyper and amt[2] or amt
+if eval_type ~= "extra" and Talisman.effects.list[eval_type] then
+	extra = Talisman.effects.transform_loc(eval_type, amt, card, extra)
+	eval_type = "extra"
+end
 '''
 match_indent = true
 
-# sfx
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
-pattern = "sound = extra.edition and 'foil2' or extra.mult_mod and 'multhit1' or extra.Xmult_mod and 'multhit2' or 'generic1'"
+pattern = '''
+config.scale = 0.7
+end
+'''
 position = "after"
-payload = "sound = Talisman.effects.get_mod_sound(extra) or sound"
+payload = '''
+colour = extra.colour or colour
+'''
 match_indent = true

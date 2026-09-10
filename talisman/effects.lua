@@ -45,8 +45,8 @@ function effects.applyGeneric(init, t, prefix)
 	t.colorKey = init.colorKey
 	t.scoreFunc = init.scoreFormat and init.scoreFormat:format(prefix)
 	t.can = init.can
-	t.after = init.after
 	t.set = init.set
+	t.processLoc = init.processLoc
 end
 
 --- @nodiscard
@@ -191,6 +191,9 @@ effects.common.score = {
 			from_edition = from_edition
 		})
 		effect.remove_default_message = s
+	end,
+	processLoc = function (self, message, effect)
+		message.update_score = true
 	end
 }
 effects.common.blindsize = {
@@ -218,6 +221,9 @@ effects.common.blindsize = {
 			from_edition = from_edition
 		})
 		effect.remove_default_message = s
+	end,
+	processLoc = function (self, message, effect)
+		message.update_blind_size = true
 	end
 }
 
@@ -264,6 +270,24 @@ function effects.evaluate_scoring_card(card, return_table)
 	end
 end
 
+--- @param effect string | t.Effects.Effect
+--- @param amt t.Omega.Parsable
+--- @param tbl? table
+function effects.transform_loc(effect, amt, obj, tbl)
+	tbl = tbl or {}
+	if type(effect) == "string" then
+		effect = effects.list[effect]
+		if not effect then return tbl end
+	end
+
+	tbl.sound = tbl.sound or effect.sound
+	tbl.message = tbl.message or effect.stringify(amt)
+	tbl.colour = tbl.colour or G.C[effect.colorKey or 'WHITE']
+	if effect.processLoc then tbl = effect:processLoc(tbl, obj) or tbl end
+
+	return tbl
+end
+
 --- @class t.Effects.EffectGeneric: t.Effects.EffectCommon
 --- @field key string e.g. `e_chips`, `hyper_chips`
 --- @field scoreFunc? string e.g. `get_chip_e_bonus`; defines a method in Card with this name and use the function for scoring cards
@@ -292,8 +316,12 @@ end
 
 --- @class t.Effects.EffectCommon
 --- @field colorKey? string
---- @field can? t.Effects.HandleFunc<boolean> Check if effect should be handled
---- @field set? t.Effects.HandleFunc<nil> Specify custom effect handler
---- @field after? t.Effects.HandleFunc<nil> Specify custom effect handler after message
+--- Check if effect should be handled
+--- @field can? t.Effects.HandleFunc<boolean>
+--- Specify custom effect handler
+--- @field set? t.Effects.HandleFunc<nil>
+--- Specify custom localization processor for message value.
+--- Note that `effect` is only available if the message is returned from calculation
+--- @field processLoc? fun(self: t.Effects.Effect, message: table, object: any, effect?: table): table?
 
 --- @alias t.Effects.HandleFunc<R> fun(self: t.Effects.Effect, effect: table, object: table, key: string, amount: any, from_edition: boolean): R
