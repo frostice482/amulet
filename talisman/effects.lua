@@ -120,13 +120,13 @@ function effects.create_ability_get_func(attr)
 	return function(card)
 		local val = card.ability[attr]
 		--return not (card.debuff or card.ability.set == 'Joker' and val == 1) and val or 0
-		return not (card.debuff or card.ability.set == 'Joker') and val or 1
+		return not (card.debuff or card.ability.set == 'Joker') and val or 0
 	end
 end
 
 function effects.create_ability_get_func_hyper(attr)
 	--local t = {0, 0}
-	local t = {1, 1}
+	local t = {0, 0}
 	--- @param card balatro.Card
 	return function(card)
 		local val = card.ability[attr]
@@ -262,7 +262,7 @@ function effects.evaluate_scoring_card(card, return_table)
 				return_table[score.key] = vv
 			end
 		else
-			if vv[2] ~= 0 and vv[2] ~= 1 then
+			if vv[2] ~= 0 and (vv[2] ~= 1 or vv[1] == -1 --[[plus]]) then
 				return_table[score.key] = vv
 			end
 		end
