@@ -90,6 +90,7 @@ SMODS.Atlas({
 })
 
 
+SMODS.Sound({ key = "xchip", path = "chips/x.ogg" })
 SMODS.Sound({ key = "echip", path = "chips/e.ogg" })
 SMODS.Sound({ key = "eechip", path = "chips/ee.ogg" })
 SMODS.Sound({ key = "eeechip", path = "chips/eee.ogg" })
