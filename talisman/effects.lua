@@ -7,6 +7,8 @@ local effects = Talisman.effects
 effects.list = {}
 --- @type t.Effects.Effect[]
 effects.listEffect = {}
+--- @type t.Effects.Effect[]
+effects.listScoring = {}
 
 local setfn = {
 	[0] = function(c, a) return c * a end,
@@ -31,6 +33,22 @@ local tmploc = {
 	vars = {}
 }
 
+--- @param init t.Effects.EffectInit
+--- @param t t.Effects.EffectGeneric
+function effects.applyGeneric(init, t, prefix)
+	local kp = init.keyPlural or init.key
+	t.parameterKey = not init.noParam and kp or nil
+	t.messageKey = prefix .. init.key .. '_message'
+	t.key = prefix .. '_' .. kp
+	t.key2 = prefix .. kp
+
+	t.colorKey = init.colorKey
+	t.scoreFunc = init.scoreFormat and init.scoreFormat:format(prefix)
+	t.can = init.can
+	t.after = init.after
+	t.set = init.set
+end
+
 --- @nodiscard
 --- @param init t.Effects.EffectInit
 --- @param i number
@@ -39,12 +57,7 @@ function effects.createIndex(init, i)
 	local up = i == 0 and 'X' or string.rep('^', i)
 	local kp = init.keyPlural or init.key
 
-	--- @type t.Effects.Effect
 	local fx = {
-		parameterKey = not init.noParam and kp or nil,
-		messageKey = e .. init.key .. '_message',
-		key = e .. '_' .. kp,
-		key2 = e .. kp,
 		modKey = e:upper() .. init.key .. '_mod',
 		attrKey = e:upper() .. kp,
 
@@ -62,11 +75,8 @@ function effects.createIndex(init, i)
 		end,
 
 		sound = formatsound(init.sound, i, e),
-		colorKey = init.colorKey,
-		can = init.can,
-		after = init.after,
-		set = init.set
 	}
+	effects.applyGeneric(init, fx, e)
 	return fx, e
 end
 
@@ -75,13 +85,8 @@ end
 function effects.createHyper(init)
 	local kp = init.keyPlural or init.key
 
-	--- @type t.Effects.Effect
 	local fx = {
 		hyper = true,
-		parameterKey = not init.noParam and kp or nil,
-		messageKey = 'hyper' .. init.key .. '_message',
-		key = 'hyper_' .. kp,
-		key2 = 'hyper' .. kp,
 		modKey = 'hyper' .. init.key .. '_mod',
 		attrKey = 'H' .. kp,
 
@@ -105,12 +110,29 @@ function effects.createHyper(init)
 		end,
 
 		sound = formatsound(init.sound, 'hyper', 'eee'),
-		colorKey = init.colorKey,
-		can = init.can,
-		after = init.after,
-		set = init.set
 	}
+	effects.applyGeneric(init, fx, 'hyper')
 	return fx
+end
+
+function effects.create_ability_get_func(attr)
+	--- @param card balatro.Card
+	return function(card)
+		local val = card.ability[attr]
+		--return not (card.debuff or card.ability.set == 'Joker' and val == 1) and val or 0
+		return not (card.debuff or card.ability.set == 'Joker') and val or 1
+	end
+end
+
+function effects.create_ability_get_func_hyper(attr)
+	--local t = {0, 0}
+	local t = {1, 1}
+	--- @param card balatro.Card
+	return function(card)
+		local val = card.ability[attr]
+		--return not (card.debuff or card.ability.set == 'Joker' or type(val) ~= 'table' or val[1] == 1 and val[2] == 1) and val or t
+		return not (card.debuff or card.ability.set == 'Joker' or type(val) ~= 'table') and val or t
+	end
 end
 
 --- @param fx t.Effects.Effect
@@ -119,6 +141,11 @@ function effects.register(fx)
 	if fx.modKey then effects.list[fx.modKey] = fx end
 	if fx.key2 then effects.list[fx.key2] = fx end
 	table.insert(effects.listEffect, fx)
+
+	if fx.scoreFunc then
+		Card[fx.scoreFunc] = fx.hyper and effects.create_ability_get_func_hyper(fx.key) or effects.create_ability_get_func(fx.key)
+		table.insert(effects.listScoring, fx)
+	end
 end
 
 --- @param init t.Effects.EffectInit
@@ -134,17 +161,20 @@ effects.common = {}
 effects.common.chips = {
 	key = 'chip',
 	keyPlural = 'chips',
+	scoreFormat = 'get_chip_%s_bonus',
 	sound = 'talisman_%schip',
-	colorKey = 'echips'
+	colorKey = 'echips',
 }
 effects.common.mult = {
 	key = 'mult',
+	scoreFormat = 'get_chip_%s_mult',
 	sound = 'talisman_%smult',
 	colorKey = 'emult',
-	loc = 'a_mult'
+	loc = 'a_mult',
 }
 effects.common.score = {
 	key = 'score',
+	scoreFormat = 'get_bonus_%s_score',
 	noParam = true,
 	sound = 'xscore', -- missing e, ee, eee variant
 	colorKey = 'escore',
@@ -165,6 +195,7 @@ effects.common.score = {
 }
 effects.common.blindsize = {
 	key = 'blindsize',
+	scoreFormat = 'get_bonus_%s_blind_size',
 	noParam = true,
 	sound = {
 		[0] = 'xblindsize',
@@ -222,32 +253,49 @@ function effects.init_ability(ability_table, config_table)
 	end
 end
 
---- @class t.Effects.Effect: t.Effects.Common
+function effects.evaluate_scoring_card(card, return_table)
+	if card.debuff or card.ability.set == 'Joker' then return end
+	for i,score in ipairs(effects.listScoring) do
+		local vv = card[score.scoreFunc](card)
+		if not score.hyper then
+			if vv ~= 0 and vv ~= 1 then
+				return_table[score.key] = vv
+			end
+		else
+			if vv[2] ~= 0 and vv[2] ~= 1 then
+				return_table[score.key] = vv
+			end
+		end
+	end
+end
+
+--- @class t.Effects.EffectGeneric: t.Effects.EffectCommon
 --- @field key string e.g. `e_chips`, `hyper_chips`
---- @field hyper? boolean
----
---- @field getValue fun(current: t.Omega.Parsable, amount: any): any Get amount to set
---- @field stringify fun(amount: any, noLoc?: boolean): string Stringify amount for message, e.g. `^2 Mult`
----
---- @field attrKey? string e.g. `Echips`, `Hchips`; used in setting card's attribute
+--- @field scoreFunc? string e.g. `get_chip_e_bonus`; defines a method in Card with this name and use the function for scoring cards
 --- @field parameterKey? string e.g. `mult`, `chips`; used in effect handlers modifying `SMODS.Scoring_Parameters` current value
 --- @field key2? string e.g. `echips`, `hyperchips`; used in effect handlers for key aliasing
---- @field modKey? string e.g. `Echip_mod`, `hyperchip_mod`; used in effect handlers without status text
 --- @field messageKey? string e.g. `echip_message`; used in effect handlers specifying effect message
----
+
+--- @class t.Effects.Effect: t.Effects.EffectGeneric
+--- @field hyper? boolean
+--- @field attrKey? string e.g. `Echips`, `Hchips`; used in setting card's attribute
+--- @field modKey? string e.g. `Echip_mod`, `hyperchip_mod`; used in effect handlers without status text
+--- @field getValue fun(current: t.Omega.Parsable, amount: any): any Get amount to set
+--- @field stringify fun(amount: any, noLoc?: boolean): string Stringify amount for message, e.g. `^2 Mult`
 --- @field sound? string
 
---- @class t.Effects.EffectInit: t.Effects.Common
+--- @class t.Effects.EffectInit: t.Effects.EffectCommon
 --- @field key string
 --- @field keyPlural? string Defaults to key
 --- @field sound? t.Effects.EffectInit.Sound
+--- @field scoreFormat? string e.g. `get_chip_%s_bonus`
 --- @field loc? string Localization key in v_dictionary
 --- @field noParam? boolean Should be set to true if the key is not for `SMODS.Scoring_Parameters`
 
 --- @alias t.Effects.EffectInit.Sound string | table<any, string> | fun(i: t.Effects.EffectInit.SoundIndex): string
 --- @alias t.Effects.EffectInit.SoundIndex number | 'hyper'
 
---- @class t.Effects.Common
+--- @class t.Effects.EffectCommon
 --- @field colorKey? string
 --- @field can? t.Effects.HandleFunc<boolean> Check if effect should be handled
 --- @field set? t.Effects.HandleFunc<nil> Specify custom effect handler
