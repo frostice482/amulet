@@ -16,7 +16,6 @@ function copy_table(o, done)
 	return copy
 end
 
-require"talisman.globals"
 require"big-num.omeganum"
 
 --- @param desc string

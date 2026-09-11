@@ -2,7 +2,7 @@ local constants = require("big-num.constants")
 Notations = require("big-num.notations")
 BigC = copy_table(constants)
 
-Talisman.maxn = table.maxn or function(arr)
+local maxn = table.maxn or function(arr)
     local total = 0
     for i, v in pairs(arr) do
         if type(i) == "number" and v ~= 0 and i > total then
@@ -26,7 +26,7 @@ function to_big(x, sign)
 	if is_number(x) then
 		return x * sign
 	elseif type(x) == "table" then
-		if Talisman.maxn(x) > 2 then
+		if maxn(x) > 2 then
 			return 1e309 * sign
 		end
 		if x[2] then

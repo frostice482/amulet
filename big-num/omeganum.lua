@@ -90,6 +90,16 @@ local function fnum(other)
     if type(other) == "number" then return other end
 end
 
+local maxn = table.maxn or function(arr)
+    local total = 0
+    for i, v in pairs(arr) do
+        if type(i) == "number" and v ~= 0 and i > total then
+            total = i
+        end
+    end
+    return total
+end
+
 --- @param arr? number[]
 --- @param sign? number
 --- @param noNormalize? boolean
@@ -148,7 +158,7 @@ function Big:_normalize()
         return
     end
 
-    local asize = Talisman.maxn(arr)
+    local asize = maxn(arr)
     if asize == 0 then
         self.sign = 1
         self.asize = 0
@@ -219,7 +229,7 @@ function Big:_normalize()
         u = u or b
     until not b
 
-    if u then asize = Talisman.maxn(arr) end
+    if u then asize = maxn(arr) end
     if asize == 0 then arr = {0} end
     bigs[self] = arr
     self.asize = asize
