@@ -2,6 +2,16 @@ local constants = require("big-num.constants")
 Notations = require("big-num.notations")
 BigC = copy_table(constants)
 
+Talisman.maxn = table.maxn or function(arr)
+    local total = 0
+    for i, v in pairs(arr) do
+        if type(i) == "number" and v ~= 0 and i > total then
+            total = i
+        end
+    end
+    return total
+end
+
 function is_big(x)
 	return false
 end
@@ -11,20 +21,23 @@ function is_number(x)
 end
 
 --- @return t.Omega | number
-function to_big(x, y)
+function to_big(x, sign)
+	sign = sign or 1
 	if is_number(x) then
-		return x * 10 ^ (y or 0)
-	elseif x == nil then
-		return 0
-	else
-		if ((#x >= 2) and ((x[2] >= 2) or (x[2] == 1) and (x[1] > 308))) then
-			return 1e309
+		return x * sign
+	elseif type(x) == "table" then
+		if Talisman.maxn(x) > 2 then
+			return 1e309 * sign
 		end
-		if (x[2] == 1) then
-			return math.pow(10, x[1])
+		if x[2] then
+			if x[2] > 4 then return 1e309 * sign end
+			local v = x[1] or 0
+			for i=1, x[2] do v = 10 ^ v end
+			return v * sign
 		end
-		return x[1] * (y or 1);
+		return (x[1] or 0) * sign
 	end
+	return 0
 end
 
 function to_number(x)

@@ -85,16 +85,6 @@ end
 
 -- #region constructor
 
-local arraySizeOf = table.maxn or function(arr)
-    local total = 0
-    for i, v in pairs(arr) do
-        if type(i) == "number" and v ~= 0 and i > total then
-            total = i
-        end
-    end
-    return total
-end
-
 local function fnum(other)
     if bigs[other] then return other.number end
     if type(other) == "number" then return other end
@@ -158,7 +148,7 @@ function Big:_normalize()
         return
     end
 
-    local asize = arraySizeOf(arr)
+    local asize = Talisman.maxn(arr)
     if asize == 0 then
         self.sign = 1
         self.asize = 0
@@ -229,7 +219,7 @@ function Big:_normalize()
         u = u or b
     until not b
 
-    if u then asize = arraySizeOf(arr) end
+    if u then asize = Talisman.maxn(arr) end
     if asize == 0 then arr = {0} end
     bigs[self] = arr
     self.asize = asize

@@ -99,5 +99,7 @@ Talisman.flame_effect = {
 Talisman.current_calc = {}
 Talisman.debug = {}
 
+if love then
 Talisman.config.load()
 Talisman.update_debug()
+end
