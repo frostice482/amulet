@@ -200,13 +200,7 @@ effects.common.blindsize = {
 	key = 'blindsize',
 	scoreFormat = 'get_bonus_%s_blind_size',
 	noParam = true,
-	sound = {
-		[0] = 'xblindsize',
-		'talisman_eblindsize',
-		'talisman_eeblindsize',
-		'talisman_eeblindsize', -- missing eee variant
-		hyper = 'talisman_eeblindsize', -- missing eee variant
-	},
+	sound = 'talisman_%sblindsize',
 	colorKey = 'eblindsize',
 	loc = 'a_blind_size',
 
@@ -226,10 +220,6 @@ effects.common.blindsize = {
 		message.update_blind_size = true
 	end
 }
-
-if Talisman.config_file.dev then
-effects.register(effects.createIndex(effects.common.blindsize, 0))
-end
 
 effects.mod_sounds = {
 	hyperchip_mod = 'talisman_eeechip',

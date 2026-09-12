@@ -99,6 +99,7 @@ SMODS.Sound({ key = "eemult", path = "mult/ee.ogg" })
 SMODS.Sound({ key = "eeemult", path = "mult/eee.ogg" })
 SMODS.Sound({ key = "eblindsize", path = "blindsize/e.ogg" })
 SMODS.Sound({ key = "eeblindsize", path = "blindsize/ee.ogg" })
+SMODS.Sound({ key = "eeeblindsize", path = "blindsize/eee.ogg" })
 
 function curmod.load_mod_config() end
 function curmod.save_mod_config() end
