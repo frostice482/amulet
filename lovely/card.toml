@@ -35,11 +35,13 @@ match_indent = true
 [patches.pattern]
 target = "functions/common_events.lua"
 pattern = '''
-config.scale = 0.7
+else
+	config.type = 'fall'
+	config.scale = 0.7
 end
 '''
 position = "after"
 payload = '''
-colour = extra.colour or colour
+colour = extra and extra.colour or colour
 '''
 match_indent = true
