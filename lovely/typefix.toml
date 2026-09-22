@@ -53,3 +53,38 @@ if type(G.GAME.current_round.current_hand[name]) ~= 'number' then all_numbers = 
 payload = '''
 all_numbers = all_numbers and is_number(G.GAME.current_round.current_hand[name])
 '''
+
+# smods: fix smart_level_up_hand amount not working
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+match_indent = true
+position = 'at'
+pattern = '''
+level_up_hand(card, hand, instant, (type(amount) == 'number' or type(amount) == 'table') and amount or 1, statustext)
+'''
+payload = '''
+print(is_number(amount) or type(amount) == 'table', amount)
+level_up_hand(card, hand, instant, (is_number(amount) or type(amount) == 'table') and amount or 1, statustext)
+'''
+
+# smods: fix level_up_hand and upgrade_poker_hands amount not working
+[[patches]]
+[patches.pattern]
+target = '=[SMODS _ "src/utils.lua"]'
+match_indent = true
+position = 'at'
+pattern = '''
+G.GAME.hands[hand].level = G.GAME.hands[hand].level + (type(args.level_up) == 'number' and args.level_up or 1)
+'''
+payload = '''
+G.GAME.hands[hand].level = G.GAME.hands[hand].level + (is_number(args.level_up) and args.level_up or 1)
+'''
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if type(vals.level) == 'number' then"
+position = "at"
+payload = "if is_number(vals.level) then"
+match_indent = true
