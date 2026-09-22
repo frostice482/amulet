@@ -14,6 +14,7 @@ Amulet failed to load (sanity check failed). You might want to check your instal
 Debug info:
  - amulet folder: %s
  - mods folder: %s
+ - working dir: %s
  - stat.type for talisman folder: %s
  - directory listing for talisman folder: [%s]
 
@@ -22,6 +23,7 @@ Debug info:
 error(msg:format(
     _mod_dir_amulet,
     require("lovely").mod_dir,
+    NFS and NFS.getWorkingDirectory() or "?",
     love.filesystem.getInfo("talisman") and love.filesystem.getInfo("talisman").type or "?",
     table.concat(love.filesystem.getDirectoryItems("talisman"), '; '),
     tal_c_err
