@@ -64,7 +64,6 @@ pattern = '''
 level_up_hand(card, hand, instant, (type(amount) == 'number' or type(amount) == 'table') and amount or 1, statustext)
 '''
 payload = '''
-print(is_number(amount) or type(amount) == 'table', amount)
 level_up_hand(card, hand, instant, (is_number(amount) or type(amount) == 'table') and amount or 1, statustext)
 '''
 
