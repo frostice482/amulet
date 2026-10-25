@@ -1,0 +1,26 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = "main.lua"
+position = "before"
+pattern = "function love.run()"
+payload = '''
+error(string.format([==[
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    You wrongly installed Amulet. It is meant to be placed in its own folder, rather than the mods folder.
+    For example, Amulet should be put in %s/Amulet,
+    not %s
+
+[!] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! [!]
+
+    (you will be sent to the while hole if you report this crash message)
+
+]==], require"lovely".mod_dir, require"lovely".mod_dir))
+'''
+match_indent = true
